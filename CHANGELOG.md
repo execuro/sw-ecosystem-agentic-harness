@@ -7,11 +7,17 @@ release.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-16
+
 ### Added
 
 - **An `install` command** — `apply --yes` under a friendlier one-step name.
   Typing the verb is the consent, so it never prompts and needs no `--yes`; the
   scriptable `apply --yes` is unchanged and stays what skills and CI call.
+
+### Fixed
+
+- CI and the GitHub Pages setup for the plugin marketplace.
 
 ## [0.1.0] - 2026-09-16
 

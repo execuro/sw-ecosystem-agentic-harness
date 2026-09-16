@@ -60,7 +60,7 @@ So this row never blocks readiness. It asks.
   `package` field from `companions[]`), then re-run
 
   ```
-  npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.0 apply --yes
+  npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.1 apply --yes
   ```
 
   which places one `SKILL.md` per companion into each selected host's own
