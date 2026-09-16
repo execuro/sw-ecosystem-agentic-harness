@@ -14,14 +14,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install -g @anthropic-ai/claude-code
-      # `claude plugin validate <dir>` resolves a directory to ONE manifest and
-      # returns `contents: []`, so it is not a sufficient gate on its own.
-      # Each target is named explicitly.
+      # Pinned: `claude plugin validate <dir>` (bare directory form) resolves
+      # differently across CLI builds — locally it validates the directory's
+      # components, in CI (unpinned, floating latest) it demanded its own
+      # manifest and failed. That instability gates our release, so the
+      # version is fixed here rather than left to float. Content coverage for
+      # skills/agents lives in our own test suite (test/frontmatter.test.mjs,
+      # test/content.test.mjs), not the CLI's directory-walk.
+      - run: npm install -g @anthropic-ai/claude-code@2.1.273
+      # Only the explicit-file-path form is used: it is unambiguous across
+      # CLI versions. The bare-directory form (`validate skills`, `validate
+      # agents`) is not — do not reintroduce it.
       - run: claude plugin validate .claude-plugin/plugin.json --strict
       - run: claude plugin validate .claude-plugin/marketplace.json --strict
-      - run: claude plugin validate skills --strict
-      - run: claude plugin validate agents --strict
       - name: Root plugin.json is valid JSON and Agent Plugins 1.0
         run: |
           node -e '
