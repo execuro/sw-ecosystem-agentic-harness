@@ -21,17 +21,22 @@ const COMMANDS = {
   status: async () => (await import('../lib/commands.mjs')).status,
   plan: async () => (await import('../lib/commands.mjs')).plan,
   apply: async () => (await import('../lib/commands.mjs')).apply,
+  install: async () => (await import('../lib/commands.mjs')).install,
   uninstall: async () => (await import('../lib/commands.mjs')).uninstall,
   guide: async () => (await import('../lib/guide.mjs')).main,
 };
 
 const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
 
+  install    [--host <h>] [--scope project|user] [--root <path>] [--no-companions]
   status     [--host <h>] [--scope project|user] [--root <path>]
   plan       [--host <h>] [--scope project|user] [--root <path>] [--no-companions]
   apply      --yes [--host <h>] [--scope project|user] [--root <path>] [--no-companions]
   uninstall  --yes [--host <h>] [--scope project|user] [--root <path>]
   guide      print the install protocol
+
+  install is apply --yes under a friendlier name: the whole install in one
+  command, no --yes needed — typing the verb is the consent.
 
   <h> is one of: claude-code, codex, copilot, cursor. Repeat --host to select
   several; omitting it selects every host that is present.

@@ -49,6 +49,7 @@ declines is fully set up without them, and `--editor` on `sw-design-requirements
 
 | Command | What it does |
 | --- | --- |
+| `install` | installs into every detected host; the same as `apply --yes` |
 | `status` | read-only; what is installed, what drifted, which optional companion packages are present |
 | `plan` | the exact changes, written as a diff; writes nothing |
 | `apply --yes` | performs them |
@@ -58,21 +59,17 @@ declines is fully set up without them, and `--editor` on `sw-design-requirements
 Flags: `--host claude-code|codex|copilot|cursor` (repeatable; omitting it
 selects every host that is present), `--scope project|user` (default
 `project`), `--root <path>` (default the current directory), `--yes` (required
-by `apply` and `uninstall`, never prompts), and `--no-companions` (skip
-detection of the optional editor packages).
+by `apply` and `uninstall`, never prompts — `install` implies it), and
+`--no-companions` (skip detection of the optional editor packages).
 
 ## Install
 
 ```bash
-# see what is there and what is missing — read-only, always safe
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness status
-
-# see the exact changes, written as a diff. Writes nothing.
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness plan
-
-# perform them
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness apply --yes
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness install
 ```
+
+Want to look first? `status` is read-only and `plan` prints the diff; neither
+writes anything.
 
 Then restart your coding agent — every host reads its configuration at startup.
 The command's output tells you which ones and how.
