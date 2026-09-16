@@ -2,7 +2,7 @@
 name: sw-verify-feature-ac-tests
 description: Verify that a feature's acceptance criteria are backed by tests that actually exist, actually pass, and actually test what their name/comment/PHPDoc claims. Classifies tests by type (API/PHPUnit, Admin Panel/Playwright, Storefront/Playwright, CLI/PHPUnit), runs a test-health audit to catch false, mismatched, or unhealthy tests, then reports per-AC Coverage and Execution as pass / partly / not pass. One of three parallel verifiers spawned by sw-verify-feature; can also be run standalone.
 when_to_use: Trigger phrases — "verify AC tests for spec 0007", "audit test health for this feature", "are these tests actually testing what they claim", "check test coverage for epic 1".
-argument-hint: [specs/NNNN-slug-spec.md]
+argument-hint: '[specs/NNNN-slug-spec.md]'
 allowed-tools: Read Glob Grep Bash mcp__playwright__browser_navigate mcp__playwright__browser_click mcp__playwright__browser_type mcp__playwright__browser_fill_form mcp__playwright__browser_snapshot mcp__playwright__browser_take_screenshot mcp__playwright__browser_wait_for mcp__playwright__browser_console_messages mcp__playwright__browser_network_requests mcp__playwright__browser_evaluate mcp__playwright__browser_select_option mcp__playwright__browser_press_key mcp__playwright__browser_hover mcp__playwright__browser_tabs mcp__playwright__browser_close
 ---
 

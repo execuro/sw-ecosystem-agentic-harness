@@ -2,7 +2,7 @@
 name: sw-document-feature
 description: Document one Shopware project feature into the LLM-wiki under docs/project-wiki/ — one feature page per surface (administration/ and/or storefront/), the "why" row in the domain index, ADR pages only promoted from the WIP ADR files sw-design-solution extracted into specs/ once they are accepted and built (with an organised table of contents) or provided by the user (never invented). Sources are a PRD (specs/NNNN-slug.md), its tech spec (specs/NNNN-slug-spec.md), or the current chat. Runs a mandatory built-check gate first — pages for functionality that does not exist in custom/ or vendor/ are written only after the user explicitly enforces it, and then carry the ⚠️ NOT BUILT block. Never restates code; references paths, extension points, decisions, config. Not for writing PRDs or specs — that's sw-design-requirements / sw-design-solution.
 when_to_use: Trigger phrases — "document this feature", "write the wiki page for spec 0007", "document PRD specs/0003-…", "add docs for <feature>", "update the wiki for <feature>", "put this in the project wiki", "record this as a project coding rule", "override/waive this guideline for our project".
-argument-hint: [path to PRD or spec | empty = use chat] [--setup]
+argument-hint: '[path to PRD or spec | empty = use chat] [--setup]'
 allowed-tools: Read Glob Grep Bash Write Edit Agent AskUserQuestion mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
 ---
 

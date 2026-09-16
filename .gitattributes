@@ -1,0 +1,9 @@
+# Every text file is checked out with LF, on every platform. The generators
+# and the installer hash raw file bytes (the sha256 over shipped agent/skill
+# files, the source-hash header the Codex/Copilot generators embed, the TOML
+# literal blocks they compare) and a Windows CRLF checkout would change every
+# one of those hashes without changing a single character of content.
+#
+# No asset in this package is binary or needs to keep CRLF, so one blanket
+# rule covers everything; nothing here is excluded from it.
+* text=auto eol=lf

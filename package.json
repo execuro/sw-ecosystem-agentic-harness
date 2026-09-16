@@ -4,13 +4,13 @@
   "description": "Shopware 6 agentic harness: sw-* skills and sub-agents, plus an installer that writes them into Claude Code, Codex, GitHub Copilot and Cursor.",
   "license": "MIT",
   "author": "Execuro UG (haftungsbeschränkt)",
-  "homepage": "https://github.com/Execuro/sw-ecosystem-agentic-harness#readme",
+  "homepage": "https://github.com/execuro/sw-ecosystem-agentic-harness#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Execuro/sw-ecosystem-agentic-harness.git"
+    "url": "git+https://github.com/execuro/sw-ecosystem-agentic-harness.git"
   },
   "bugs": {
-    "url": "https://github.com/Execuro/sw-ecosystem-agentic-harness/issues"
+    "url": "https://github.com/execuro/sw-ecosystem-agentic-harness/issues"
   },
   "keywords": [
     "shopware",
@@ -49,7 +49,7 @@
   "scripts": {
     "gen": "node scripts/gen-codex-agents.mjs && node scripts/gen-copilot-agents.mjs && node scripts/gen-agents-md.mjs",
     "gen:check": "node scripts/gen-codex-agents.mjs --check && node scripts/gen-copilot-agents.mjs --check && node scripts/gen-agents-md.mjs --check",
-    "test": "node --test test/*.test.mjs scripts/*.test.mjs",
+    "test": "node -e \"const{spawnSync}=require('node:child_process');const{readdirSync}=require('node:fs');const list=(dir)=>readdirSync(dir).filter((f)=>f.endsWith('.test.mjs')).map((f)=>dir+'/'+f);const files=[...list('test'),...list('scripts')];const r=spawnSync(process.execPath,['--test',...files],{stdio:'inherit'});process.exit(r.status??1);\"",
     "check:mcp": "node scripts/check-mcp.mjs"
   },
   "publishConfig": {

@@ -1,6 +1,6 @@
 ---
 name: sw-tender-editor
-description: Mechanical file worker for the sw-discover-tender skill — extracts requirement tables from a tender's source export into cluster files, merges PM/architect/QA cluster reports into finished §4 row blocks, splices those blocks into the analysis sidecar, and assembles and checks the final response CSVs. Deterministic, no judgment: every value it writes comes from a named input file, never from memory or estimation. Not for research, feasibility checks, effort estimation or any judgment call — that is `sw-product-manager`, `sw-shopware-architect` and `sw-qa-engineer`'s work; this agent only reshapes what they already produced into the file the skill needs next.
+description: Mechanical file worker for the sw-discover-tender skill — extracts requirement tables from a tender's source export into cluster files, merges PM/architect/QA cluster reports into finished §4 row blocks, splices those blocks into the analysis sidecar, and assembles and checks the final response CSVs. Deterministic, no judgment — every value it writes comes from a named input file, never from memory or estimation. Not for research, feasibility checks, effort estimation or any judgment call — that is `sw-product-manager`, `sw-shopware-architect` and `sw-qa-engineer`'s work; this agent only reshapes what they already produced into the file the skill needs next.
 tools: Read, Write, Edit, Glob, Grep
 ---
 

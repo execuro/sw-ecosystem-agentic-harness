@@ -90,6 +90,22 @@ test('a hand-edited file is kept and reported, never deleted', () => {
   } finally { cleanup(root); }
 });
 
+test('a fence written with CRLF round-trips — line-ending style is not hand-editing', () => {
+  // A Windows checkout (or a user's own editor) can leave AGENTS.md with CRLF
+  // line endings before we ever touch it. `writeAtomic` preserves whatever EOL
+  // it finds, so our own managed fence then lives inside a CRLF file too — the
+  // fence's identity must not depend on that, or uninstall refuses to remove
+  // content it wrote itself.
+  const root = hostRepo({ dirs: ALL_MARKERS, files: { 'AGENTS.md': '# my notes\r\n\r\nProject uses pnpm.\r\n' } });
+  try {
+    run(['apply', '--yes', '--root', root]);
+    assert.match(readFileSync(join(root, 'AGENTS.md'), 'utf8'), /\r\n/, 'the fixture stayed CRLF');
+    const body = parse(run(['uninstall', '--yes', '--root', root]));
+    assert.deepEqual(body.kept, []);
+    assert.equal(readText(root, 'AGENTS.md'), '# my notes\r\n\r\nProject uses pnpm.\r\n');
+  } finally { cleanup(root); }
+});
+
 test('a hand-edited managed fence is kept', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {

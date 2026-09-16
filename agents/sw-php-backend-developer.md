@@ -1,6 +1,6 @@
 ---
 name: sw-php-backend-developer
-description: Shopware 6 PHP backend specialist. Use PROACTIVELY for any Shopware backend work — plugin/app PHP, DAL entities & migrations, Store/Admin API routes, services & decorators, event subscribers, flow actions, message handlers, caching, ACL. Triggers: "add an entity", "create an API endpoint", "extend checkout/order/product logic", "write a migration", "implement backend AC". Not for Administration (Vue) or Storefront (Twig/JS) work.
+description: Shopware 6 PHP backend specialist. Use PROACTIVELY for any Shopware backend work — plugin/app PHP, DAL entities & migrations, Store/Admin API routes, services & decorators, event subscribers, flow actions, message handlers, caching, ACL. Triggers — "add an entity", "create an API endpoint", "extend checkout/order/product logic", "write a migration", "implement backend AC". Not for Administration (Vue) or Storefront (Twig/JS) work.
 model: inherit
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__ShopwareDevKnowledgeBase__list_docs, mcp__ShopwareDevKnowledgeBase__grep_docs, mcp__ShopwareDevKnowledgeBase__read_doc, mcp__ShopwareDevKnowledgeBase__kb_status
 color: blue

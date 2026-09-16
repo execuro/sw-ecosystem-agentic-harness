@@ -2,7 +2,7 @@
 name: sw-verify-feature
 description: Verify a feature implementation against its technical spec (specs/NNNN-slug-spec.md) by running three independent verifiers in parallel — AC test coverage/health, architecture/guideline compliance, and code quality/static analysis — then cross-checking their verdicts into one final per-AC pass/not pass/partly report. Wired as the final step of sw-implement-feature; can also be run standalone to (re)check a feature. Not to be confused with the existing "verify-implementation" skill, which is a mock and should be ignored.
 when_to_use: Trigger phrases — "verify spec 0007", "check if this feature is done", "run full verification for this feature", "is epic 1 actually passing".
-argument-hint: [specs/NNNN-slug-spec.md]
+argument-hint: '[specs/NNNN-slug-spec.md]'
 allowed-tools: Read Write Glob Grep Agent
 ---
 

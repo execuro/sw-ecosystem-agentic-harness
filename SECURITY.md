@@ -9,7 +9,7 @@
 
 Report a suspected vulnerability privately, using GitHub's private
 vulnerability reporting: open
-**https://github.com/Execuro/sw-ecosystem-agentic-harness/security/advisories/new**,
+**https://github.com/execuro/sw-ecosystem-agentic-harness/security/advisories/new**,
 or click **Report a vulnerability** on the repository's **Security** tab.
 This opens a private thread visible only to you and the maintainers; nothing
 becomes public until an advisory is published. Please do not open a public

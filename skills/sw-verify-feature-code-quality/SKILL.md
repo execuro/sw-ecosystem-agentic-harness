@@ -2,7 +2,7 @@
 name: sw-verify-feature-code-quality
 description: Verify the code-quality gate for a feature — identifies which tool suites actually apply (PHPStan, ESLint, Stylelint, sw-cli structural validation via shopware-cli, PHPUnit regression), executes them, and checks the touched files against written Core and Project guidelines' quality/style clauses (naming, duplication, dead code, unneeded complexity). Reports whole-plugin gate results plus any per-AC quality defect found in that AC's files. One of three parallel verifiers spawned by sw-verify-feature; can also be run standalone.
 when_to_use: Trigger phrases — "verify code quality for spec 0007", "run static analysis for this feature", "does this pass PHPStan/ESLint", "code quality gate for epic 1".
-argument-hint: [specs/NNNN-slug-spec.md]
+argument-hint: '[specs/NNNN-slug-spec.md]'
 allowed-tools: Read Glob Grep Bash mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
 ---
 
