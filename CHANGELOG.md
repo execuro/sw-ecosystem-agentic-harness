@@ -7,6 +7,8 @@ release.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-16
+
 ### Changed
 
 - **Install/update instructions now anchor to `@latest`.** Every `npx`
