@@ -7,10 +7,14 @@
 
 ## Reporting a vulnerability
 
-Email **security@execuro.example** <!-- placeholder: no verified Execuro
-security contact was found in this repository; replace with the real address
-before publishing --> with a description of the issue and, if you have one, a
-reproduction. Do not open a public GitHub issue for a suspected vulnerability.
+Report a suspected vulnerability privately, using GitHub's private
+vulnerability reporting: open
+**https://github.com/Execuro/sw-ecosystem-agentic-harness/security/advisories/new**,
+or click **Report a vulnerability** on the repository's **Security** tab.
+This opens a private thread visible only to you and the maintainers; nothing
+becomes public until an advisory is published. Please do not open a public
+GitHub issue for a suspected vulnerability — that discloses it before a fix
+exists.
 
 We aim to acknowledge a report within **5 business days** and to have a fix or
 a mitigation plan within **30 days** of confirming it.
@@ -32,9 +36,14 @@ and user (`$HOME`) scope. In-scope classes of issue include:
 - the installer executing anything beyond the CLI invocation the user typed,
   or an install hook firing without the user running `apply` themselves.
 
-Out of scope: vulnerabilities in a third-party MCP server this package
-registers (report those upstream), and the Shopware project code the
-installed skills and agents operate on.
+This package declares **zero runtime dependencies** and runs **no lifecycle
+scripts** on install, which removes a large part of the usual npm attack
+surface.
+
+Out of scope: vulnerabilities in the coding agents themselves, in the
+separately published companion packages (they have their own repositories
+and their own reporting), or in a third-party MCP server this package merely
+registers, such as Playwright's (report those upstream).
 
 ## Disclosure
 
