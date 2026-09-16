@@ -1,0 +1,55 @@
+{
+  "name": "@execuro-sw-ecosystem/sw-ecosystem-agentic-harness",
+  "version": "0.1.0",
+  "description": "Shopware 6 agentic harness: sw-* skills and sub-agents, plus an installer that writes them into Claude Code, Codex, GitHub Copilot and Cursor.",
+  "license": "MIT",
+  "author": "Execuro UG (haftungsbeschränkt)",
+  "homepage": "https://github.com/Execuro/sw-ecosystem-agentic-harness#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Execuro/sw-ecosystem-agentic-harness.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Execuro/sw-ecosystem-agentic-harness/issues"
+  },
+  "keywords": [
+    "shopware",
+    "agentic",
+    "claude-code",
+    "codex",
+    "copilot",
+    "cursor",
+    "skills",
+    "subagents"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "sw-ecosystem-agentic-harness": "bin/cli.mjs"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "agents/",
+    "skills/",
+    "codex/",
+    "copilot/",
+    "content/",
+    "plugin.json",
+    "mcp.json",
+    ".mcp.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "gen": "node scripts/gen-codex-agents.mjs && node scripts/gen-copilot-agents.mjs && node scripts/gen-agents-md.mjs",
+    "gen:check": "node scripts/gen-codex-agents.mjs --check && node scripts/gen-copilot-agents.mjs --check && node scripts/gen-agents-md.mjs --check",
+    "test": "node --test test/*.test.mjs scripts/*.test.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

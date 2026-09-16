@@ -1,0 +1,51 @@
+# Jekyll site configuration for the project wiki (GitHub Pages compatible).
+# This folder is the site root: when it is published as its own repository
+# (Settings → Pages → Deploy from a branch → / (root)), this file is the site config.
+
+title: Shopware Project Wiki
+description: What we built in this Shopware project, why, where it lives in the code, and how to run it.
+
+# Just the Docs gives the left sidebar navigation and search. It is not one of the themes selectable
+# via `theme:`, but GitHub Pages supports `remote_theme:` on a plain branch deploy — no Actions
+# workflow needed. Pinned to a tag so a theme release cannot change the site unannounced.
+remote_theme: just-the-docs/just-the-docs@v0.10.1
+
+markdown: kramdown
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+
+# A GitHub Pages *project* site (this folder published from a repo whose Pages URL is
+# https://<org>.github.io/<repo>/) needs baseurl set to "/<repo>", or the theme's CSS and JS 404.
+# A user/org site (repo named <org>.github.io) or a build via GitHub Actions needs it empty.
+# The scaffold cannot know the repository name — set this by hand after publishing.
+baseurl: ""
+
+# The sidebar hierarchy comes from each page's nav_order / parent / grand_parent front matter;
+# the layout is applied here so pages stay free of theme-specific keys.
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 2
+
+heading_anchors: true
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# aux_links:
+#   "Project repository": https://github.com/<org>/<repo>
+# aux_links_new_tab: true
+
+color_scheme: light
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor

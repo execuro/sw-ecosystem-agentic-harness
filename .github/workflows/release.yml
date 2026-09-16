@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # OIDC trusted publishing, so each tarball traces to its commit
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Generated files are in step with their source
+        run: npm run gen:check
+
+      - run: npm test
+
+      - name: The tarball carries exactly the files allow-list
+        run: node scripts/check-pack.mjs
+
+      - name: Licence metadata is complete
+        run: |
+          test -f LICENSE
+          node -e '
+            const fs = require("fs");
+            for (const path of ["package.json", "plugin.json", ".claude-plugin/plugin.json"]) {
+              const m = JSON.parse(fs.readFileSync(path, "utf8"));
+              if (m.license !== "MIT") throw new Error(path + ": license must be MIT");
+              if (!m.author) throw new Error(path + ": author is required");
+            }
+          '
+
+      - name: The tag matches the package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF#refs/tags/v}"
+          pkg=$(node -p "require('./package.json').version")
+          if [ "$tag" != "$pkg" ]; then
+            echo "tag v$tag does not match package.json $pkg"; exit 1
+          fi
+
+      - run: npm publish --provenance --access public

@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  validate:
+    name: Plugin manifests validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install -g @anthropic-ai/claude-code
+      # `claude plugin validate <dir>` resolves a directory to ONE manifest and
+      # returns `contents: []`, so it is not a sufficient gate on its own.
+      # Each target is named explicitly.
+      - run: claude plugin validate .claude-plugin/plugin.json --strict
+      - run: claude plugin validate .claude-plugin/marketplace.json --strict
+      - run: claude plugin validate skills --strict
+      - run: claude plugin validate agents --strict
+      - name: Root plugin.json is valid JSON and Agent Plugins 1.0
+        run: |
+          node -e '
+            const m = JSON.parse(require("fs").readFileSync("plugin.json", "utf8"));
+            if (m.$schema !== "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json") {
+              throw new Error("root plugin.json must carry the Agent Plugins 1.0 $schema");
+            }
+          '
+
+  generated:
+    name: Generated files are in step with their source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm run gen:check
+      - name: Regenerating produces no diff
+        run: |
+          npm run gen
+          git diff --exit-code -- codex/agents copilot/agents content/AGENTS.md
+
+  test:
+    name: Tests (node ${{ matrix.node }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+
+  pack:
+    name: The published tarball installs and uninstalls
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: The tarball carries exactly the files allow-list
+        run: node scripts/check-pack.mjs
+      # Exercise what a user actually gets, not the working tree: a lifecycle
+      # script that fires on a registry install would be invisible here otherwise.
+      - name: Install from the tarball and round-trip a fixture repo
+        run: |
+          set -euo pipefail
+          npm pack --silent | tail -1 > /tmp/tarball
+          WORK=$(mktemp -d); tar -xzf "$(cat /tmp/tarball)" -C "$WORK"
+          CLI="$WORK/package/bin/cli.mjs"
+          FIX=$(mktemp -d); mkdir -p "$FIX"/{.claude,.codex,.github,.cursor}
+          node "$CLI" status --root "$FIX" > /dev/null
+          node "$CLI" plan --root "$FIX" > /dev/null
+          node "$CLI" apply --yes --root "$FIX" > /tmp/apply.json
+          node -e '
+            const r = JSON.parse(require("fs").readFileSync("/tmp/apply.json", "utf8"));
+            if (!r.ok || r.summary.failed) throw new Error("apply failed: " + JSON.stringify(r.summary));
+            if (!r.next_step) throw new Error("apply carried no next_step");
+          '
+          node "$CLI" apply --yes --root "$FIX" > /tmp/again.json
+          node -e '
+            const r = JSON.parse(require("fs").readFileSync("/tmp/again.json", "utf8"));
+            if (r.summary.created || r.summary.updated) throw new Error("apply is not idempotent");
+          '
+          node "$CLI" uninstall --yes --root "$FIX" > /dev/null
+          test ! -e "$FIX/.claude/skills/sw-setup/SKILL.md"
+
+  hygiene:
+    name: Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No executable bits outside bin/ and scripts/
+        run: |
+          found=$(find . -path ./node_modules -prune -o -type f -perm -u+x -print \
+            | grep -v '^\./\(bin\|scripts\|\.git\)/' || true)
+          if [ -n "$found" ]; then echo "unexpected executables:"; echo "$found"; exit 1; fi
+      - name: Licence and notices are present
+        run: test -f LICENSE

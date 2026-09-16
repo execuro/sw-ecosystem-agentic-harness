@@ -1,0 +1,16 @@
+{
+  "servers": [
+    {
+      "name": "playwright",
+      "package": "@playwright/mcp@latest",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
+    {
+      "name": "ShopwareDevKnowledgeBase",
+      "package": "@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp@0.1.0",
+      "args": ["-y", "@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp@0.1.0"],
+      "projectWikiFlag": "--project-wiki",
+      "projectWikiDefault": "docs/project-wiki"
+    }
+  ]
+}

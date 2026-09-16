@@ -1,0 +1,262 @@
+# Shopware Ecosystem Agentic Harness
+
+The `sw-*` skills and sub-agents for Shopware 6 projects: they turn a briefing
+into a PRD, a PRD into a technical spec, a spec into tested code, and tested
+code into a project wiki page.
+
+It ships as **one npm package carrying an installer**. The installer copies the
+skills and agents into whichever coding agents your repository uses and
+registers the MCP servers and permission rules they depend on. Nothing is
+loaded as a plugin, because the configuration the harness needs has no plugin
+vehicle on any host.
+
+- Published by Execuro UG (haftungsbeschränkt) under the MIT licence.
+- Installs into **Claude Code, OpenAI Codex, GitHub Copilot and Cursor**.
+- Zero runtime dependencies, and no install hooks: nothing executes on your
+  machine except the CLI you invoke yourself.
+
+## What it ships
+
+| Component | Where | Contents |
+| --- | --- | --- |
+| Skills | `skills/` | 10 `sw-*` skills — `sw-setup`, `sw-discover-tender`, `sw-design-requirements`, `sw-design-solution`, `sw-implement-feature`, `sw-document-feature`, `sw-verify-feature` and its three verifiers (`-ac-tests`, `-architecture`, `-code-quality`) |
+| Sub-agents | `agents/` | `sw-storefront-developer`, `sw-php-backend-developer`, `sw-admin-frontend-developer`, `sw-qa-engineer`, `sw-shopware-architect`, `sw-product-manager`, `sw-tender-editor` |
+| Codex adapters | `codex/agents/` | The seven agents as Codex TOML roles — Codex plugins cannot ship sub-agents, so the installer writes these into `.codex/agents/` |
+| Copilot adapters | `copilot/agents/` | The same seven as `.agent.md`, with Claude tool names mapped to Copilot's |
+| Installer | `bin/`, `lib/` | The `sw-ecosystem-agentic-harness` CLI |
+
+Every adapter is generated from `agents/*.md` at build time, committed, and
+diff-checked in CI — so a bad mapping is a red build here, never a broken
+install on your machine.
+
+### Separate packages
+
+The knowledge-base MCP server (`@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp`)
+and the two visual editors (`@execuro-sw-ecosystem/sw-specs-editor`,
+`@execuro-sw-ecosystem/sw-tender-discovery-tool`) are their own npm packages.
+This package registers the knowledge base as an MCP server; it does not contain
+it.
+
+The two editors are **optional add-ons**, and each ships its own skill inside
+its package rather than here. `sw-setup` offers to install them; a host that
+declines is fully set up without them, and `--editor` on `sw-design-requirements`,
+`sw-design-solution` or `sw-discover-tender` then stops with one line saying so.
+
+## Install
+
+```bash
+# see what is there and what is missing — read-only, always safe
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness status
+
+# see the exact changes, written as a diff. Writes nothing.
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness plan
+
+# perform them
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness apply --yes
+```
+
+Then restart your coding agent — every host reads its configuration at startup.
+The command's output tells you which ones and how.
+
+`apply` refuses without `--yes` and never prompts: Codex's question tool does
+not block outside Plan mode, and CI has no terminal. Add `--host claude-code`
+(repeatable) to install into one agent, and `--scope user` to install into your
+home directory instead of this repository. The default scope is the project —
+nothing is written under `~` unless you ask.
+
+### What it writes
+
+| Host | Skills | Sub-agents | MCP | Settings |
+| --- | --- | --- | --- | --- |
+| Claude Code | `.claude/skills/` | `.claude/agents/` | `.mcp.json` | `.claude/settings.json` |
+| Codex | `.agents/skills/` | `.codex/agents/*.toml` | `.codex/config.toml` | `.codex/config.toml` |
+| GitHub Copilot | `.github/skills/` | `.github/agents/*.agent.md` | `.mcp.json`, `.vscode/mcp.json` | — |
+| Cursor | reads Claude's | reads Claude's | `.cursor/mcp.json` | — |
+
+`AGENTS.md` gets a managed block too — Codex, Copilot and Cursor read it, and
+Codex never reads `CLAUDE.md`.
+
+### What it will not do
+
+- **It never overwrites a file it did not install.** A file already at one of
+  these paths that differs from ours is reported as a conflict and left alone.
+- **It never overwrites your edits.** Once installed, a file you change is
+  reported as drift and skipped on every later run.
+- **It never removes or loosens an existing rule.** Permission lists are merged.
+  A rule you delete after install is remembered as declined and never re-added.
+- **It never rewrites a config with comments.** A JSONC `.vscode/mcp.json`
+  becomes a manual step with the exact snippet, rather than losing your notes.
+- **It writes atomically.** Every file is written to a temporary file and
+  renamed, so an interrupted run cannot truncate your settings.
+
+Undo everything with:
+
+```bash
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness uninstall --yes
+```
+
+It removes exactly what the lock file at `.sw-ai-sdk/harness.lock.json` records,
+keeps anything you hand-edited, and tells you what it kept.
+
+### From a skill
+
+`sw-setup` is a stub: it runs `status`, renders the table, asks once, and runs
+`apply --yes`. It deliberately restates none of the protocol, because an
+installed skill file goes stale and the CLI does not. Anything that needs the
+protocol runs:
+
+```bash
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness guide
+```
+
+## Prerequisites
+
+| Requirement | Why | Check |
+| --- | --- | --- |
+| `shopware-cli` ≥ 0.16 | Every `bin/console` call and every build the agents run goes through it | `shopware-cli --version` |
+| A running dev environment | `shopware-cli project console` proxies into the `web` container; without it you get `service "web" is not running` | `shopware-cli project dev` |
+| Node ≥ 20 | The MCP servers and the editor tools run through `npx` | `node -v` |
+
+PHP on the host is **not** required. The agents never call `php` or
+`bin/console` directly, and never call webpack or vite directly — the storefront
+ships both bundler configs and only the CLI knows which one applies to a given
+version.
+
+## Configuration
+
+The installer writes these; `sw-setup` reports on them. Both are covered by
+`apply --yes` above, so this section is what is being installed and why, not a
+second step to run.
+
+- the permission rules below, into `.claude/settings.json` (Claude Code) or
+  `.codex/config.toml` (Codex);
+- the `ShopwareDevKnowledgeBase` MCP registration, pinned by version, with the
+  `--project-wiki` path resolved for this machine — Codex performs no variable
+  expansion, so it cannot be left as a placeholder;
+- `sandbox.network.allowLocalBinding`, which the Specs Editor and Tender
+  Discovery Tool loopback servers need.
+
+### The permission rules
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "Edit(vendor/**)",
+      "Edit(public/theme/**)",
+      "Edit(public/bundles/**)",
+      "Edit(custom/**/Resources/app/storefront/dist/**)",
+      "Edit(custom/**/Resources/public/**)",
+      "Bash(shopware-cli project ci*)"
+    ],
+    "allow": ["Bash(grep *)"]
+  }
+}
+```
+
+Why each group:
+
+- **`vendor/**`** — an agent finds the "real" block fastest in core and can
+  patch it there. Core edits are silently lost on the next `composer update` and
+  break every other extension. The correct move is always `sw_extends` from
+  `custom/plugins/<Name>/src/Resources/views/…`.
+- **`public/theme/**`, `public/bundles/**`, `**/dist/**`, `**/Resources/public/**`**
+  — compiled output. Editing it looks like it works and is overwritten by the
+  next `theme:compile` or asset build.
+- **`Bash(shopware-cli project ci*)`** — `project ci` is a CI build step; run
+  against a working tree it deletes source files.
+
+Do not add matching `Write(…)` entries. File-permission checks match on
+`Edit(path)` rules only, and an `Edit(…)` rule already covers every
+file-editing tool — `Write`, `Edit`, `MultiEdit`, `NotebookEdit`. A
+`Write(path)` deny rule is inert and Claude Code warns about it on every start.
+
+If your team uses enterprise managed settings, put the same `deny` array there
+instead — it then applies across every repo without per-repo commits.
+
+## Verifying the installation
+
+```bash
+# 1. the install is complete and undrifted
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness status
+
+# 2. the toolchain the agents call actually exists
+shopware-cli project console --help
+shopware-cli project storefront-build --help
+shopware-cli extension validate --help
+
+# 3. the deny rules are live — ask the session to edit any file under
+#    vendor/shopware/storefront/Resources/views/ and confirm it is blocked
+```
+
+`status` reports `state: "ok"` when every host is installed and nothing has
+drifted. A second `apply --yes` is the other check: it must report everything
+as `unchanged` and rewrite nothing.
+
+Then run one real task: ask `sw-storefront-developer` for a trivial storefront
+change (for example a `data-testid` on the header logo block). A correct report
+contains the Locate proofs (template path, block name and the file it was found
+in, other bundles providing that path), a `lint:twig` result, and a Playwright
+assertion that the attribute appears in the rendered HTML. If any of the three
+is missing, the configuration above is incomplete.
+
+## What the agents do differently once configured
+
+These are the behaviours the configuration above switches on:
+
+- **Locate before writing.** No `{% block %}` is written until the template path
+  is confirmed on disk, the block name is confirmed *in that file* (block names
+  are not unique across the storefront), every other bundle providing the same
+  relative path is listed, and — when the dev env is up — `debug:twig` has
+  printed the matched and overridden files.
+- **Lint, build, render as a gate.** `shopware-cli project console lint:twig
+  <file>` after every Twig edit; `shopware-cli extension validate --full --only
+  eslint,stylelint` after SCSS/JS; then cache/theme/`storefront-build`; then a
+  render assertion. A `sw_extends` with a wrong path or a non-existent block
+  name is a **silent no-op** — only the render assertion catches it.
+- **Correct inheritance model.** `@Storefront` < `@Plugins` < one active-theme
+  slot, `theme.json` `views` reordering, the silent two-bundle conflict, and
+  never targeting your own namespace.
+
+## Working on the package
+
+```bash
+# regenerate every host adapter after editing an agent or a skill
+npm run gen
+
+# what CI checks
+npm run gen:check
+npm test                        # 124 tests, zero dependencies
+node scripts/check-pack.mjs     # the tarball matches the files allow-list
+claude plugin validate .claude-plugin/plugin.json --strict
+claude plugin validate .claude-plugin/marketplace.json --strict
+claude plugin validate skills --strict
+claude plugin validate agents --strict
+```
+
+`claude plugin validate <dir>` resolves a directory to one manifest and returns
+`contents: []`, so it is not a sufficient gate on its own — hence the four
+explicit targets.
+
+`scripts/` is developer tooling, run by hand and by CI. It is not in the
+published tarball and never runs on a user's machine.
+
+### The plugin manifests
+
+`plugin.json`, `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+are kept valid in CI although nothing reads them today. Distribution is the
+installer; marketplace listing is postponed, not cancelled, and keeping the
+manifests correct is what makes un-postponing it a listing step rather than a
+rebuild. **The marketplace manifest in this repository is development-only.**
+
+### Every `SKILL.md` is capped at 8 KB
+
+Codex's effective skill-body limit is the smallest of the four hosts', so it is
+the budget every skill is written to. Overflow lives in `reference/*.md` beside
+each `SKILL.md`, loaded on demand. A test enforces the cap, so the gate is
+mechanical rather than a review habit.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 Execuro UG
+(haftungsbeschränkt).

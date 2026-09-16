@@ -1,0 +1,218 @@
+# Readiness rows
+
+Eleven environment rows. Each: check (read-only), what "ticked" means, the fix
+(only run on approval, in this order), and which skills the row blocks when
+unticked. Host configuration files (`.mcp.json` entries, `.gitignore` lines,
+permission grants) are not rows here — the installer CLI owns them and
+reports their state in its own `status`/`plan` output; see `SKILL.md`.
+
+## 1. Containers
+
+- **Check:** `docker compose ps` — service `web` (or the service named in
+  `compose.yaml`) shows `running`/`healthy`.
+- **Ticked:** the `web` service is up.
+- **Fix:** `docker compose up -d` (guideline §6.1). If the shop was never
+  installed: `docker compose exec web php bin/console system:install --basic-setup --force --no-interaction` (guideline §6.1).
+- **Blocks:** every other row's fix that runs `docker compose exec web …`
+  (vendor/, plugin tests). Design/implement/verify skills that need a running
+  shop for live checks.
+
+## 2. vendor/
+
+- **Check:** `vendor/shopware/core` exists, `composer.lock` exists,
+  `vendor/bin/phpunit` exists — file presence only, never a host
+  executable-bit check: composer runs inside the container, so the file can
+  land `-rw-------` on the host and still run fine inside the container
+  (guideline §6.2).
+- **Ticked:** all three present; report the `shopware/core` version from
+  `composer.lock`.
+- **Fix:** `docker compose exec web composer install --no-interaction`
+  (guideline §6.1 — "a vendor tree built with `--no-dev` has no
+  `vendor/bin/phpunit`"). Needs the Containers row ticked first.
+- **Blocks:** `sw-design-solution`, `sw-implement-feature`,
+  `sw-verify-feature` (and its architecture/code-quality/ac-tests sub-skills).
+
+## 3. Node
+
+- **Check:** `node --version`; parse major and minor.
+- **Ticked:** ≥ 20. Warn (do not fail) when < 20.15: the Tender Discovery Tool
+  needs `zlib.crc32` for the xlsx write-back, so `export --xlsx` will not run
+  below 20.15 while everything else does.
+- **Fix:** none — host tool. Report the install advice only: use the
+  project's documented Node version manager, or https://nodejs.org/. Never
+  install it globally on the user's behalf.
+- **Blocks:** the Specs Editor, the Tender Discovery Tool, the KB MCP server
+  (the knowledge-base MCP), the acceptance-test project,
+  Playwright.
+
+## 4. Visual editors (optional)
+
+The Specs Editor and the Tender Discovery Tool are **optional add-ons**, not
+part of this plugin. Each ships its own skill inside its npm package, and that
+skill is the thing a host installs; the CLI comes with it, fetched by `npx` on
+first use. A host that wants neither is fully set up without them.
+
+So this row never blocks readiness. It asks.
+
+- **Check:** are the `sw-specs-editor` and `sw-tender-discovery-tool` skills
+  present in this host's skills directory? Each host keeps skills in its own
+  place; `install-skill` finds it, so neither this row nor the user needs to
+  name a path.
+- **Ticked:** `[x]` when installed, `[-]` when the user has declined it. Only
+  an unanswered offer shows `[ ]`, and even then it does not hold the table
+  open — report it as optional and move on.
+- **Fix:** offer each missing one inside step 3's single question, naming what
+  it buys: "Specs Editor — review a PRD or tech spec on a live page, with
+  notes, question answers and diagrams. Install?" — and "Tender Discovery Tool
+  — read a client tender workbook, confirm its column mapping and review the
+  analysis on a live page. Install?" On yes:
+
+  ```
+  npx -y @execuro-sw-ecosystem/sw-specs-editor@0.1.0 install-skill
+  npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0 install-skill
+  ```
+
+  which writes one file each into the host's skills directory. It is
+  idempotent, and it refuses to overwrite a copy the host has edited — show
+  that diff and let the user decide rather than passing `--force` for them.
+  Tell them to reload the session afterwards so the new skill is picked up.
+  Needs the Node row ticked.
+- **On no:** record the decline and do not re-ask on the next run. `--editor`
+  on `sw-design-requirements` / `sw-design-solution` / `sw-discover-tender`
+  then stops with one line naming this skill, which is the intended behaviour,
+  not a fault.
+- **Blocks:** Specs Editor missing → `sw-design-requirements --editor`,
+  `sw-design-solution --editor`, the `sw-specs-editor` skill. Tender
+  Discovery Tool missing → `sw-discover-tender --editor` and its `.xlsx`
+  import, plus the `sw-tender-discovery-tool` skill.
+
+## 5. shopware-cli
+
+- **Check:** `command -v shopware-cli`.
+- **Ticked:** present on `PATH`.
+- **Fix:** none — host tool. Report the install advice only: Homebrew cask
+  `shopware-cli` (verified in `sw-verify-feature-architecture`, step 4).
+  Never install it on the user's behalf.
+- **Blocks:** `sw-verify-feature-architecture`, `sw-verify-feature-code-quality`
+  (static analysis, Twig linters), `sw-implement-feature` (per-AC
+  `extension fix`/`extension validate`).
+
+## 6. KB MCP
+
+- **Check:** `mcp__ShopwareDevKnowledgeBase__kb_status` reports the `platform`
+  layer as `implemented`. (Whether the `ShopwareDevKnowledgeBase` entry
+  exists in `.mcp.json` is installer configuration, not checked here — the
+  installer CLI's `status`/`plan` output covers it.)
+- **Ticked:** `platform` `implemented`.
+- **Fix:** the entry itself is installed by the installer CLI (`apply`), not
+  by this skill. If `platform` is not `implemented`, the corpus is built by the
+  knowledge-base factory, a separate producer-side project — not by any skill
+  here, because a consumer host carries no `kb-factory-*` skills. Report that
+  the KB has to be built there and point at that project's producer manual.
+- **Blocks:** `sw-design-requirements` (stock-behaviour lookup),
+  `sw-design-solution` step 0.5/step 3 (KB grep), `sw-product-manager`,
+  `sw-shopware-architect`.
+
+## 7. Acceptance-test project
+
+- **Check:** `tests/acceptance/package.json` exists and lists
+  `@shopware-ag/acceptance-test-suite` as a dependency;
+  `tests/acceptance/playwright.config.ts` exists;
+  `tests/acceptance/fixtures/BaseTestFile.ts` exists.
+- **Ticked:** all three present.
+- **Fix (guideline §3.7, host, once):**
+  ```bash
+  mkdir -p tests/acceptance && cd tests/acceptance
+  npm init -y && npm pkg set type=module
+  npm install -D @playwright/test @shopware-ag/acceptance-test-suite dotenv
+  ```
+  then write `playwright.config.ts` and `fixtures/BaseTestFile.ts` from the
+  templates quoted in guideline §3.7 verbatim (do not paraphrase — Playwright
+  fails on a malformed config). Needs the Node row ticked.
+- **Blocks:** `sw-implement-feature` (e2e authoring by `sw-qa-engineer`),
+  `sw-verify-feature-ac-tests` (Playwright execution).
+
+## 8. Playwright browsers
+
+- **Check:** `npx playwright install --dry-run` output (or
+  `~/.cache/ms-playwright`/the project-local browsers path) shows Chromium
+  installed for the Playwright version in `tests/acceptance/package.json`.
+- **Ticked:** Chromium present.
+- **Fix:** `npx playwright install --with-deps chromium` run inside
+  `tests/acceptance` (guideline §3.7). Needs the Acceptance-test project row
+  ticked (the `@playwright/test` version comes from there).
+- **Blocks:** `sw-implement-feature` (e2e execution), `sw-verify-feature-ac-tests`.
+
+## 9. ATS env
+
+- **Check:** `tests/acceptance/.env` exists.
+- **Ticked:** file exists and defines `APP_URL`, `SHOPWARE_ADMIN_USERNAME`,
+  `SHOPWARE_ADMIN_PASSWORD` (the names guideline §3.7's `.env.example` block
+  documents).
+- **Fix:** copy `tests/acceptance/.env.example` to `tests/acceptance/.env` if
+  the example is missing, write it from the guideline §3.7 template first —
+  then ask the user for the real `APP_URL`/admin credentials (or
+  `SHOPWARE_ACCESS_KEY_ID`/`SHOPWARE_SECRET_ACCESS_KEY` as the alternative the
+  template lists) with a structured question tool if one is available, or
+  directly otherwise; never invent values, never print them back once
+  entered. Needs the Acceptance-test project row ticked.
+- **Blocks:** `sw-implement-feature` (e2e execution), `sw-verify-feature-ac-tests`.
+
+## 10. Plugin tests, per `custom/plugins/<Name>`
+
+- **Enumerate:** `ls custom/plugins`; one row per directory found.
+- **Check per plugin:**
+  - PHP: `custom/plugins/<Name>/phpunit.xml.dist` and
+    `custom/plugins/<Name>/tests/TestBootstrap.php` both exist.
+  - Admin JS: only if `custom/plugins/<Name>/src/Resources/app/administration`
+    exists — then also require `custom/plugins/<Name>/package.json` and
+    `custom/plugins/<Name>/jest.admin.config.js` (or the project's equivalent
+    name, e.g. `jest.administration.config.js`).
+  - Storefront JS: only if
+    `custom/plugins/<Name>/src/Resources/app/storefront` exists — then also
+    require `package.json` and `jest.storefront.config.js`.
+- **Ticked:** the PHP pair present, plus each applicable JS pair present.
+- **Fix:** scaffold the missing files from the guideline templates —
+  `phpunit.xml.dist` from §3.3, `tests/TestBootstrap.php` from §3.4 (fill
+  `<Name>`/`<Vendor>` from `composer.json`), Jest config(s) from §3.5 (option
+  (a), plugin-local preset), `package.json` scripts block from §3.5's closing
+  JSON snippet. Needs the Containers row ticked for the `npm install` steps
+  that run inside the container.
+- **Blocks:** `sw-implement-feature` (PHPUnit/Jest execution for that
+  plugin's ACs), `sw-verify-feature` (and its sub-skills, for that plugin).
+
+## 11. Project wiki
+
+- **Check:** `docs/project-wiki/` exists.
+- **Ticked:** directory present.
+- **Fix:** invoke skill `sw-document-feature --setup` (Skill tool) — it asks
+  its own flavour questions and writes the scaffold; do not replicate that
+  logic here.
+- **Blocks:** `sw-document-feature`.
+
+## 12. `.gitignore`
+
+- **Check:** `.gitignore` contains all six lines:
+  ```
+  /specs/.editor/
+  /specs/.rfp/
+  tests/acceptance/node_modules/
+  tests/acceptance/.env
+  tests/acceptance/test-results/
+  var/verification-screenshots/
+  ```
+  (`/specs/.editor/` and `/specs/.rfp/` are already present in this project's
+  `.gitignore`; check the other four independently. `.sw-ai-sdk/` is not on
+  this list — the installer CLI adds that one itself.)
+
+  Do **not** add `specs/<rfp-basename>/`. The tender tool's normalised source
+  export and its `import-map.json` live there and are committed on purpose —
+  they are what the analysis reads, hashes and exports from. Only the transient
+  half (snapshot, proposed map) goes to the ignored `/specs/.editor/`.
+- **Ticked:** all six present (exact path forms, not just a substring match
+  on directory name).
+- **Fix:** append whichever of the six lines are missing, each under a short
+  comment naming its owner (specs-editor, sw-discover-tender, acceptance-test
+  project, verify-ac-tests screenshots). Idempotent — safe to re-run.
+- **Blocks:** nothing directly; unticked means the next `git status` will
+  show generated/secret files as untracked.

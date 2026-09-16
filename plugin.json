@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "sw-ecosystem-agentic-harness",
+  "version": "0.1.0",
+  "description": "Shopware 6 agentic harness: sw-* skills and sub-agents for requirements, specs, implementation, verification and documentation, with an installer CLI that writes them into Claude Code, Codex, GitHub Copilot and Cursor. The knowledge-base MCP and the editor tools are separate npm packages.",
+  "author": {
+    "name": "Execuro UG (haftungsbeschränkt)",
+    "url": "https://github.com/Execuro"
+  },
+  "homepage": "https://github.com/Execuro/sw-ecosystem-agentic-harness",
+  "repository": "https://github.com/Execuro/sw-ecosystem-agentic-harness",
+  "license": "MIT",
+  "keywords": [
+    "shopware",
+    "php",
+    "twig",
+    "vue"
+  ]
+}

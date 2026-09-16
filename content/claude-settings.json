@@ -1,0 +1,31 @@
+{
+  "rules": [
+    {
+      "id": "permissions.deny",
+      "pointer": "/permissions/deny",
+      "op": "array-union",
+      "values": [
+        "Edit(vendor/**)",
+        "Edit(public/theme/**)",
+        "Edit(public/bundles/**)",
+        "Edit(custom/**/Resources/app/storefront/dist/**)",
+        "Edit(custom/**/Resources/public/**)",
+        "Bash(shopware-cli project ci*)"
+      ]
+    },
+    {
+      "id": "permissions.allow",
+      "pointer": "/permissions/allow",
+      "op": "array-union",
+      "values": ["Bash(grep *)"]
+    }
+  ],
+  "settings": [
+    {
+      "id": "sandbox.network.allowLocalBinding",
+      "pointer": "/sandbox/network/allowLocalBinding",
+      "op": "set",
+      "value": true
+    }
+  ]
+}
