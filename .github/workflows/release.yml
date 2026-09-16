@@ -49,4 +49,7 @@ jobs:
             echo "tag v$tag does not match package.json $pkg"; exit 1
           fi
 
+      - name: Every registered MCP server starts and answers
+        run: node scripts/check-mcp.mjs
+
       - run: npm publish --provenance --access public

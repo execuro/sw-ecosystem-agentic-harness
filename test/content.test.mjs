@@ -3,9 +3,10 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { CONTENT_VERSION, PKG_ROOT, PKG_VERSION, SUPPORTED_CONTENT, agents, skills } from '../lib/content.mjs';
+import { walk } from '../lib/fsx.mjs';
 
 // Codex's effective skill-body cap. A hard gate rather than an aspiration:
 // one skill body, sized for the smallest host.
@@ -69,6 +70,56 @@ test('no skill or agent carries a Claude-only construct', () => {
   visit(join(PKG_ROOT, 'skills'));
   visit(join(PKG_ROOT, 'agents'));
   assert.deepEqual(offenders, []);
+});
+
+test('no shipped file leaks internal/producer-side vocabulary', () => {
+  // Every shipped file is whatever `package.json`'s `files` allow-list
+  // resolves to on disk — not just skills/agents — because the leak this
+  // guards against (an internal packaging-unit ID, an internal repo or
+  // skill name) can land in any file a consumer's npm install pulls down.
+  //
+  // Patterns are anchored so they cannot catch the harness's own product
+  // vocabulary: `\b…\b` word boundaries mean `U-1`..`U-6` never match inside
+  // `AC-1`, `FR-1`, `D-1`, `M-1`, `C-3` (different letter) or a `-n`
+  // template placeholder (no digit), and never match the prose phrases
+  // "unit tests" / "packaging unit" (no trailing `-<digit>` at all). The
+  // internal skill names are matched as whole tokens, not substrings, so
+  // they cannot false-positive on an unrelated compound name.
+  const patterns = [
+    { name: 'packaging unit ID', re: /\bU-[1-6]\b/ },
+    { name: 'ah-prd / AH PRD', re: /\bah[- ]prd\b/i },
+    { name: 'sw-boilerplate67-ah', re: /sw-boilerplate67-ah/ },
+    { name: 'kb-factory-', re: /kb-factory-/ },
+    { name: 'producer-manual', re: /producer-manual/i },
+    { name: 'ah-developer', re: /\bah-developer\b/ },
+    { name: 'ah-pr-review', re: /\bah-pr-review\b/ },
+    { name: 'ah-prefer-sub-agents', re: /\bah-prefer-sub-agents\b/ },
+  ];
+
+  const pkg = JSON.parse(readFileSync(join(PKG_ROOT, 'package.json'), 'utf8'));
+  const shipped = [];
+  for (const entry of pkg.files) {
+    const abs = join(PKG_ROOT, entry);
+    if (entry.endsWith('/')) {
+      if (!existsSync(abs)) continue;
+      for (const rel of walk(abs)) shipped.push(join(abs, rel));
+    } else if (existsSync(abs)) {
+      shipped.push(abs);
+    }
+  }
+
+  const offenders = [];
+  for (const file of shipped) {
+    let text;
+    try { text = readFileSync(file, 'utf8'); } catch { continue; } // skip binaries
+    text.split('\n').forEach((line, i) => {
+      for (const { re } of patterns) {
+        const m = re.exec(line);
+        if (m) offenders.push(`${file}:${i + 1} — ${m[0]}`);
+      }
+    });
+  }
+  assert.deepEqual(offenders, [], offenders.join('\n'));
 });
 
 test('AskUserQuestion is never named as the only way to ask', () => {

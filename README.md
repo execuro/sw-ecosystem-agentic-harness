@@ -35,12 +35,31 @@ The knowledge-base MCP server (`@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp`
 and the two visual editors (`@execuro-sw-ecosystem/sw-specs-editor`,
 `@execuro-sw-ecosystem/sw-tender-discovery-tool`) are their own npm packages.
 This package registers the knowledge base as an MCP server; it does not contain
-it.
+it. The knowledge-base server is also listed in the MCP Registry as
+`io.github.execuro/sw-dev-knowledge-base-mcp` — a separate discovery-catalogue
+identity, not an npm package name — and can be run standalone in any stdio MCP
+client without this harness.
 
 The two editors are **optional add-ons**, and each ships its own skill inside
 its package rather than here. `sw-setup` offers to install them; a host that
 declines is fully set up without them, and `--editor` on `sw-design-requirements`,
 `sw-design-solution` or `sw-discover-tender` then stops with one line saying so.
+
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `status` | read-only; what is installed, what drifted, which optional companion packages are present |
+| `plan` | the exact changes, written as a diff; writes nothing |
+| `apply --yes` | performs them |
+| `uninstall --yes` | removes what the lock file records |
+| `guide` | the install protocol, the single source of truth |
+
+Flags: `--host claude-code|codex|copilot|cursor` (repeatable; omitting it
+selects every host that is present), `--scope project|user` (default
+`project`), `--root <path>` (default the current directory), `--yes` (required
+by `apply` and `uninstall`, never prompts), and `--no-companions` (skip
+detection of the optional editor packages).
 
 ## Install
 
@@ -130,11 +149,24 @@ second step to run.
 
 - the permission rules below, into `.claude/settings.json` (Claude Code) or
   `.codex/config.toml` (Codex);
-- the `ShopwareDevKnowledgeBase` MCP registration, pinned by version, with the
+- the `playwright` and `ShopwareDevKnowledgeBase` MCP registrations, with the
   `--project-wiki` path resolved for this machine — Codex performs no variable
   expansion, so it cannot be left as a placeholder;
 - `sandbox.network.allowLocalBinding`, which the Specs Editor and Tender
   Discovery Tool loopback servers need.
+
+The package's own `mcp.json` carries only `playwright` — it is the portable
+manifest checked by `claude plugin validate`, not what gets installed. Both
+servers are written into each host's own MCP config (`.mcp.json`,
+`.codex/config.toml`, `.vscode/mcp.json`, `.cursor/mcp.json`) at `apply` time,
+from `content/mcp-servers.json`.
+
+### The `@latest` exception
+
+`playwright` and `ShopwareDevKnowledgeBase` are registered as `@latest`; every
+other pinned thing in this package is pinned exactly. That is deliberate: a
+browser driver and a documentation corpus both ship stale if pinned, and
+staleness there is a worse failure than a version drifting under you.
 
 ### The permission rules
 
@@ -226,7 +258,7 @@ npm run gen
 
 # what CI checks
 npm run gen:check
-npm test                        # 124 tests, zero dependencies
+npm test                        # the full suite, zero dependencies
 node scripts/check-pack.mjs     # the tarball matches the files allow-list
 claude plugin validate .claude-plugin/plugin.json --strict
 claude plugin validate .claude-plugin/marketplace.json --strict
@@ -245,9 +277,8 @@ published tarball and never runs on a user's machine.
 
 `plugin.json`, `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
 are kept valid in CI although nothing reads them today. Distribution is the
-installer; marketplace listing is postponed, not cancelled, and keeping the
-manifests correct is what makes un-postponing it a listing step rather than a
-rebuild. **The marketplace manifest in this repository is development-only.**
+installer, not a plugin marketplace. **The marketplace manifest in this
+repository is development-only.**
 
 ### Every `SKILL.md` is capped at 8 KB
 
@@ -255,6 +286,17 @@ Codex's effective skill-body limit is the smallest of the four hosts', so it is
 the budget every skill is written to. Overflow lives in `reference/*.md` beside
 each `SKILL.md`, loaded on demand. A test enforces the cap, so the gate is
 mechanical rather than a review habit.
+
+## Troubleshooting
+
+| Symptom | What it means | What to do |
+| --- | --- | --- |
+| `state: "conflict"` | A file we did not install already sits at that path. It is never overwritten. | Move or delete the existing file, or `--host`-scope the run away from it, then re-run `apply`. |
+| `state: "drift"` | You (or something else) edited a file this installer wrote. It is left alone on every later run. | Nothing to fix — this is by design. Re-run `status` to confirm it is the only thing reported. |
+| A manual step for `.vscode/mcp.json` | That file is JSONC (comments or trailing commas). Rewriting it would destroy your notes, so it is never touched automatically. | Add the printed snippet to `.vscode/mcp.json` yourself, under the `servers` key. |
+| `.codex/` reported read-only | Codex's default workspace-write sandbox makes `.codex/` and `.agents/` read-only from inside a Codex session. | Run the installer from a plain shell, not from inside Codex. |
+| A manual step for `[agents]` in `.codex/config.toml` | An unfenced `[agents]` table already exists. TOML forbids a duplicate table header, and the installer never edits lines it did not write. | Add `max_concurrent_threads_per_session = 4` to your existing `[agents]` table by hand. |
+| An MCP server that will not start after install | Usually a stale or unpublished package version, or a registry/network problem reaching npm. | Run the server's `npx` command directly (see the registration in your host's MCP config) to see the real error; `npm i -D` the package first if the registry needs auth. |
 
 ## Licence
 

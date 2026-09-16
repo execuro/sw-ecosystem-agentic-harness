@@ -48,39 +48,40 @@ reports their state in its own `status`/`plan` output; see `SKILL.md`.
 ## 4. Visual editors (optional)
 
 The Specs Editor and the Tender Discovery Tool are **optional add-ons**, not
-part of this plugin. Each ships its own skill inside its npm package, and that
-skill is the thing a host installs; the CLI comes with it, fetched by `npx` on
-first use. A host that wants neither is fully set up without them.
+part of this plugin. The installer CLI installs them itself, per host — this
+row never runs a companion package's own install command.
 
 So this row never blocks readiness. It asks.
 
-- **Check:** are the `sw-specs-editor` and `sw-tender-discovery-tool` skills
-  present in this host's skills directory? Each host keeps skills in its own
-  place; `install-skill` finds it, so neither this row nor the user needs to
-  name a path.
-- **Ticked:** `[x]` when installed, `[-]` when the user has declined it. Only
-  an unanswered offer shows `[ ]`, and even then it does not hold the table
-  open — report it as optional and move on.
-- **Fix:** offer each missing one inside step 3's single question, naming what
-  it buys: "Specs Editor — review a PRD or tech spec on a live page, with
-  notes, question answers and diagrams. Install?" — and "Tender Discovery Tool
-  — read a client tender workbook, confirm its column mapping and review the
-  analysis on a live page. Install?" On yes:
+- **Check:** read `companions[]` from the `status` output the skill already
+  ran in step 1 — each entry's `available`, `installed_for` (the hosts it is
+  placed in), and `install` (the npm command, when missing). Never probe a
+  path and never run a companion package by hand; the CLI owns both.
+- **Ticked:** `[x]` when a companion's `available` is true and
+  `installed_for` includes this host; `[-]` when the user has declined it.
+  Only an unanswered offer shows `[ ]`, and even then it does not hold the
+  table open — report it as optional and move on.
+- **Fix:** offer each missing companion inside step 3's single question,
+  naming what it buys, not how it works: "Specs Editor — review a PRD or
+  tech spec on a live page, with notes, question answers and diagrams.
+  Install?" — and "Tender Discovery Tool — read a client tender workbook,
+  confirm its column mapping and review the analysis on a live page.
+  Install?" On yes, for each accepted one: `npm i -D <package>@0.1.0` (the
+  `package` field from `companions[]`), then re-run
 
   ```
-  npx -y @execuro-sw-ecosystem/sw-specs-editor@0.1.0 install-skill
-  npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0 install-skill
+  npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.0 apply --yes
   ```
 
-  which writes one file each into the host's skills directory. It is
-  idempotent, and it refuses to overwrite a copy the host has edited — show
-  that diff and let the user decide rather than passing `--force` for them.
-  Tell them to reload the session afterwards so the new skill is picked up.
-  Needs the Node row ticked.
-- **On no:** record the decline and do not re-ask on the next run. `--editor`
-  on `sw-design-requirements` / `sw-design-solution` / `sw-discover-tender`
-  then stops with one line naming this skill, which is the intended behaviour,
-  not a fault.
+  which places one `SKILL.md` per companion into each selected host's own
+  skills directory, records it, and removes it again on uninstall. **Never
+  run the companion package's own `install-skill`** — with no `--target` it
+  defaults to Claude Code's own skills directory, wrong for a Codex, Copilot
+  or Cursor install. Needs the Node row ticked.
+- **On no:** record the decline and do not re-ask on the next run. `apply`
+  keeps reporting that skill as `skipped` — the intended steady state, not a
+  fault. `--editor` on `sw-design-requirements` / `sw-design-solution` /
+  `sw-discover-tender` then stops with one line naming this skill.
 - **Blocks:** Specs Editor missing → `sw-design-requirements --editor`,
   `sw-design-solution --editor`, the `sw-specs-editor` skill. Tender
   Discovery Tool missing → `sw-discover-tender --editor` and its `.xlsx`
@@ -105,10 +106,14 @@ So this row never blocks readiness. It asks.
   installer CLI's `status`/`plan` output covers it.)
 - **Ticked:** `platform` `implemented`.
 - **Fix:** the entry itself is installed by the installer CLI (`apply`), not
-  by this skill. If `platform` is not `implemented`, the corpus is built by the
-  knowledge-base factory, a separate producer-side project — not by any skill
-  here, because a consumer host carries no `kb-factory-*` skills. Report that
-  the KB has to be built there and point at that project's producer manual.
+  by this skill. The corpus ships already built, inside the
+  `@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp` package — nobody
+  consuming this package builds one. If `platform` is not `implemented`,
+  check the registration first: does `.mcp.json` list the
+  `ShopwareDevKnowledgeBase` entry, and is `sw-dev-knowledge-base-mcp`
+  current? The fix is to re-run the installer CLI's `apply --yes`, or bump
+  the `sw-dev-knowledge-base-mcp` package to a version that ships the
+  corpus — never build one locally.
 - **Blocks:** `sw-design-requirements` (stock-behaviour lookup),
   `sw-design-solution` step 0.5/step 3 (KB grep), `sw-product-manager`,
   `sw-shopware-architect`.

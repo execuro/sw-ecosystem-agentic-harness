@@ -95,6 +95,22 @@ jobs:
           node "$CLI" uninstall --yes --root "$FIX" > /dev/null
           test ! -e "$FIX/.claude/skills/sw-setup/SKILL.md"
 
+  mcp-servers:
+    name: Registered MCP servers start and answer (advisory)
+    runs-on: ubuntu-latest
+    # Reaches the network (npx fetches each package fresh) and is slow, so it
+    # must not gate a normal PR run the way `test` and `pack` do — a registry
+    # hiccup would block unrelated work. It still runs on every push/PR so a
+    # dead build shows up early, days before release.yml would catch it as a
+    # hard gate; `continue-on-error` keeps that visibility without blocking.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/check-mcp.mjs
+
   hygiene:
     name: Hygiene
     runs-on: ubuntu-latest

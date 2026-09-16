@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import { mcpServers, wrapCommand } from '../lib/content.mjs';
 import { buildPlan } from '../lib/hosts.mjs';
 import { rel, abs } from '../lib/fsx.mjs';
+import { COMPANIONS, probeArgs } from '../lib/companions.mjs';
 import { ALL_MARKERS, cleanup, hostRepo, readLock, run } from './helpers.mjs';
 
 test('npx is wrapped in cmd /c on win32 and left bare elsewhere', () => {
@@ -59,6 +60,16 @@ test('paths in output and the lock are POSIX on every platform', () => {
       assert.doesNotMatch(key, /\\/, `lock key is not POSIX: ${key}`);
     }
   } finally { cleanup(root); }
+});
+
+test('a companion probe is wrapped in cmd /c npx --no-install on win32', () => {
+  for (const companion of COMPANIONS) {
+    const spec = `${companion.pkg}@${companion.version}`;
+    assert.deepEqual(probeArgs(companion, 'win32'),
+      ['cmd', '/c', 'npx', '--no-install', spec, 'install-skill', '--print']);
+    assert.deepEqual(probeArgs(companion, 'linux'),
+      ['npx', '--no-install', spec, 'install-skill', '--print']);
+  }
 });
 
 test('rel and abs round trip through a POSIX key', () => {

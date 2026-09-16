@@ -32,6 +32,19 @@ test('a first apply installs every skill and agent into every host', () => {
   } finally { cleanup(root); }
 });
 
+test('with no npx shim, the real npx --no-install reports the companions absent, not a failure', () => {
+  const { root, body } = install();
+  try {
+    assert.equal(body.summary.failed, 0);
+    const skillCopy = body.actions.filter((a) => a.kind === 'skill-copy');
+    assert.ok(skillCopy.length > 0);
+    assert.ok(skillCopy.every((a) => a.state === 'skipped'));
+    for (const dir of ['sw-specs-editor', 'sw-tender-discovery-tool']) {
+      assert.equal(exists(root, `.claude/skills/${dir}`), false);
+    }
+  } finally { cleanup(root); }
+});
+
 test('both MCP servers land in every host config', () => {
   const { root } = install();
   try {

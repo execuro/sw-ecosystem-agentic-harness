@@ -3,14 +3,16 @@
     {
       "name": "playwright",
       "package": "@playwright/mcp@latest",
-      "args": ["-y", "@playwright/mcp@latest"]
+      "args": ["-y", "@playwright/mcp@latest"],
+      "tracksLatestBecause": "a browser driver ships stale if pinned"
     },
     {
       "name": "ShopwareDevKnowledgeBase",
-      "package": "@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp@0.1.0",
-      "args": ["-y", "@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp@0.1.0"],
+      "package": "@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp@latest",
+      "args": ["-y", "@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp@latest"],
       "projectWikiFlag": "--project-wiki",
-      "projectWikiDefault": "docs/project-wiki"
+      "projectWikiDefault": "docs/project-wiki",
+      "tracksLatestBecause": "a documentation corpus ships stale if pinned"
     }
   ]
 }

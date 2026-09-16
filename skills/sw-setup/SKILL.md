@@ -116,9 +116,11 @@ Options:
   before running if the Containers row is still unticked at execution time.
 - The Project wiki fix invokes `sw-document-feature --setup` with the Skill
   tool; the KB MCP row only reports whether the platform layer is built —
-  the KB itself is built by the knowledge-base factory, a separate
-  producer-side project, not by invoking a skill here. Neither is replicated
-  in this skill.
+  the corpus ships already built inside the
+  `@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp` package. If `platform` is
+  not `implemented`, the fix is to check the registration (re-run the
+  installer CLI's `apply --yes`) or update that package — never build a
+  corpus here. Neither is replicated in this skill.
 - This skill never writes a host configuration file itself (`.mcp.json`,
   permission grants, `.gitignore` lines). Every such write goes through the
   installer CLI's `apply --yes`, run only after the user's yes.

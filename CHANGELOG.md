@@ -7,6 +7,8 @@ release.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-16
+
 ### Added
 
 - **An npm package with an installer CLI** — `bin/cli.mjs` plus `lib/`,
@@ -32,13 +34,14 @@ release.
 - `.github/workflows/release.yml` — OIDC trusted publishing with
   `--provenance`, gated on the generators, the tests, the pack check and the
   licence metadata.
-- 124 tests (`node --test`, zero dependencies) covering the whole risk surface
-  the compatibility guide names: install idempotency asserted on **mtimes**,
-  malformed and JSONC configs, the uninstall round trip, Windows command
-  wrapping and POSIX lock keys, and per-host error aggregation.
-- The five remaining `sw-*` skills — `sw-setup`, `sw-specs-editor`,
-  `sw-discover-tender`, `sw-design-requirements`, `sw-design-solution` — so the
-  package now ships all **11** skills and **7** sub-agents.
+- A full `node --test` suite, zero dependencies, covering the whole risk
+  surface the compatibility guide names: install idempotency asserted on
+  **mtimes**, malformed and JSONC configs, the uninstall round trip, Windows
+  command wrapping and POSIX lock keys, and per-host error aggregation.
+- The remaining `sw-*` skills — `sw-setup`, `sw-discover-tender`,
+  `sw-design-requirements`, `sw-design-solution` — so the package now ships
+  all **10** skills and **7** sub-agents. The Specs Editor's own skill ships
+  inside its own package, not here.
 
 ### Changed
 
@@ -69,10 +72,7 @@ release.
 
 ### Notes
 
-- **Distribution is the installer; marketplace listing is postponed, not
-  cancelled**. The plugin manifests are kept and kept valid in CI so that
-  un-postponing it is a listing step rather than a rebuild.
-- The `ShopwareDevKnowledgeBase` registration is pinned to
-  `@execuro-sw-ecosystem/sw-dev-knowledge-base-mcp@0.1.0`, which is **not yet
-  published**. Until it is, that server will fail to start with an npm 404;
-  everything else installs and works.
+- Distribution is the installer, not a plugin marketplace. The plugin
+  manifests are kept valid in CI although nothing reads them today.
+- The `ShopwareDevKnowledgeBase` and `playwright` MCP registrations both track
+  `@latest`; every other pinned thing in this package is pinned exactly.

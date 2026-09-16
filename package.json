@@ -42,12 +42,15 @@
     ".mcp.json",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "CONTRIBUTING.md"
   ],
   "scripts": {
     "gen": "node scripts/gen-codex-agents.mjs && node scripts/gen-copilot-agents.mjs && node scripts/gen-agents-md.mjs",
     "gen:check": "node scripts/gen-codex-agents.mjs --check && node scripts/gen-copilot-agents.mjs --check && node scripts/gen-agents-md.mjs --check",
-    "test": "node --test test/*.test.mjs scripts/*.test.mjs"
+    "test": "node --test test/*.test.mjs scripts/*.test.mjs",
+    "check:mcp": "node scripts/check-mcp.mjs"
   },
   "publishConfig": {
     "access": "public"
