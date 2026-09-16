@@ -27,7 +27,12 @@ On repair the flavor is never asked — derive it: `docs/project-wiki/_config.ym
 
 ## 2. Questions (init only)
 
-One call to a structured question tool if you have one (Claude Code: `AskUserQuestion`; Codex: `request_user_input`), asked once ever per wiki. Question 2 is included only when the answer to question 1 is Jekyll — if the tool cannot express that dependency, ask question 1 alone first, then 2–3 in a second call.
+Asked once ever per wiki with a structured question tool if you have one (Claude Code: `AskUserQuestion`; Codex: `request_user_input`), in **two calls, never one**:
+
+- **Call 1 — question 1 on its own.** Wait for the answer.
+- **Call 2 — questions 2 and 3 together, and only when the answer to question 1 was Jekyll.** On Vanilla there is no second call at all: the flavor is the only answer needed.
+
+Questions 2 and 3 exist solely to fill `_config.yml`, which the Vanilla flavor does not have. Never put them in the same call as question 1 — no structured question tool can make an option list conditional on another answer in the same call, so a single call asks every user to pick a GitHub Pages deployment style, `baseurl` and all, before anyone has established that the wiki is a Jekyll site.
 
 - **Question 1 — "docs/project-wiki/ does not exist yet — set it up as a Jekyll/GitHub Pages site or a plain Markdown wiki?"**
   - Option 1, label "Jekyll / GitHub Pages (Recommended)": adds `_config.yml`, so pages render as a themed site with left sidebar navigation and search (Just the Docs, via `remote_theme:`), plus a Liquid-generated ADR table on top of the hand-maintained ADR index; ready to publish via GitHub Pages or `jekyll serve`.
@@ -136,7 +141,7 @@ On Jekyll, always name the resolved `baseurl` in that row, and when it was left 
 ## Dry-run examples
 
 - **Empty project, no flag** (`composer.json` name `acme/webshop`, lock `6.7.13.0`, origin `git@github.com:acme/webshop-docs.git`): detect → no directory → ask §2 → Jekyll + own repository + default title → resolve `acme/webshop`, `6.7.13`, today, `baseurl: "/webshop-docs"` → announce → sub-agent writes 16 files → table: 16 created, `flavor | Jekyll / GitHub Pages · baseurl "/webshop-docs"`, no drift check (`guidelines/documentation-guidelines.md` was just created) → continue at step 1.
-- **Empty project, user picks Vanilla**: questions 2–3 are skipped (no `_config.yml` to configure) → 15 writes, overlay files from `reference/scaffold/vanilla/` → table: 15 created, `flavor | Vanilla / plain Markdown` → continue at step 1.
+- **Empty project, user picks Vanilla**: the second call never happens — questions 2–3 are never shown (no `_config.yml` to configure) → 15 writes, overlay files from `reference/scaffold/vanilla/` → table: 15 created, `flavor | Vanilla / plain Markdown` → continue at step 1.
 - **`--setup`, existing wiki with `domains/platform/logging.md` deleted**: repair → flavor derived from `_config.yml` → 1 write → drift check → table: 1 created, kept count, no `flavor` row → stop. Business domains, feature pages and the hand-edited `_config.yml` untouched.
 - **`--setup`, complete wiki**: nothing missing → drift check only → table: N kept → stop.
 - **No flag, complete wiki**: this file is never opened.

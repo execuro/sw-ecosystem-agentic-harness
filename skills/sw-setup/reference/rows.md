@@ -6,18 +6,7 @@ unticked. Host configuration files (`.mcp.json` entries, `.gitignore` lines,
 permission grants) are not rows here — the installer CLI owns them and
 reports their state in its own `status`/`plan` output; see `SKILL.md`.
 
-## 1. Containers
-
-- **Check:** `docker compose ps` — service `web` (or the service named in
-  `compose.yaml`) shows `running`/`healthy`.
-- **Ticked:** the `web` service is up.
-- **Fix:** `docker compose up -d` (guideline §6.1). If the shop was never
-  installed: `docker compose exec web php bin/console system:install --basic-setup --force --no-interaction` (guideline §6.1).
-- **Blocks:** every other row's fix that runs `docker compose exec web …`
-  (vendor/, plugin tests). Design/implement/verify skills that need a running
-  shop for live checks.
-
-## 2. vendor/
+## 1. vendor/
 
 - **Check:** `vendor/shopware/core` exists, `composer.lock` exists,
   `vendor/bin/phpunit` exists — file presence only, never a host
@@ -28,11 +17,12 @@ reports their state in its own `status`/`plan` output; see `SKILL.md`.
   `composer.lock`.
 - **Fix:** `docker compose exec web composer install --no-interaction`
   (guideline §6.1 — "a vendor tree built with `--no-dev` has no
-  `vendor/bin/phpunit`"). Needs the Containers row ticked first.
+  `vendor/bin/phpunit`"). Runs inside the `web` container; if it is not
+  running, stop and report that — sw-setup never starts the stack itself.
 - **Blocks:** `sw-design-solution`, `sw-implement-feature`,
   `sw-verify-feature` (and its architecture/code-quality/ac-tests sub-skills).
 
-## 3. Node
+## 2. Node
 
 - **Check:** `node --version`; parse major and minor.
 - **Ticked:** ≥ 20. Warn (do not fail) when < 20.15: the Tender Discovery Tool
@@ -45,7 +35,7 @@ reports their state in its own `status`/`plan` output; see `SKILL.md`.
   (the knowledge-base MCP), the acceptance-test project,
   Playwright.
 
-## 4. Visual editors (optional)
+## 3. Visual editors (optional)
 
 The Specs Editor and the Tender Discovery Tool are **optional add-ons**, not
 part of this plugin. The installer CLI installs them itself, per host — this
@@ -87,7 +77,7 @@ So this row never blocks readiness. It asks.
   Discovery Tool missing → `sw-discover-tender --editor` and its `.xlsx`
   import, plus the `sw-tender-discovery-tool` skill.
 
-## 5. shopware-cli
+## 4. shopware-cli
 
 - **Check:** `command -v shopware-cli`.
 - **Ticked:** present on `PATH`.
@@ -98,7 +88,7 @@ So this row never blocks readiness. It asks.
   (static analysis, Twig linters), `sw-implement-feature` (per-AC
   `extension fix`/`extension validate`).
 
-## 6. KB MCP
+## 5. KB MCP
 
 - **Check:** `mcp__ShopwareDevKnowledgeBase__kb_status` reports the `platform`
   layer as `implemented`. (Whether the `ShopwareDevKnowledgeBase` entry
@@ -118,7 +108,7 @@ So this row never blocks readiness. It asks.
   `sw-design-solution` step 0.5/step 3 (KB grep), `sw-product-manager`,
   `sw-shopware-architect`.
 
-## 7. Acceptance-test project
+## 6. Acceptance-test project
 
 - **Check:** `tests/acceptance/package.json` exists and lists
   `@shopware-ag/acceptance-test-suite` as a dependency;
@@ -137,7 +127,7 @@ So this row never blocks readiness. It asks.
 - **Blocks:** `sw-implement-feature` (e2e authoring by `sw-qa-engineer`),
   `sw-verify-feature-ac-tests` (Playwright execution).
 
-## 8. Playwright browsers
+## 7. Playwright browsers
 
 - **Check:** `npx playwright install --dry-run` output (or
   `~/.cache/ms-playwright`/the project-local browsers path) shows Chromium
@@ -148,7 +138,7 @@ So this row never blocks readiness. It asks.
   ticked (the `@playwright/test` version comes from there).
 - **Blocks:** `sw-implement-feature` (e2e execution), `sw-verify-feature-ac-tests`.
 
-## 9. ATS env
+## 8. ATS env
 
 - **Check:** `tests/acceptance/.env` exists.
 - **Ticked:** file exists and defines `APP_URL`, `SHOPWARE_ADMIN_USERNAME`,
@@ -163,7 +153,7 @@ So this row never blocks readiness. It asks.
   entered. Needs the Acceptance-test project row ticked.
 - **Blocks:** `sw-implement-feature` (e2e execution), `sw-verify-feature-ac-tests`.
 
-## 10. Plugin tests, per `custom/plugins/<Name>`
+## 9. Plugin tests, per `custom/plugins/<Name>`
 
 - **Enumerate:** `ls custom/plugins`; one row per directory found.
 - **Check per plugin:**
@@ -181,12 +171,13 @@ So this row never blocks readiness. It asks.
   `phpunit.xml.dist` from §3.3, `tests/TestBootstrap.php` from §3.4 (fill
   `<Name>`/`<Vendor>` from `composer.json`), Jest config(s) from §3.5 (option
   (a), plugin-local preset), `package.json` scripts block from §3.5's closing
-  JSON snippet. Needs the Containers row ticked for the `npm install` steps
-  that run inside the container.
+  JSON snippet. The `npm install` steps run inside the `web` container; if it
+  is not running, stop and report that — sw-setup never starts the stack
+  itself.
 - **Blocks:** `sw-implement-feature` (PHPUnit/Jest execution for that
   plugin's ACs), `sw-verify-feature` (and its sub-skills, for that plugin).
 
-## 11. Project wiki
+## 10. Project wiki
 
 - **Check:** `docs/project-wiki/` exists.
 - **Ticked:** directory present.
@@ -195,7 +186,7 @@ So this row never blocks readiness. It asks.
   logic here.
 - **Blocks:** `sw-document-feature`.
 
-## 12. `.gitignore`
+## 11. `.gitignore`
 
 - **Check:** `.gitignore` contains all six lines:
   ```

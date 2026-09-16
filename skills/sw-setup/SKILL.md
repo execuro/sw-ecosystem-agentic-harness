@@ -1,6 +1,6 @@
 ---
 name: sw-setup
-description: Print one environment-readiness table for the project's development/test setup — containers, vendor/, Node, the editor CLIs, shopware-cli, the KB MCP, the acceptance-test project, Playwright browsers, its .env, per-plugin test scaffolding, the project wiki and `.gitignore`, plus the installer CLI's own configuration/drift status. Stops when every row is ticked. When rows are missing, asks one yes/no question and delegates the fix to the installer CLI. Use when asked to set up the project, check if the environment is ready, or bootstrap the tests. Never designs, implements or verifies a feature itself — that's sw-design-solution, sw-implement-feature and sw-verify-feature, which call this skill first. Never writes a host configuration file itself — that's the installer CLI.
+description: Print one environment-readiness table for the project's development/test setup — vendor/, Node, the editor CLIs, shopware-cli, the KB MCP, the acceptance-test project, Playwright browsers, its .env, per-plugin test scaffolding, the project wiki and `.gitignore`, plus the installer CLI's own configuration/drift status. Stops when every row is ticked. When rows are missing, asks one yes/no question and delegates the fix to the installer CLI. Use when asked to set up the project, check if the environment is ready, or bootstrap the tests. Never designs, implements or verifies a feature itself — that's sw-design-solution, sw-implement-feature and sw-verify-feature, which call this skill first. Never writes a host configuration file itself — that's the installer CLI.
 when_to_use: Trigger phrases — "set up the project", "is the environment ready", "bootstrap the tests", "sw-setup".
 allowed-tools: Read Glob Grep AskUserQuestion Skill Bash mcp__ShopwareDevKnowledgeBase__kb_status Bash(npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.0 *)
 ---
@@ -46,15 +46,14 @@ npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.0 status
 It prints one JSON object (`ok`, `next_step`, `help`, and its own
 `hosts[]`/`drift[]` configuration state). Alongside it, run every
 environment row's check from `reference/rows.md` in this skill's directory —
-read-only, seconds each: file/directory existence, one `docker compose ps`,
-one version command, one `kb_status` call. Never write, never install, never
-ask a question in this step.
+read-only, seconds each: file/directory existence, one version command, one
+`kb_status` call. Never write, never install, never ask a question in this
+step.
 
 Print one checkbox list, one line per row — the environment rows first, then
 one line per configuration item the CLI's `hosts[]`/`drift[]` reports:
 
 ```
-- [x] Containers — web running
 - [x] vendor/ — shopware/core 6.7.13.0
 - [ ] Node — 18.x (need >= 20)
 - [-] Visual editors (optional) — Specs Editor not installed, Tender tool not installed
@@ -90,7 +89,7 @@ npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.0 plan
 ```
 
 List the concrete steps in plain words: environment-row fixes in order
-(Containers → vendor/ → Visual editors → KB MCP → Acceptance-test project →
+(vendor/ → Visual editors → KB MCP → Acceptance-test project →
 Playwright browsers → ATS env → Plugin tests → Project wiki), then the CLI's
 planned configuration changes last. Skip any row already ticked.
 
@@ -112,8 +111,9 @@ Options:
   itself) are reported with install advice only, never installed.
 - Credentials (ATS env values) are prompted for as part of the single
   question in step 3, never invented, never printed back once entered.
-- A fix that needs a running container states so in the step list and stops
-  before running if the Containers row is still unticked at execution time.
+- A fix that runs inside a container says so in the step list; if the
+  container is not running at execution time it stops and reports that —
+  sw-setup never starts the developer's stack itself.
 - The Project wiki fix invokes `sw-document-feature --setup` with the Skill
   tool; the KB MCP row only reports whether the platform layer is built —
   the corpus ships already built inside the
@@ -137,7 +137,7 @@ line:
 
 ## Reference files
 
-`reference/rows.md` in this skill's directory — the twelve environment rows:
+`reference/rows.md` in this skill's directory — the eleven environment rows:
 check command(s), what "ticked" means, the fix steps verbatim from the
 guideline, and which skills the row blocks. Host configuration state (what
 gets installed into `.mcp.json`, permissions, `.gitignore`) is not in this
