@@ -45,7 +45,7 @@ and installs the harness configuration — permission rules and the MCP
 server registrations — through the installer CLI:
 
 ```
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.1 status
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest status
 ```
 
 The Shopware knowledge base is served by the `ShopwareDevKnowledgeBase`

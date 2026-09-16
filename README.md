@@ -65,7 +65,7 @@ by `apply` and `uninstall`, never prompts — `install` implies it), and
 ## Install
 
 ```bash
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness install
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install
 ```
 
 Want to look first? `status` is read-only and `plan` prints the diff; neither
@@ -79,6 +79,26 @@ not block outside Plan mode, and CI has no terminal. Add `--host claude-code`
 (repeatable) to install into one agent, and `--scope user` to install into your
 home directory instead of this repository. The default scope is the project —
 nothing is written under `~` unless you ask.
+
+## Keep up to date
+
+The same command updates:
+
+```bash
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install
+```
+
+It rewrites what it owns, leaves anything you hand-edited alone (reported as
+drift), and records the new version in the lock file. The `@latest` matters:
+without it, `npx` can reuse a copy already in its cache or in this project's
+`node_modules`, so you would silently keep running whatever version you first
+installed. Restart your coding agent afterwards, same as a first install.
+
+Want to check what you have first? `... @latest status` reports
+`installed_version` and any drift, and writes nothing. The Specs Editor and
+Tender Discovery Tool are separate packages and update on their own `npm i -D
+<package>@<version>` line — `status`'s `companions` array names the exact
+command for each.
 
 ### What it writes
 
@@ -108,7 +128,7 @@ Codex never reads `CLAUDE.md`.
 Undo everything with:
 
 ```bash
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness uninstall --yes
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest uninstall --yes
 ```
 
 It removes exactly what the lock file at `.sw-ai-sdk/harness.lock.json` records,
@@ -122,7 +142,7 @@ installed skill file goes stale and the CLI does not. Anything that needs the
 protocol runs:
 
 ```bash
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness guide
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest guide
 ```
 
 ## Prerequisites
@@ -207,7 +227,7 @@ instead — it then applies across every repo without per-repo commits.
 
 ```bash
 # 1. the install is complete and undrifted
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness status
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest status
 
 # 2. the toolchain the agents call actually exists
 shopware-cli project console --help

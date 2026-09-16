@@ -78,7 +78,10 @@ function render() {
     'server registrations — through the installer CLI:',
     '',
     '```',
-    `npx -y ${pkg.name}@${pkg.version} status`,
+    // @latest, not the packing version: this line lands in a consumer's
+    // AGENTS.md and stays there. Pinned, it would route them at the version
+    // they first installed forever; npx also reuses a cached copy without it.
+    `npx -y ${pkg.name}@latest status`,
     '```',
     '',
     'The Shopware knowledge base is served by the `ShopwareDevKnowledgeBase`',

@@ -7,7 +7,9 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # OIDC trusted publishing, so each tarball traces to its commit
+  # Required for OIDC trusted publishing (npm CLI >= 11.5.1 exchanges this token for a
+  # short-lived publish credential). No NPM_TOKEN secret exists or is needed.
+  id-token: write
 
 jobs:
   publish:
@@ -15,10 +17,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Trusted publishing needs npm >= 11.5.1 and Node >= 22.14.0. Node 22 here is the
+      # release toolchain only — it is independent of the package's own engines.node >= 20,
+      # which is the range consumers are supported on.
+      # No `registry-url:` here, deliberately. It makes setup-node write an .npmrc containing
+      # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With no NODE_AUTH_TOKEN secret —
+      # and there is none, that is the point of OIDC — npm reads an empty token, attempts
+      # token auth and fails before it ever tries the OIDC exchange.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          registry-url: https://registry.npmjs.org
+          node-version: "22.14.0"
+
+      - name: Ensure npm supports trusted publishing
+        run: |
+          npm install -g npm@^11.5.1
+          npm --version
 
       - name: Generated files are in step with their source
         run: npm run gen:check
@@ -48,8 +62,38 @@ jobs:
           if [ "$tag" != "$pkg" ]; then
             echo "tag v$tag does not match package.json $pkg"; exit 1
           fi
+          echo "RELEASE_VERSION=$pkg" >> "$GITHUB_ENV"
 
       - name: Every registered MCP server starts and answers
         run: node scripts/check-mcp.mjs
 
-      - run: npm publish --provenance --access public
+      - name: Publish to npm (OIDC trusted publishing)
+        run: |
+          # An .npmrc auth line silently disables the OIDC path, so surface one rather than
+          # letting `npm publish` fail with a bare auth error.
+          for f in .npmrc "$HOME/.npmrc"; do
+            if [ -f "$f" ] && grep -q '_authToken' "$f"; then
+              echo "::error::$f sets _authToken; npm will use token auth and never attempt OIDC trusted publishing"
+              exit 1
+            fi
+          done
+          echo "id-token permission present: ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}"
+          # No --provenance: with trusted publishing npm generates and publishes provenance
+          # automatically for a public package from a public repository. Passing the flag is
+          # redundant and one more thing that can disagree with the OIDC path.
+          # Idempotent: a release can fail in a later step and re-running it must not die on
+          # npm's 409/403 for a version that already made it to the registry. This package has
+          # no staging directory — it publishes straight from the repo root that every gate
+          # above just verified.
+          pkg="$(node -p "require('./package.json').name")"
+          if [ "$(curl -s -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/$pkg/$RELEASE_VERSION")" = "200" ]; then
+            echo "::notice::$pkg@$RELEASE_VERSION is already on npm; skipping the publish"
+            exit 0
+          fi
+          out="$(npm publish --access public 2>&1)" && { echo "$out"; exit 0; }
+          echo "$out"
+          if printf '%s' "$out" | grep -qiE 'cannot publish over|previously published|EPUBLISHCONFLICT|403 Forbidden - PUT .* - You cannot publish over'; then
+            echo "::notice::$pkg@$RELEASE_VERSION is already published; treating as success"
+            exit 0
+          fi
+          exit 1

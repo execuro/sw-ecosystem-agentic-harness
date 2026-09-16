@@ -7,6 +7,16 @@ release.
 
 ## [Unreleased]
 
+### Changed
+
+- **Install/update instructions now anchor to `@latest`.** Every `npx`
+  invocation of this package in `README.md`, `sw-setup`'s `SKILL.md` and
+  `reference/rows.md` uses `@execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest`
+  instead of a bare package name or a frozen version — a bare invocation can
+  resolve to a stale copy already in the `npx` cache or `node_modules`. Added
+  a **Keep up to date** section to `README.md` and a **Keeping it current**
+  section to `guide`'s output.
+
 ## [0.1.1] - 2026-09-16
 
 ### Added

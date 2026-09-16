@@ -2,7 +2,7 @@
 name: sw-setup
 description: Print one environment-readiness table for the project's development/test setup — vendor/, Node, the editor CLIs, shopware-cli, the KB MCP, the acceptance-test project, Playwright browsers, its .env, per-plugin test scaffolding, the project wiki and `.gitignore`, plus the installer CLI's own configuration/drift status. Stops when every row is ticked. When rows are missing, asks one yes/no question and delegates the fix to the installer CLI. Use when asked to set up the project, check if the environment is ready, or bootstrap the tests. Never designs, implements or verifies a feature itself — that's sw-design-solution, sw-implement-feature and sw-verify-feature, which call this skill first. Never writes a host configuration file itself — that's the installer CLI.
 when_to_use: Trigger phrases — "set up the project", "is the environment ready", "bootstrap the tests", "sw-setup".
-allowed-tools: Read Glob Grep AskUserQuestion Skill Bash mcp__ShopwareDevKnowledgeBase__kb_status Bash(npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.1 *)
+allowed-tools: Read Glob Grep AskUserQuestion Skill Bash mcp__ShopwareDevKnowledgeBase__kb_status Bash(npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest *)
 ---
 
 # sw-setup
@@ -20,7 +20,7 @@ copy of this skill can go stale while the CLI does not. For the current
 source of truth, run:
 
 ```
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.1 guide
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest guide
 ```
 
 This skill only renders the CLI's output as a table and relays its one
@@ -40,7 +40,7 @@ table from this run's output — it does not re-run `sw-setup`'s checks.
 Run:
 
 ```
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.1 status
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest status
 ```
 
 It prints one JSON object (`ok`, `next_step`, `help`, and its own
@@ -85,7 +85,7 @@ For a missing/drifted configuration row, do not research or plan the fix
 yourself — the CLI's `plan` command already has it:
 
 ```
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.1 plan
+npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest plan
 ```
 
 List the concrete steps in plain words: environment-row fixes in order
@@ -99,7 +99,7 @@ if you have one (Claude Code: `AskUserQuestion`; Codex: `request_user_input`,
 which is non-blocking outside Plan mode — so end the turn after asking).
 Options:
 - **Yes, run it** — run the environment-row fixes in order, then
-  `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@0.1.1 apply --yes`
+  `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest apply --yes`
   for the configuration changes, then re-run step 1 and print the final table.
 - **No, stop** — stop; the table from step 1 is already on screen.
 
