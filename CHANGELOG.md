@@ -7,6 +7,8 @@ release.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-09-17
+
 ### Changed
 
 - **The `vendor/` row now names the specific missing file when unticked.**
