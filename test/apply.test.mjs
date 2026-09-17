@@ -32,7 +32,7 @@ test('a first apply installs every skill and agent into every host', () => {
   } finally { cleanup(root); }
 });
 
-test('with no npx shim, the real npx --no-install reports the companions absent, not a failure', () => {
+test('with no npx shim, the real npx --no-install reports the extra components absent, not a failure', () => {
   const { root, body } = install();
   try {
     assert.equal(body.summary.failed, 0);

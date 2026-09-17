@@ -41,7 +41,7 @@ An edit is not done until `lint:twig` passes on it and the changed markup is obs
 - Lighthouse on touched pages; perf/a11y/SEO regressions are failures.
 - Playwright MCP (`mcp__playwright__*`) for click-through and screenshots. Shopware docs MCP (`mcp__ShopwareDevKnowledgeBase__*`) for the exact core template, block, route or plugin before extending; never guess a block name.
 - Test the targeted state: logged-out, logged-in, guest checkout, plus a non-default currency or language when prices or text change.
-- "Does not show up" checklist, in order: template path, block name, theme assigned, theme compiled, cache cleared, browser cache.
+- "Does not show up" checklist, in order: template path (not a deprecated forwarder file), block name in that file (and its `feature()` branch), theme assigned, theme compiled, cache cleared, browser cache.
 
 ### Small, reversible
 - One concern per template, subscriber or plugin; header + footer + checkout is three changes.
@@ -56,14 +56,14 @@ An edit is not done until `lint:twig` passes on it and the changed markup is obs
 
 1. **Classify.** Confirm storefront work (see Boundary). If mixed, split and hand off the non-storefront part first.
 2. **Locate — prove it, never assume.** Docs MCP answers *what an extension point is for*; only the installed source answers *whether it exists here*. Produce all four proofs before writing a single `{% block %}`:
-   1. The target template exists at the exact relative path: `ls vendor/shopware/storefront/Resources/views/storefront/<rel>`.
-   2. The block name exists verbatim **in that file**: `grep -n "{% block <name>" vendor/shopware/storefront/Resources/views/storefront/<rel>`. Block names are not unique across the storefront (~2200 block tags, ~2035 distinct names — every override re-declares its parent's name), so a repo-wide grep for a name is not proof. If it is not in that file, it lives in an included sub-template: find that file and override it instead.
-   3. Every other bundle already providing the same relative path: `grep -rl "<rel>" custom/ vendor/*/*/Resources/views/`. Name who wins under the slot order above, and whether they call `{{ parent() }}`.
+   1. The target template exists at the exact relative path: `ls vendor/shopware/storefront/Resources/views/storefront/<rel>` — and its first lines carry no `@deprecated … File will be removed` header: such a forwarder is never loaded, extend the file it names instead.
+   2. The block name exists verbatim **in that file**: `grep -n "{% block <name>" vendor/shopware/storefront/Resources/views/storefront/<rel>`. Block names are not unique across the storefront (~2200 block tags, ~2035 distinct names — every override re-declares its parent's name), so a repo-wide grep for a name is not proof. If it is not in that file, it lives in an included sub-template: find that file and override it instead. Note the `feature()` branch the block sits in, if any — the guideline's template-inheritance section says which anchor to target.
+   3. Every other bundle already providing the same relative path: `grep -rl "<rel>" custom/ vendor/*/*/Resources/views/`, plus the active theme's chain: `grep -A4 '"views"' custom/*/*/src/Resources/theme.json`. Name who wins under the chain order in the guideline's template-inheritance section, and whether they call `{{ parent() }}`.
    4. When the dev env is up, `shopware-cli project console debug:twig @Storefront/storefront/<rel>` prints "Matched File" and "Overridden Files" — the real resolution, and it overrides 1–3. Caveat: the theme slot is filled per storefront request, so a CLI run may show only the `@Storefront`/`@Plugins` part of the chain; the browser is the final word on which theme override wins.
    A block name recalled from memory or from an older Shopware version is a defect, not a starting point.
 3. **Place.** Theme (look, Bootstrap variables) vs plugin (features).
 4. **Test first** where tooling supports it: Jest for JS plugins, functional/e2e for rendered HTML. Failing test before the extension.
-5. **Implement** the smallest extension that passes: one block, one subscriber, one plugin.
+5. **Implement** the smallest extension that passes: one block, one subscriber, one plugin — placed per the guideline's override-placement ladder (edit an existing project override rather than adding a second file for the same path; go later in the chain than a marketplace override).
 6. **Lint and build.** `lint:twig` on every touched Twig file first, then `extension validate` for SCSS/JS, then the cache/theme/build sequence — all per "Verify: lint, build, render".
 7. **Verify.** Render assertion first (the changed markup is actually in the page), then browser pass (Playwright MCP), console/network clean, breakpoints, keyboard, Lighthouse.
 8. **Report** in the format below.

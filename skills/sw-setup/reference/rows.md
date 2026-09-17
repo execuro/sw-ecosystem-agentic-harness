@@ -45,33 +45,33 @@ reports their state in its own `status`/`plan` output; see `SKILL.md`.
 
 The Specs Editor and the Tender Discovery Tool are **optional add-ons**, not
 part of this plugin. The installer CLI installs them itself, per host — this
-row never runs a companion package's own install command.
+row never runs an extra component's own install command.
 
 So this row never blocks readiness. It asks.
 
-- **Check:** read `companions[]` from the `status` output the skill already
+- **Check:** read `extra_components[]` from the `status` output the skill already
   ran in step 1 — each entry's `available`, `installed_for` (the hosts it is
   placed in), and `install` (the npm command, when missing). Never probe a
-  path and never run a companion package by hand; the CLI owns both.
-- **Ticked:** `[x]` when a companion's `available` is true and
+  path and never run an extra component by hand; the CLI owns both.
+- **Ticked:** `[x]` when an extra component's `available` is true and
   `installed_for` includes this host; `[-]` when the user has declined it.
   Only an unanswered offer shows `[ ]`, and even then it does not hold the
   table open — report it as optional and move on.
-- **Fix:** offer each missing companion inside step 3's single question,
+- **Fix:** offer each missing extra component inside step 3's single question,
   naming what it buys, not how it works: "Specs Editor — review a PRD or
   tech spec on a live page, with notes, question answers and diagrams.
   Install?" — and "Tender Discovery Tool — read a client tender workbook,
   confirm its column mapping and review the analysis on a live page.
   Install?" On yes, for each accepted one: `npm i -D <package>@0.1.0` (the
-  `package` field from `companions[]`), then re-run
+  `package` field from `extra_components[]`), then re-run
 
   ```
   npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest apply --yes
   ```
 
-  which places one `SKILL.md` per companion into each selected host's own
+  which places one `SKILL.md` per extra component into each selected host's own
   skills directory, records it, and removes it again on uninstall. **Never
-  run the companion package's own `install-skill`** — with no `--target` it
+  run the extra component's own `install-skill`** — with no `--target` it
   defaults to Claude Code's own skills directory, wrong for a Codex, Copilot
   or Cursor install. Needs the Node row ticked.
 - **On no:** record the decline and do not re-ask on the next run. `apply`

@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import { mcpServers, wrapCommand } from '../lib/content.mjs';
 import { buildPlan } from '../lib/hosts.mjs';
 import { rel, abs } from '../lib/fsx.mjs';
-import { COMPANIONS, probeArgs } from '../lib/companions.mjs';
+import { EXTRA_COMPONENTS, probeArgs } from '../lib/extra-components.mjs';
 import { ALL_MARKERS, cleanup, hostRepo, readLock, run } from './helpers.mjs';
 
 test('npx is wrapped in cmd /c on win32 and left bare elsewhere', () => {
@@ -62,12 +62,12 @@ test('paths in output and the lock are POSIX on every platform', () => {
   } finally { cleanup(root); }
 });
 
-test('a companion probe is wrapped in cmd /c npx --no-install on win32', () => {
-  for (const companion of COMPANIONS) {
-    const spec = `${companion.pkg}@${companion.version}`;
-    assert.deepEqual(probeArgs(companion, 'win32'),
+test('an extra-component probe is wrapped in cmd /c npx --no-install on win32', () => {
+  for (const component of EXTRA_COMPONENTS) {
+    const spec = `${component.pkg}@${component.version}`;
+    assert.deepEqual(probeArgs(component, 'win32'),
       ['cmd', '/c', 'npx', '--no-install', spec, 'install-skill', '--print']);
-    assert.deepEqual(probeArgs(companion, 'linux'),
+    assert.deepEqual(probeArgs(component, 'linux'),
       ['npx', '--no-install', spec, 'install-skill', '--print']);
   }
 });

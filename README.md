@@ -50,7 +50,7 @@ declines is fully set up without them, and `--editor` on `sw-design-requirements
 | Command | What it does |
 | --- | --- |
 | `install` | installs into every detected host; the same as `apply --yes` |
-| `status` | read-only; what is installed, what drifted, which optional companion packages are present |
+| `status` | read-only; what is installed, what drifted, which optional extra components are present |
 | `plan` | the exact changes, written as a diff; writes nothing |
 | `apply --yes` | performs them |
 | `uninstall --yes` | removes what the lock file records |
@@ -60,7 +60,7 @@ Flags: `--host claude-code|codex|copilot|cursor` (repeatable; omitting it
 selects every host that is present), `--scope project|user` (default
 `project`), `--root <path>` (default the current directory), `--yes` (required
 by `apply` and `uninstall`, never prompts — `install` implies it), and
-`--no-companions` (skip detection of the optional editor packages).
+`--no-extra-components` (skip detection of the optional editor packages).
 
 ## Install
 
@@ -151,7 +151,7 @@ npm i -D @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0
   on `sw-discover-tender`.
 
 Re-run `install` afterwards so the new skill lands in each host. `status`'s
-`companions[]` array reports the pinned `version` and the exact `install`
+`extra_components[]` array reports the pinned `version` and the exact `install`
 command for whichever one is missing.
 
 Re-running `install` is safe at any time: it rewrites only what it owns,
@@ -164,7 +164,7 @@ in this project's `node_modules`, so you would silently keep running the
 version you first installed.
 
 To look before you change anything: `... @latest status` reports
-`installed_version`, any drift, and which companion packages are present. It
+`installed_version`, any drift, and which extra components are present. It
 writes nothing.
 
 ## Prerequisites

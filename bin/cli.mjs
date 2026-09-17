@@ -28,10 +28,10 @@ const COMMANDS = {
 
 const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
 
-  install    [--host <h>] [--scope project|user] [--root <path>] [--no-companions]
+  install    [--host <h>] [--scope project|user] [--root <path>] [--no-extra-components]
   status     [--host <h>] [--scope project|user] [--root <path>]
-  plan       [--host <h>] [--scope project|user] [--root <path>] [--no-companions]
-  apply      --yes [--host <h>] [--scope project|user] [--root <path>] [--no-companions]
+  plan       [--host <h>] [--scope project|user] [--root <path>] [--no-extra-components]
+  apply      --yes [--host <h>] [--scope project|user] [--root <path>] [--no-extra-components]
   uninstall  --yes [--host <h>] [--scope project|user] [--root <path>]
   guide      print the install protocol
 
@@ -44,7 +44,7 @@ const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
   --scope defaults to project: nothing is written under your home directory
   unless you ask for it. --root defaults to the current directory.
 
-  --no-companions skips the two optional companion-package skills (Specs
+  --no-extra-components skips the two optional extra-component skills (Specs
   Editor, Tender Discovery Tool) even when the package is present locally.
 
 Every command prints one JSON object on stdout carrying a next_step. Run

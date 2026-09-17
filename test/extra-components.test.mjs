@@ -1,4 +1,4 @@
-// The two optional companion packages: probed with `npx --no-install
+// The two optional extra components: probed with `npx --no-install
 // install-skill --print`, never fetched, never invoked with `--target`.
 //
 // Every test that spawns depends on the fake-npx shell shim, so the whole
@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { COMPANIONS } from '../lib/companions.mjs';
+import { EXTRA_COMPONENTS } from '../lib/extra-components.mjs';
 import {
   ALL_MARKERS, cleanup, exists, fakeNpx, hostRepo, mtimes, parse, readArgvLog, readLock, readText,
   run, snapshot, withNpx,
@@ -30,7 +30,7 @@ function install(shimDir, extra = {}) {
 
 // ------------------------------------------------------------------- 1
 
-test('neither companion present — skipped everywhere, no host reads as drift', SKIP, () => {
+test('neither extra component present — skipped everywhere, no host reads as drift', SKIP, () => {
   const { dir } = fakeNpx({ bodies: {} });
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
@@ -38,10 +38,10 @@ test('neither companion present — skipped everywhere, no host reads as drift',
     const skillCopy = body.actions.filter((a) => a.kind === 'skill-copy');
     // Cursor reads Claude's trees directly here, so only 3 hosts get their
     // own skill-copy actions.
-    assert.equal(skillCopy.length, COMPANIONS.length * 3);
+    assert.equal(skillCopy.length, EXTRA_COMPONENTS.length * 3);
     assert.ok(skillCopy.every((a) => a.state === 'skipped'));
     assert.equal(body.summary.failed, 0);
-    for (const c of COMPANIONS) assert.equal(exists(root, `.claude/skills/${c.id}`), false);
+    for (const c of EXTRA_COMPONENTS) assert.equal(exists(root, `.claude/skills/${c.id}`), false);
     assert.match(body.next_step, /npm i -D/);
 
     const status = parse(run(['status', '--root', root], { env: withNpx(dir) }));
@@ -51,7 +51,7 @@ test('neither companion present — skipped everywhere, no host reads as drift',
 
 // ------------------------------------------------------------------- 2
 
-test('one companion present — lands in the three Claude-tree hosts, not Cursor', SKIP, () => {
+test('one extra component present — lands in the three Claude-tree hosts, not Cursor', SKIP, () => {
   const { dir } = fakeNpx({ bodies: { 'sw-specs-editor': BODY['sw-specs-editor'] } });
   const { root, body } = install(dir);
   try {
@@ -60,7 +60,7 @@ test('one companion present — lands in the three Claude-tree hosts, not Cursor
     assert.ok(exists(root, '.github/skills/sw-specs-editor/SKILL.md'));
     assert.equal(exists(root, '.cursor/skills/sw-specs-editor/SKILL.md'), false);
 
-    const other = body.actions.filter((a) => a.companion === 'sw-tender-discovery-tool');
+    const other = body.actions.filter((a) => a.component === 'sw-tender-discovery-tool');
     assert.ok(other.every((a) => a.state === 'skipped'));
 
     const lock = readLock(root);
@@ -93,7 +93,7 @@ test('--host cursor writes under .cursor/skills alone', SKIP, () => {
 
 // ------------------------------------------------------------------- 4
 
-test('idempotent, and a companion that disappears reads as skipped, not drift', SKIP, () => {
+test('idempotent, and an extra component that disappears reads as skipped, not drift', SKIP, () => {
   const { dir } = fakeNpx({ bodies: BODY });
   const { root } = install(dir);
   try {
@@ -104,7 +104,7 @@ test('idempotent, and a companion that disappears reads as skipped, not drift', 
     assert.equal(second.summary.drift, 0);
     assert.deepEqual(mtimes(root), before);
 
-    // The shim is off PATH: a companion package that has disappeared.
+    // The shim is off PATH: an extra component that has disappeared.
     const third = parse(run(['apply', '--yes', '--root', root]));
     const skillCopy = third.actions.filter((a) => a.kind === 'skill-copy');
     assert.ok(skillCopy.every((a) => a.state === 'skipped'));
@@ -115,7 +115,7 @@ test('idempotent, and a companion that disappears reads as skipped, not drift', 
 
 // ------------------------------------------------------------------- 5
 
-test('a hand-edited companion copy drifts under apply, and is kept — not deleted — by uninstall', SKIP, () => {
+test('a hand-edited extra-component copy drifts under apply, and is kept — not deleted — by uninstall', SKIP, () => {
   const { dir } = fakeNpx({ bodies: BODY });
   const { root } = install(dir);
   try {
@@ -137,7 +137,7 @@ test('a hand-edited companion copy drifts under apply, and is kept — not delet
 
 // ------------------------------------------------------------------- 6
 
-test('a foreign file at a companion target is a conflict, untouched', SKIP, () => {
+test('a foreign file at an extra-component target is a conflict, untouched', SKIP, () => {
   const { dir } = fakeNpx({ bodies: BODY });
   const root = hostRepo({
     dirs: ALL_MARKERS,
@@ -159,7 +159,7 @@ test('a non-frontmatter body on exit 0 is probe-failed and nothing is written', 
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
     const body = parse(run(['apply', '--yes', '--root', root], { env: withNpx(dir) }));
-    const action = body.actions.find((a) => a.companion === 'sw-specs-editor' && a.host === 'claude-code');
+    const action = body.actions.find((a) => a.component === 'sw-specs-editor' && a.host === 'claude-code');
     assert.equal(action.state, 'skipped');
     assert.equal(action.probe.state, 'probe-failed');
     assert.equal(exists(root, '.claude/skills/sw-specs-editor/SKILL.md'), false);
@@ -171,7 +171,7 @@ test('a clean non-zero exit is absent, with an npm i -D remedy', SKIP, () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
     const body = parse(run(['apply', '--yes', '--root', root], { env: withNpx(dir) }));
-    const action = body.actions.find((a) => a.companion === 'sw-specs-editor' && a.host === 'claude-code');
+    const action = body.actions.find((a) => a.component === 'sw-specs-editor' && a.host === 'claude-code');
     assert.equal(action.probe.state, 'absent');
     assert.match(action.remedy, /^npm i -D @execuro-sw-ecosystem\/sw-specs-editor@0\.1\.0$/);
   } finally { cleanup(root); }
@@ -182,7 +182,7 @@ test('an empty PATH is probe-failed and mentions npx, but the run still succeeds
   try {
     const body = parse(run(['apply', '--yes', '--root', root], { env: { PATH: '' } }));
     assert.equal(body.ok, true);
-    const action = body.actions.find((a) => a.companion === 'sw-specs-editor' && a.host === 'claude-code');
+    const action = body.actions.find((a) => a.component === 'sw-specs-editor' && a.host === 'claude-code');
     assert.equal(action.probe.state, 'probe-failed');
     assert.match(action.probe.reason, /npx/);
   } finally { cleanup(root); }
@@ -213,22 +213,22 @@ test('probing is read-only, always passes --no-install, never -y or --target, an
 
 // ------------------------------------------------------------------- 9
 
-test('--no-companions emits no skill-copy actions and never spawns npx', SKIP, () => {
+test('--no-extra-components emits no skill-copy actions and never spawns npx', SKIP, () => {
   const { dir, logFile } = fakeNpx({ bodies: BODY });
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const body = parse(run(['plan', '--root', root, '--no-companions'], { env: withNpx(dir) }));
+    const body = parse(run(['plan', '--root', root, '--no-extra-components'], { env: withNpx(dir) }));
     assert.equal(body.actions.filter((a) => a.kind === 'skill-copy').length, 0);
     assert.deepEqual(readArgvLog(logFile), []);
   } finally { cleanup(root); }
 });
 
-test('status --no-companions reports no companions and never spawns npx', SKIP, () => {
+test('status --no-extra-components reports no extra components and never spawns npx', SKIP, () => {
   const { dir, logFile } = fakeNpx({ bodies: BODY });
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const body = parse(run(['status', '--root', root, '--no-companions'], { env: withNpx(dir) }));
-    assert.deepEqual(body.companions, []);
+    const body = parse(run(['status', '--root', root, '--no-extra-components'], { env: withNpx(dir) }));
+    assert.deepEqual(body.extra_components, []);
     assert.deepEqual(readArgvLog(logFile), []);
   } finally { cleanup(root); }
 });

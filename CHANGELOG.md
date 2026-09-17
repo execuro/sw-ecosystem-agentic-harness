@@ -23,12 +23,26 @@ release.
   Editor and Tender Discovery Tool through their own `npm i -D` line followed
   by a re-run of `install`. The section also moved below Install's own
   subsections, which it had been separating from their heading.
-- **The two companion packages are now named individually, with the exact
+- **The two extra components are now named individually, with the exact
   pinned `npm i -D` command for each**, in both `README.md`'s new **The
   optional editors** subsection and `guide`'s output — replacing the earlier
   `<package>@<version>` placeholder — because the probe accepts only the
-  exact version `COMPANIONS` pins and skips the skill for anything else,
+  exact version `EXTRA_COMPONENTS` pins and skips the skill for anything else,
   including `@latest`.
+- **Breaking: the "companion" terminology is renamed to "extra component".**
+  The CLI flag `--no-companions` is now `--no-extra-components`, and the
+  `status` JSON output key `companions` is now `extra_components`. Anything
+  scripting against `0.1.2` or earlier that reads `companions` or passes
+  `--no-companions` must update to the new names — there is no backwards-
+  compatible alias.
+- **`sw-storefront-developer`'s locate proofs now check for deprecated
+  forwarder files and `feature()` branches, and read the active theme's
+  `views` chain.** Proof 1 rejects a template whose header names it a removed
+  forwarder; proof 2 notes the `feature()` branch a block sits in; proof 3
+  also greps the theme's `theme.json` `views` order. The chain order and
+  where an override belongs are now deferred to the storefront guideline's
+  expert template-inheritance and override-placement sections instead of
+  being restated in the agent body.
 
 ## [0.1.2] - 2026-09-16
 

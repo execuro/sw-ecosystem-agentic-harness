@@ -104,7 +104,7 @@ export function exists(root, path) {
 
 /**
  * A fake `npx` on `PATH` that answers `--no-install <spec> install-skill
- * --print` for the companion ids named in `bodies` (keyed by id, e.g.
+ * --print` for the extra-component ids named in `bodies` (keyed by id, e.g.
  * `sw-specs-editor`) and exits 1 for everything else — the shape of a real
  * `npx --no-install` against a package that is not installed locally. Every
  * invocation's argv is appended to `logFile` as one JSON array per line, so a
