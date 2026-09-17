@@ -7,6 +7,29 @@ release.
 
 ## [Unreleased]
 
+### Changed
+
+- **The `vendor/` row now names the specific missing file when unticked.**
+  `sw-setup`'s printed line says which of `vendor/shopware/core`,
+  `composer.lock` or `vendor/bin/phpunit` is missing instead of just marking
+  the row unticked, so a `--no-dev` vendor tree (which has the first two but
+  not `vendor/bin/phpunit`) is diagnosable at a glance. Same fix as before,
+  `composer install --no-interaction`, offered the same way.
+- **The update documentation now covers every component.** `README.md`'s
+  **Keep up to date** section became **Keeping it up to date** and says how
+  each of the three parts updates on its own schedule: this package through
+  `install`, the MCP servers by themselves (they are registered as `@latest`,
+  so a host fetches the newest build when it next starts one), and the Specs
+  Editor and Tender Discovery Tool through their own `npm i -D` line followed
+  by a re-run of `install`. The section also moved below Install's own
+  subsections, which it had been separating from their heading.
+- **The two companion packages are now named individually, with the exact
+  pinned `npm i -D` command for each**, in both `README.md`'s new **The
+  optional editors** subsection and `guide`'s output — replacing the earlier
+  `<package>@<version>` placeholder — because the probe accepts only the
+  exact version `COMPANIONS` pins and skips the skill for anything else,
+  including `@latest`.
+
 ## [0.1.2] - 2026-09-16
 
 ### Changed

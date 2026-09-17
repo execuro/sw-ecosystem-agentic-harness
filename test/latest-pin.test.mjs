@@ -8,6 +8,7 @@ import { test } from 'node:test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { PKG_NAME, PKG_ROOT } from '../lib/content.mjs';
+import { COMPANIONS } from '../lib/companions.mjs';
 
 function markdownFiles(dir) {
   const out = [];
@@ -61,4 +62,19 @@ test('lib/guide.mjs names @latest as the upgrade path, without repinning RUN', (
     'guide.mjs does not tell the reader how to reach the newest published version');
   assert.match(text, /RUN = `npx -y \$\{PKG_NAME\}@\$\{PKG_VERSION\}`/,
     'guide.mjs RUN constant changed shape — it must keep interpolating the running CLI\'s own version');
+});
+
+// README.md's `npm i -D <package>@<version>` lines for the two companion
+// packages must name the version COMPANIONS currently pins — otherwise the
+// README tells the user to install a version the probe will reject.
+test('README companion install lines are pinned to what COMPANIONS pins', () => {
+  const text = readFileSync(join(PKG_ROOT, 'README.md'), 'utf8');
+  for (const c of COMPANIONS) {
+    const escaped = c.pkg.replace(/[/@]/g, '\\$&');
+    const re = new RegExp(`npm i -D ${escaped}@(\\S+)`);
+    const match = text.match(re);
+    assert.ok(match, `README.md has no "npm i -D ${c.pkg}@<version>" line`);
+    assert.equal(match[1], c.version,
+      `README.md pins ${c.pkg} to ${match[1]}, but COMPANIONS pins ${c.version}`);
+  }
 });

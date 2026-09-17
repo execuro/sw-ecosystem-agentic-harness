@@ -15,6 +15,12 @@ reports their state in its own `status`/`plan` output; see `SKILL.md`.
   (guideline §6.2).
 - **Ticked:** all three present; report the `shopware/core` version from
   `composer.lock`.
+- **Unticked:** the printed line names the specific missing path(s), not just
+  the row — e.g. a tree built `--no-dev` has `vendor/shopware/core` and
+  `composer.lock` but no `vendor/bin/phpunit`, so the line reads
+  `vendor/ — vendor/bin/phpunit missing (tree built --no-dev)`. This is the
+  same row and the same fix below, offered inside step 3's single question
+  like any other row.
 - **Fix:** `docker compose exec web composer install --no-interaction`
   (guideline §6.1 — "a vendor tree built with `--no-dev` has no
   `vendor/bin/phpunit`"). Runs inside the `web` container; if it is not

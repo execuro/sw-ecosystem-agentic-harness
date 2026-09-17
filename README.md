@@ -80,26 +80,6 @@ not block outside Plan mode, and CI has no terminal. Add `--host claude-code`
 home directory instead of this repository. The default scope is the project —
 nothing is written under `~` unless you ask.
 
-## Keep up to date
-
-The same command updates:
-
-```bash
-npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install
-```
-
-It rewrites what it owns, leaves anything you hand-edited alone (reported as
-drift), and records the new version in the lock file. The `@latest` matters:
-without it, `npx` can reuse a copy already in its cache or in this project's
-`node_modules`, so you would silently keep running whatever version you first
-installed. Restart your coding agent afterwards, same as a first install.
-
-Want to check what you have first? `... @latest status` reports
-`installed_version` and any drift, and writes nothing. The Specs Editor and
-Tender Discovery Tool are separate packages and update on their own `npm i -D
-<package>@<version>` line — `status`'s `companions` array names the exact
-command for each.
-
 ### What it writes
 
 | Host | Skills | Sub-agents | MCP | Settings |
@@ -144,6 +124,48 @@ protocol runs:
 ```bash
 npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest guide
 ```
+
+## Keeping it up to date
+
+Three things update on different schedules.
+
+| What | How it updates |
+| --- | --- |
+| This package — skills, sub-agents, permission rules, MCP registrations | `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install` |
+| The MCP servers (`ShopwareDevKnowledgeBase`, `playwright`) | By themselves. They are registered as `@latest`, so your agent fetches the newest build the next time it starts one. Nothing to run. |
+| Specs Editor, Tender Discovery Tool | You update them. Each has its own line — see below. |
+
+### The optional editors
+
+Install or update each at the exact version this release pins — the CLI
+probes for that version and skips the skill if it finds another:
+
+```bash
+npm i -D @execuro-sw-ecosystem/sw-specs-editor@0.1.0
+npm i -D @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0
+```
+
+- `sw-specs-editor` backs the `--editor` flag on `sw-design-requirements` and
+  `sw-design-solution`.
+- `sw-tender-discovery-tool` backs the `--editor` flag and the `.xlsx` import
+  on `sw-discover-tender`.
+
+Re-run `install` afterwards so the new skill lands in each host. `status`'s
+`companions[]` array reports the pinned `version` and the exact `install`
+command for whichever one is missing.
+
+Re-running `install` is safe at any time: it rewrites only what it owns,
+leaves anything you hand-edited alone (reported as drift), and records the new
+version in the lock file. Restart your coding agent afterwards — every host
+reads its configuration at startup.
+
+`@latest` matters. Without it, `npx` can reuse a copy already in its cache or
+in this project's `node_modules`, so you would silently keep running the
+version you first installed.
+
+To look before you change anything: `... @latest status` reports
+`installed_version`, any drift, and which companion packages are present. It
+writes nothing.
 
 ## Prerequisites
 

@@ -55,6 +55,7 @@ one line per configuration item the CLI's `hosts[]`/`drift[]` reports:
 
 ```
 - [x] vendor/ — shopware/core 6.7.13.0
+- [ ] vendor/ — vendor/bin/phpunit missing (tree built --no-dev)
 - [ ] Node — 18.x (need >= 20)
 - [-] Visual editors (optional) — Specs Editor not installed, Tender tool not installed
 - [x] shopware-cli — 0.16.10
