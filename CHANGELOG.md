@@ -7,6 +7,8 @@ release.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-09-17
+
 ### Added
 
 - **`sw-setup` gained a twelfth readiness row, "Package updates".** It checks
