@@ -1,6 +1,6 @@
 # Readiness rows
 
-Eleven environment rows. Each: check (read-only), what "ticked" means, the fix
+Twelve environment rows. Each: check (read-only), what "ticked" means, the fix
 (only run on approval, in this order), and which skills the row blocks when
 unticked. Host configuration files (`.mcp.json` entries, `.gitignore` lines,
 permission grants) are not rows here — the installer CLI owns them and
@@ -218,3 +218,42 @@ So this row never blocks readiness. It asks.
   project, verify-ac-tests screenshots). Idempotent — safe to re-run.
 - **Blocks:** nothing directly; unticked means the next `git status` will
   show generated/secret files as untracked.
+
+## 12. Package updates (optional)
+
+The KB MCP is excluded — it is registered as `@latest` and re-resolves on
+every host launch, so there is nothing to update (see row 5). This row covers
+only the three versioned packages: the harness itself, the Specs Editor and
+the Tender Discovery Tool.
+
+This row never blocks readiness. It folds into step 3's single question.
+
+- **Check:** three `npm view <pkg> version` calls, each with a 10-second
+  timeout — `npm view @execuro-sw-ecosystem/sw-ecosystem-agentic-harness
+  version`, `npm view @execuro-sw-ecosystem/sw-specs-editor version`,
+  `npm view @execuro-sw-ecosystem/sw-tender-discovery-tool version`. Installed
+  versions come from three different places: the harness's from
+  `installed_version` in the `status` JSON the skill already ran in step 1
+  (from the lock file); the Specs Editor's from `version` in
+  `node_modules/@execuro-sw-ecosystem/sw-specs-editor/package.json`; the
+  Tender Discovery Tool's the same way, in its own `node_modules` path. A
+  failed or timed-out `npm view` call reports "could not check" for that
+  package only — never an unticked row, never an error, never a blocked run.
+  No network is a normal condition, not a fault.
+- **Ticked:** all three packages at their target version — the harness at
+  npm's latest, each editor at the pin its own `status` output names
+  (`extra_components[].version`), not at npm's latest.
+- **Unticked:** one line per stale package, `installed → available` — e.g.
+  `harness 0.1.1 → 0.1.3`, `Specs Editor 0.1.0 → 0.1.0 (pinned)` when current.
+  An editor whose npm latest is ahead of the pin is a harness-release lag,
+  not a missing update: report it, but do not offer to install that newer
+  version — only a newer harness can raise the pin.
+- **Fix:** update the harness first — a newer harness may carry newer pins:
+  `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install`.
+  That command rewrites the installed `sw-setup` skill itself, so the newer
+  skill takes effect on the next run — which step 3 already causes by
+  re-running step 1. Re-read the new `status` output, then for each stale
+  editor run the same `npm i -D <package>@<version>` shape row 3's Fix uses,
+  with `<package>` and `<version>` taken from that editor's own
+  `extra_components[]` entry in the re-read `status`.
+- **Blocks:** nothing. Out of date is not broken.

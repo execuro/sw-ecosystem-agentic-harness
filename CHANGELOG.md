@@ -7,6 +7,17 @@ release.
 
 ## [Unreleased]
 
+### Added
+
+- **`sw-setup` gained a twelfth readiness row, "Package updates".** It checks
+  whether the harness, the Specs Editor and the Tender Discovery Tool are at
+  their target versions (the harness at npm's latest, each editor at its own
+  `extra_components[].version` pin, never npm's latest) via three
+  `npm view` lookups, each with a 10-second timeout — a failed or timed-out
+  lookup reports "could not check" rather than failing the row. Folds into
+  step 3's single question; never blocks readiness. The KB MCP keeps its
+  existing row (registered as `@latest`, nothing to update).
+
 ## [0.1.3] - 2026-09-17
 
 ### Changed
