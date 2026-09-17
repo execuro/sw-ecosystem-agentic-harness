@@ -49,18 +49,26 @@ declines is fully set up without them, and `--editor` on `sw-design-requirements
 
 | Command | What it does |
 | --- | --- |
-| `install` | installs into every detected host; the same as `apply --yes` |
+| `install` | installs into the resolved host(s) (see Flags below); the same as `apply --yes` |
 | `status` | read-only; what is installed, what drifted, which optional extra components are present |
 | `plan` | the exact changes, written as a diff; writes nothing |
 | `apply --yes` | performs them |
 | `uninstall --yes` | removes what the lock file records |
 | `guide` | the install protocol, the single source of truth |
 
-Flags: `--host claude-code|codex|copilot|cursor` (repeatable; omitting it
-selects every host that is present), `--scope project|user` (default
-`project`), `--root <path>` (default the current directory), `--yes` (required
-by `apply` and `uninstall`, never prompts — `install` implies it), and
-`--no-extra-components` (skip detection of the optional editor packages).
+Flags: `--host claude-code|codex|copilot|cursor` (repeatable), `--scope
+project|user` (default `project`), `--root <path>` (default the current
+directory), `--yes` (required by `apply` and `uninstall` — `install` implies
+it), and `--no-extra-components` (skip detection of the optional editor
+packages).
+
+`install`/`apply` resolve which host(s) to write into, in order: `--host` if
+given; else the hosts a lock file already records (a re-run needs no
+question); else, with a terminal attached, an interactive picker; else exit 2
+with the four `install --host <h>` commands as `help` — it never guesses and
+never hangs. `status` and `uninstall` are unaffected by this and keep
+covering every host by default; `plan` writes nothing, so with no `--host` and
+no lock it previews all four and says so.
 
 ## Install
 
@@ -74,11 +82,14 @@ writes anything.
 Then restart your coding agent — every host reads its configuration at startup.
 The command's output tells you which ones and how.
 
-`apply` refuses without `--yes` and never prompts: Codex's question tool does
-not block outside Plan mode, and CI has no terminal. Add `--host claude-code`
-(repeatable) to install into one agent, and `--scope user` to install into your
-home directory instead of this repository. The default scope is the project —
-nothing is written under `~` unless you ask.
+`apply` refuses without `--yes`. Neither `apply` nor `install` prompts for
+consent — typing the verb, or passing `--yes`, is the consent — but with no
+`--host`, no existing lock and no terminal (Codex's question tool does not
+block outside Plan mode, and CI has no terminal either), it exits 2 rather
+than guess. Add `--host claude-code` (repeatable) to install into one agent,
+and `--scope user` to install into your home directory instead of this
+repository. The default scope is the project — nothing is written under `~`
+unless you ask.
 
 ### What it writes
 

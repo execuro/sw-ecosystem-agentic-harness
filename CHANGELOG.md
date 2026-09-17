@@ -7,6 +7,17 @@ release.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`install`/`apply` no longer write into every detected host when
+  `--host` is omitted.** They now resolve which host(s) to use in order:
+  `--host` if given; else the hosts a lock file already records; else an
+  interactive picker when a terminal is attached; else exit 2 naming the
+  four `install --host <h>` commands as `help`, instead of silently
+  defaulting to Claude Code, Codex, Copilot *and* Cursor. `status` and
+  `uninstall` keep covering every host by default, and `plan` previews all
+  four and says so when nothing was selected.
+
 ## [0.1.4] - 2026-09-17
 
 ### Added

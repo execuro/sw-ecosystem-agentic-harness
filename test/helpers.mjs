@@ -52,6 +52,14 @@ export function cleanup(root) {
 
 export const ALL_MARKERS = ['.claude', '.codex', '.github', '.cursor'];
 
+/** `--host` for every host, spread into argv — `run()` has no TTY (it is a
+ * child process spawned with a piped stdin), so any test exercising a bare
+ * "install every host" run must say so explicitly now that host resolution
+ * no longer defaults to every host on its own. */
+export const ALL_HOST_FLAGS = [
+  '--host', 'claude-code', '--host', 'codex', '--host', 'copilot', '--host', 'cursor',
+];
+
 /** path -> sha256 for every file under a root. */
 export function snapshot(root) {
   const out = {};

@@ -6,6 +6,16 @@ unticked. Host configuration files (`.mcp.json` entries, `.gitignore` lines,
 permission grants) are not rows here — the installer CLI owns them and
 reports their state in its own `status`/`plan` output; see `SKILL.md`.
 
+When that `status` call reports no install at all (no lock file, so no
+recorded hosts), the installer CLI's `apply --yes`/`install` has no `--host`
+to reuse and, run from this skill, no terminal to ask on — it would exit 2.
+Do not pass a guessed `--host`. Report this to the user instead: the first
+install must be run by them directly in a terminal, e.g.
+`npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install`,
+which then either takes their `--host` or prompts them interactively. Re-run
+this skill's `status` check afterwards — every later `apply --yes` reuses the
+hosts that first run recorded, and this skill can call it directly again.
+
 ## 1. vendor/
 
 - **Check:** `vendor/shopware/core` exists, `composer.lock` exists,

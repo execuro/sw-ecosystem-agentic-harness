@@ -7,12 +7,12 @@ import { test } from 'node:test';
 import { writeFileSync, readFileSync, unlinkSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  ALL_MARKERS, cleanup, exists, hostRepo, mtimes, parse, readJson, readLock, readText, run, snapshot,
+  ALL_HOST_FLAGS, ALL_MARKERS, cleanup, exists, hostRepo, mtimes, parse, readJson, readLock, readText, run, snapshot,
 } from './helpers.mjs';
 
 function install(extra = {}) {
   const root = hostRepo({ dirs: ALL_MARKERS, ...extra });
-  const body = parse(run(['apply', '--yes', '--root', root]));
+  const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]));
   return { root, body };
 }
 
@@ -101,7 +101,7 @@ test('a foreign file at one of our paths is a conflict, never overwritten', () =
     files: { '.claude/agents/sw-qa-engineer.md': 'someone else wrote this\n' },
   });
   try {
-    const body = parse(run(['apply', '--yes', '--root', root]));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]));
     const action = body.actions.find((a) => a.target === '.claude/agents/sw-qa-engineer.md');
     assert.equal(action.state, 'conflict');
     assert.equal(readText(root, '.claude/agents/sw-qa-engineer.md'), 'someone else wrote this\n');
@@ -116,7 +116,7 @@ test('an identical pre-existing file is adopted rather than flagged', () => {
     const shipped = readFileSync(join(process.cwd(), 'agents', 'sw-qa-engineer.md'));
     mkdirSync(join(root, '.claude', 'agents'), { recursive: true });
     writeFileSync(join(root, '.claude', 'agents', 'sw-qa-engineer.md'), shipped);
-    const body = parse(run(['apply', '--yes', '--root', root]));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]));
     const action = body.actions.find((a) => a.target === '.claude/agents/sw-qa-engineer.md');
     assert.equal(action.state, 'unchanged');
     assert.match(action.detail, /adopted/);
@@ -133,7 +133,7 @@ test('existing permission rules are kept and ours are appended', () => {
     },
   });
   try {
-    run(['apply', '--yes', '--root', root]);
+    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
     const perms = readJson(root, '.claude/settings.json').permissions;
     assert.equal(perms.deny[0], 'Edit(secrets/**)', 'user rules must stay first and in order');
     assert.equal(perms.deny.filter((r) => r === 'Edit(vendor/**)').length, 1, 'no duplicate');
@@ -169,7 +169,7 @@ test('an existing unfenced [agents] table becomes a manual step, not an edit', (
     files: { '.codex/config.toml': '[agents]\nmax_concurrent_threads_per_session = 2\n' },
   });
   try {
-    const body = parse(run(['apply', '--yes', '--root', root]));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]));
     assert.equal(body.summary.manual, 1);
     assert.match(body.manual[0].remedy, /max_concurrent_threads_per_session = 4/);
     assert.match(readText(root, '.codex/config.toml'), /max_concurrent_threads_per_session = 2/);
@@ -184,7 +184,7 @@ test('a JSONC config is never rewritten — it becomes a manual step', () => {
   });
   try {
     const before = readText(root, '.vscode/mcp.json');
-    const body = parse(run(['apply', '--yes', '--root', root]));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]));
     assert.equal(readText(root, '.vscode/mcp.json'), before, 'comments must survive');
     assert.ok(body.manual.some((m) => m.target === '.vscode/mcp.json'));
   } finally { cleanup(root); }
@@ -193,7 +193,7 @@ test('a JSONC config is never rewritten — it becomes a manual step', () => {
 test('malformed JSON is a conflict, never repaired', () => {
   const root = hostRepo({ dirs: ALL_MARKERS, files: { '.mcp.json': '{ this is not json' } });
   try {
-    const body = parse(run(['apply', '--yes', '--root', root]));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]));
     assert.equal(readText(root, '.mcp.json'), '{ this is not json');
     assert.ok(body.actions.some((a) => a.target === '.mcp.json' && a.state === 'conflict'));
   } finally { cleanup(root); }
@@ -250,7 +250,7 @@ test('the gitignore entry is added once, not once per run', () => {
 test('AGENTS.md keeps the user prose and appends a managed block', () => {
   const root = hostRepo({ dirs: ALL_MARKERS, files: { 'AGENTS.md': '# mine\n\nUse pnpm.\n' } });
   try {
-    run(['apply', '--yes', '--root', root]);
+    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
     const text = readText(root, 'AGENTS.md');
     assert.ok(text.startsWith('# mine\n\nUse pnpm.\n'));
     assert.match(text, /Shopware agentic harness/);
@@ -261,7 +261,7 @@ test('plan and apply agree on the actions, modulo tense', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
     const planned = parse(run(['plan', '--root', root])).actions.map((a) => a.id).sort();
-    const applied = parse(run(['apply', '--yes', '--root', root])).actions.map((a) => a.id).sort();
+    const applied = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root])).actions.map((a) => a.id).sort();
     assert.deepEqual(applied, planned);
   } finally { cleanup(root); }
 });

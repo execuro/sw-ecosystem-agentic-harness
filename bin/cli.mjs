@@ -36,10 +36,15 @@ const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
   guide      print the install protocol
 
   install is apply --yes under a friendlier name: the whole install in one
-  command, no --yes needed — typing the verb is the consent.
+  command, no --yes needed — typing the verb is the consent for that write;
+  it can still ask which host(s), see below.
 
   <h> is one of: claude-code, codex, copilot, cursor. Repeat --host to select
-  several; omitting it selects every host that is present.
+  several. install/apply resolve which host(s) to use, in order: --host if
+  given; else the hosts already recorded in the lock file, if one exists;
+  else, with a terminal attached, an interactive picker; else exit 2 with
+  the four "... install --host <h>" commands as help. status and uninstall
+  keep covering every host by default.
 
   --scope defaults to project: nothing is written under your home directory
   unless you ask for it. --root defaults to the current directory.

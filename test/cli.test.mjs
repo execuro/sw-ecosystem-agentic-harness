@@ -3,7 +3,7 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { ALL_MARKERS, cleanup, exists, hostRepo, parse, readLock, run, snapshot } from './helpers.mjs';
+import { ALL_HOST_FLAGS, ALL_MARKERS, cleanup, exists, hostRepo, parse, readLock, run, snapshot } from './helpers.mjs';
 
 test('guide exits 0 and prints the protocol', () => {
   const r = run(['guide']);
@@ -120,8 +120,8 @@ test('install produces the same files and lock content as apply --yes', () => {
   const installRoot = hostRepo({ dirs: ALL_MARKERS });
   const applyRoot = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const installResult = run(['install', '--root', installRoot]);
-    const applyResult = run(['apply', '--yes', '--root', applyRoot]);
+    const installResult = run(['install', ...ALL_HOST_FLAGS, '--root', installRoot]);
+    const applyResult = run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', applyRoot]);
     assert.equal(installResult.code, 0);
     assert.equal(applyResult.code, 0);
 
@@ -138,7 +138,7 @@ test('install produces the same files and lock content as apply --yes', () => {
 test('install\'s JSON carries ok:true, command:"install" and a non-empty next_step', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const body = parse(run(['install', '--root', root]));
+    const body = parse(run(['install', ...ALL_HOST_FLAGS, '--root', root]));
     assert.equal(body.ok, true);
     assert.equal(body.command, 'install');
     assert.ok(body.next_step.trim().length > 0);
@@ -149,7 +149,7 @@ test('install needs no --yes; apply without --yes still exits 2', () => {
   const installRoot = hostRepo({ dirs: ALL_MARKERS });
   const applyRoot = hostRepo({ dirs: ALL_MARKERS });
   try {
-    assert.equal(run(['install', '--root', installRoot]).code, 0);
+    assert.equal(run(['install', ...ALL_HOST_FLAGS, '--root', installRoot]).code, 0);
     assert.equal(run(['apply', '--root', applyRoot]).code, 2);
   } finally { cleanup(installRoot); cleanup(applyRoot); }
 });
@@ -168,8 +168,8 @@ test('install --yes behaves identically to install', () => {
   const plainRoot = hostRepo({ dirs: ALL_MARKERS });
   const yesRoot = hostRepo({ dirs: ALL_MARKERS });
   try {
-    assert.equal(run(['install', '--root', plainRoot]).code, 0);
-    assert.equal(run(['install', '--yes', '--root', yesRoot]).code, 0);
+    assert.equal(run(['install', ...ALL_HOST_FLAGS, '--root', plainRoot]).code, 0);
+    assert.equal(run(['install', '--yes', ...ALL_HOST_FLAGS, '--root', yesRoot]).code, 0);
 
     assert.deepEqual(Object.keys(snapshot(plainRoot)).sort(), Object.keys(snapshot(yesRoot)).sort());
     assert.deepEqual(comparableLock(readLock(plainRoot), plainRoot), comparableLock(readLock(yesRoot), yesRoot));

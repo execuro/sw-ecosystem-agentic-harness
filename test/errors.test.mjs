@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { chmodSync } from 'node:fs';
 import { join } from 'node:path';
-import { ALL_MARKERS, cleanup, exists, hostRepo, parse, readLock, run, snapshot } from './helpers.mjs';
+import { ALL_HOST_FLAGS, ALL_MARKERS, cleanup, exists, hostRepo, parse, readLock, run, snapshot } from './helpers.mjs';
 
 const ROOTLESS = { skip: process.platform === 'win32' || process.getuid?.() === 0 };
 
@@ -35,7 +35,7 @@ test('two failing hosts are both reported', ROOTLESS, () => {
   try {
     chmodSync(join(root, '.codex'), 0o555);
     chmodSync(join(root, '.github'), 0o555);
-    const body = parse(run(['apply', '--yes', '--root', root]));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]));
     const failed = new Set(body.errors.map((e) => e.host));
     assert.ok(failed.has('codex'), 'codex failure missing');
     assert.ok(failed.has('copilot'), 'copilot failure missing');
@@ -52,7 +52,7 @@ test('an apply that cannot be recorded is refused before it writes', ROOTLESS, (
   try {
     const before = snapshot(root);
     chmodSync(root, 0o555);
-    const r = run(['apply', '--yes', '--root', root]);
+    const r = run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
     assert.equal(r.code, 1);
     assert.match(parse(r).error, /lock file/i);
     chmodSync(root, 0o755);

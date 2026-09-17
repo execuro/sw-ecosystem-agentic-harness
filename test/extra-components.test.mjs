@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { EXTRA_COMPONENTS } from '../lib/extra-components.mjs';
 import {
-  ALL_MARKERS, cleanup, exists, fakeNpx, hostRepo, mtimes, parse, readArgvLog, readLock, readText,
+  ALL_HOST_FLAGS, ALL_MARKERS, cleanup, exists, fakeNpx, hostRepo, mtimes, parse, readArgvLog, readLock, readText,
   run, snapshot, withNpx,
 } from './helpers.mjs';
 
@@ -24,7 +24,7 @@ const BODY = {
 
 function install(shimDir, extra = {}) {
   const root = hostRepo({ dirs: ALL_MARKERS, ...extra });
-  const body = parse(run(['apply', '--yes', '--root', root], { env: withNpx(shimDir) }));
+  const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root], { env: withNpx(shimDir) }));
   return { root, body };
 }
 
@@ -34,7 +34,7 @@ test('neither extra component present — skipped everywhere, no host reads as d
   const { dir } = fakeNpx({ bodies: {} });
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const body = parse(run(['apply', '--yes', '--root', root], { env: withNpx(dir) }));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root], { env: withNpx(dir) }));
     const skillCopy = body.actions.filter((a) => a.kind === 'skill-copy');
     // Cursor reads Claude's trees directly here, so only 3 hosts get their
     // own skill-copy actions.
@@ -144,7 +144,7 @@ test('a foreign file at an extra-component target is a conflict, untouched', SKI
     files: { '.claude/skills/sw-specs-editor/SKILL.md': 'someone else wrote this\n' },
   });
   try {
-    const body = parse(run(['apply', '--yes', '--root', root], { env: withNpx(dir) }));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root], { env: withNpx(dir) }));
     const action = body.actions.find((a) => a.target === '.claude/skills/sw-specs-editor/SKILL.md');
     assert.equal(action.state, 'conflict');
     assert.equal(readText(root, '.claude/skills/sw-specs-editor/SKILL.md'), 'someone else wrote this\n');
@@ -158,7 +158,7 @@ test('a non-frontmatter body on exit 0 is probe-failed and nothing is written', 
   const { dir } = fakeNpx({ bodies: { 'sw-specs-editor': 'not a skill document\n' } });
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const body = parse(run(['apply', '--yes', '--root', root], { env: withNpx(dir) }));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root], { env: withNpx(dir) }));
     const action = body.actions.find((a) => a.component === 'sw-specs-editor' && a.host === 'claude-code');
     assert.equal(action.state, 'skipped');
     assert.equal(action.probe.state, 'probe-failed');
@@ -170,7 +170,7 @@ test('a clean non-zero exit is absent, with an npm i -D remedy', SKIP, () => {
   const { dir } = fakeNpx({ bodies: {} });
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const body = parse(run(['apply', '--yes', '--root', root], { env: withNpx(dir) }));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root], { env: withNpx(dir) }));
     const action = body.actions.find((a) => a.component === 'sw-specs-editor' && a.host === 'claude-code');
     assert.equal(action.probe.state, 'absent');
     assert.match(action.remedy, /^npm i -D @execuro-sw-ecosystem\/sw-specs-editor@0\.1\.0$/);
@@ -180,7 +180,7 @@ test('a clean non-zero exit is absent, with an npm i -D remedy', SKIP, () => {
 test('an empty PATH is probe-failed and mentions npx, but the run still succeeds', SKIP, () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const body = parse(run(['apply', '--yes', '--root', root], { env: { PATH: '' } }));
+    const body = parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root], { env: { PATH: '' } }));
     assert.equal(body.ok, true);
     const action = body.actions.find((a) => a.component === 'sw-specs-editor' && a.host === 'claude-code');
     assert.equal(action.probe.state, 'probe-failed');
@@ -200,7 +200,7 @@ test('probing is read-only, always passes --no-install, never -y or --target, an
     assert.deepEqual(snapshot(root), before);
 
     const probe2 = fakeNpx({ bodies: BODY });
-    parse(run(['apply', '--yes', '--root', root], { env: withNpx(probe2.dir) }));
+    parse(run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root], { env: withNpx(probe2.dir) }));
     const argv = readArgvLog(probe2.logFile);
     assert.ok(argv.length <= 2, `expected at most 2 spawns across 4 hosts, got ${argv.length}`);
     for (const a of argv) {

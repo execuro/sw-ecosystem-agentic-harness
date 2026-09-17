@@ -7,7 +7,7 @@ import { mcpServers, wrapCommand } from '../lib/content.mjs';
 import { buildPlan } from '../lib/hosts.mjs';
 import { rel, abs } from '../lib/fsx.mjs';
 import { EXTRA_COMPONENTS, probeArgs } from '../lib/extra-components.mjs';
-import { ALL_MARKERS, cleanup, hostRepo, readLock, run } from './helpers.mjs';
+import { ALL_HOST_FLAGS, ALL_MARKERS, cleanup, hostRepo, readLock, run } from './helpers.mjs';
 
 test('npx is wrapped in cmd /c on win32 and left bare elsewhere', () => {
   const spec = { command: 'npx', args: ['-y', 'pkg'] };
@@ -55,7 +55,7 @@ test('mcpServers resolves the project-wiki path rather than emitting a variable'
 test('paths in output and the lock are POSIX on every platform', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    run(['apply', '--yes', '--root', root]);
+    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
     for (const key of Object.keys(readLock(root).files)) {
       assert.doesNotMatch(key, /\\/, `lock key is not POSIX: ${key}`);
     }
