@@ -4,6 +4,8 @@ The `sw-*` skills and sub-agents for Shopware 6 projects: they turn a briefing
 into a PRD, a PRD into a technical spec, a spec into tested code, and tested
 code into a project wiki page.
 
+New line
+
 It ships as **one npm package carrying an installer**. The installer copies the
 skills and agents into whichever coding agents your repository uses and
 registers the MCP servers and permission rules they depend on. Nothing is
