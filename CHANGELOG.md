@@ -7,6 +7,12 @@ release.
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-09-19
+
+### Changed
+
+- `README.md` names `sw-setup` as part of the installation flow. Documentation only.
+
 ## [0.1.8] - 2026-09-19
 
 ### Changed
