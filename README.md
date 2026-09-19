@@ -100,6 +100,13 @@ writes anything.
 Then restart your coding agent — every host reads its configuration at startup.
 The command's output tells you which ones and how.
 
+Then run the `sw-setup` skill in that agent. The installer only writes the
+harness files; `sw-setup` checks and completes everything else the skills need
+— `vendor/`, Node, `shopware-cli`, the knowledge-base MCP, the acceptance-test
+project and its Playwright browsers, the per-plugin test scaffolding, and the
+optional editor add-ons. It prints one readiness table and is done when every
+row is ticked.
+
 `apply` refuses without `--yes`. Neither `apply` nor `install` prompts for
 consent — typing the verb, or passing `--yes`, is the consent — but with no
 `--agent`, no existing lock and no terminal (Codex's question tool does not
