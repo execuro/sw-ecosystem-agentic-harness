@@ -7,6 +7,8 @@ release.
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-09-19
+
 ### Changed
 
 - **BREAKING: `install`, `status`, `plan` and `uninstall` print a human
