@@ -3,7 +3,7 @@ name: sw-design-requirements
 description: Turn a briefing — chat text or a file, covering one or more features — into a lean, business-only PRD stored as specs/NNNN-slug.md. Runs an interactive clarification loop for the requirement gaps and inconsistencies that actually change the requirements, then scores a weighted confidence %. Use when asked to write, draft, refine, continue, or score a PRD / requirements doc / feature brief for this Shopware project. Never writes a tech spec or answers architecture questions — that's sw-design-solution.
 when_to_use: Trigger phrases — "write a PRD", "draft requirements", "turn this brief into a PRD", "continue PRD 0003", "is this PRD ready for specification", "raise the confidence on this PRD", "requirements for <feature>".
 argument-hint: '[file-path | briefing text | specs/NNNN-slug.md to continue] [--editor]'
-allowed-tools: Read Write Edit Glob Grep AskUserQuestion Agent Skill Bash(ls *) Bash(mkdir -p specs) Bash(npx -y @execuro-sw-ecosystem/sw-specs-editor@0.1.0 *) mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
+allowed-tools: Read Write Edit Glob Grep AskUserQuestion Agent Skill Bash(ls *) Bash(mkdir -p specs) Bash(npx -y @execuro-sw-ecosystem/sw-specs-editor@latest *) mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
 
 ---
 

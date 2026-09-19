@@ -7,6 +7,56 @@ release.
 
 ## [Unreleased]
 
+### Changed
+
+- **The lock file moved to `var/sw-ai-sdk/harness.lock.json`, and the
+  `.gitignore` line is gone with it.** A Shopware project ignores the whole of
+  `var/` through the `shopware/core` Flex recipe (`/var/*`, with a single
+  `!/var/.htaccess` negation) and already keeps its machine-local state there
+  — `var/cache`, `var/log` — so the installer no longer creates a directory in
+  the repository root and no longer writes to `.gitignore` at all. A root with
+  no `var/` (`--scope user` under $HOME, or a checkout that is not a Shopware
+  project) keeps `.sw-ai-sdk/` and its managed line, unchanged. Nothing here
+  reads a path outside the install root, on any platform.
+  **Migration is automatic and lossless:** a lock still at the old path is
+  read, rewritten to the new one, and the old file, its directory and the
+  managed `.gitignore` block are removed. Declined rules, recorded agents and
+  file hashes all survive, so the first run after upgrading reinstalls nothing
+  — it reports `migrated[]` in `--json` and one line in the human summary.
+  `lock_file` in every result body now carries the resolved path; anything
+  that hard-coded `.sw-ai-sdk/` should read that key instead.
+
+### Removed
+
+- **BREAKING: the "extra component" mechanism is gone.** The CLI no longer
+  detects, installs, updates or removes the two optional visual editors
+  (Specs Editor, Tender Discovery Tool); each package installs its own skill,
+  orchestrated by the `sw-setup` skill. Removed with it: the
+  `extra_components[]` key from `status --json`, the `--no-extra-components`
+  flag on `install`/`plan`/`apply`, the `skipped` field from `plan`'s and
+  `apply`'s `summary` (nothing else could produce that state), the
+  `skill-copy` action kind, and the "Optional extra components" section of
+  `guide`. Anything reading `extra_components[]` or counting `summary.skipped`
+  must stop.
+  **Why:** the mechanism had never once worked. It spawned `npx --no-install
+  <pkg>@<pin> install-skill --print` and required stdout to begin with `---`,
+  but both editors document a `source:`/`next_step:` preamble before the skill
+  document, so the check could never pass and neither skill was ever installed.
+  `--no-install` also suppresses installing but not resolving, so every
+  `status`, `plan` and `apply` issued a real request to the npm registry —
+  `status` was never offline-safe, contrary to what the module claimed.
+- The two editors are now invoked as `@latest` everywhere, including in the
+  `allowed-tools` permission grants of `sw-design-requirements`,
+  `sw-design-solution` and `sw-discover-tender`, which still named an exact
+  version and would therefore have denied the calls. The `@latest` check now
+  guards `allowed-tools` lines as well as prose.
+
+### Added
+
+- `status --json` reports `skills_dir` per agent — the directory that agent
+  actually reads skills from, and the `--target` `sw-setup` hands to an
+  editor package's own `install-skill`/`uninstall-skill`.
+
 ## [0.1.7] - 2026-09-19
 
 ### Changed

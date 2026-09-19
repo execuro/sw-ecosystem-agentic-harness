@@ -2,7 +2,7 @@
 name: sw-setup
 description: Print one environment-readiness table for the project's development/test setup — vendor/, Node, the editor CLIs, shopware-cli, the KB MCP, the acceptance-test project, Playwright browsers, its .env, per-plugin test scaffolding, the project wiki, `.gitignore` and whether the SW AH npm packages are current, plus the installer CLI's own configuration/drift status. Stops when every row is ticked. When rows are missing, asks one yes/no question and delegates the fix to the installer CLI. Use when asked to set up the project, check if the environment is ready, or bootstrap the tests. Never designs, implements or verifies a feature itself — that's sw-design-solution, sw-implement-feature and sw-verify-feature, which call this skill first. Never writes a coding agent's configuration file itself — that's the installer CLI.
 when_to_use: Trigger phrases — "set up the project", "is the environment ready", "bootstrap the tests", "sw-setup".
-allowed-tools: Read Glob Grep AskUserQuestion Skill Bash mcp__ShopwareDevKnowledgeBase__kb_status Bash(npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest *)
+allowed-tools: Read Glob Grep AskUserQuestion Skill Bash mcp__ShopwareDevKnowledgeBase__kb_status Bash(npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest *) Bash(npx -y @execuro-sw-ecosystem/sw-specs-editor@latest *) Bash(npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@latest *)
 ---
 
 # sw-setup
@@ -49,8 +49,8 @@ prints a human summary, not the object below. It prints one JSON object
 state). Alongside it, run every
 environment row's check from `reference/rows.md` in this skill's directory —
 read-only, seconds each: file/directory existence, one version command, one
-`kb_status` call, three `npm view` registry lookups (Package updates row) —
-the one part of step 1 that touches the network, so it is the slow part.
+`kb_status` call, one `npm view` registry lookup (Package updates row) — the
+one part of step 1 that touches the network, so it is the slow part.
 Never write, never install, never ask a question in this step.
 
 Print one checkbox list, one line per row — the environment rows first, then
@@ -60,7 +60,7 @@ one line per configuration item the CLI's `agents[]`/`drift[]` reports:
 - [x] vendor/ — shopware/core 6.7.13.0
 - [ ] vendor/ — vendor/bin/phpunit missing (tree built --no-dev)
 - [ ] Node — 18.x (need >= 20)
-- [-] Visual editors (optional) — Specs Editor not installed, Tender tool not installed
+- [-] Visual editors (optional) — Specs Editor installed, Tender tool declined
 - [x] shopware-cli — 0.16.10
 - [x] KB MCP — platform: implemented
 - [ ] Acceptance-test project — tests/acceptance/ missing
@@ -68,7 +68,7 @@ one line per configuration item the CLI's `agents[]`/`drift[]` reports:
 - [ ] ATS env — tests/acceptance/.env missing
 - [x] Plugin tests — AhCheckout: phpunit + jest ok
 - [ ] Project wiki — docs/project-wiki/ missing
-- [ ] Package updates — harness 0.1.0 → 0.1.3, Specs Editor not installed
+- [ ] Package updates — harness 0.1.0 → 0.1.3
 - [ ] Installer config — .mcp.json entry: drift (from CLI status)
 ```
 

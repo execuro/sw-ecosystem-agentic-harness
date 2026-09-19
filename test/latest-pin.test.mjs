@@ -8,7 +8,6 @@ import { test } from 'node:test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { PKG_NAME, PKG_ROOT } from '../lib/content.mjs';
-import { EXTRA_COMPONENTS } from '../lib/extra-components.mjs';
 
 function markdownFiles(dir) {
   const out = [];
@@ -64,18 +63,43 @@ test('lib/guide.mjs names @latest as the upgrade path, without repinning RUN', (
     'guide.mjs RUN constant changed shape — it must keep interpolating the running CLI\'s own version');
 });
 
-// README.md's `npm i -D <package>@<version>` lines for the two extra
-// components must name the version EXTRA_COMPONENTS currently pins —
-// otherwise the README tells the user to install a version the probe will
-// reject.
-test('README extra-component install lines are pinned to what EXTRA_COMPONENTS pins', () => {
-  const text = readFileSync(join(PKG_ROOT, 'README.md'), 'utf8');
-  for (const c of EXTRA_COMPONENTS) {
-    const escaped = c.pkg.replace(/[/@]/g, '\\$&');
-    const re = new RegExp(`npm i -D ${escaped}@(\\S+)`);
-    const match = text.match(re);
-    assert.ok(match, `README.md has no "npm i -D ${c.pkg}@<version>" line`);
-    assert.equal(match[1], c.version,
-      `README.md pins ${c.pkg} to ${match[1]}, but EXTRA_COMPONENTS pins ${c.version}`);
+// Every OTHER `@execuro-sw-ecosystem/*` package a skill invokes — the Specs
+// Editor and the Tender Discovery Tool — must be `@latest` too. They are
+// installed and updated by `sw-setup`, not pinned by this package, so a
+// frozen version here would invoke a copy older than the skill the user has.
+const ECOSYSTEM = /npx[^\n]*?(@execuro-sw-ecosystem\/[a-z0-9-]+)(@[A-Za-z0-9.-]+)?/g;
+
+test('every npx invocation of a sibling ecosystem package is pinned to @latest', () => {
+  const offenders = [];
+  for (const file of markdownFiles(join(PKG_ROOT, 'skills'))) {
+    readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+      for (const match of line.matchAll(ECOSYSTEM)) {
+        if (match[2] === '@latest') continue;
+        offenders.push(`${file.replace(PKG_ROOT + '/', '')}:${i + 1}  ${line.trim().slice(0, 120)}`);
+      }
+    });
   }
+  assert.deepEqual(offenders, [],
+    `ecosystem npx invocations not pinned to @latest:\n${offenders.join('\n')}`);
+});
+
+// The `allowed-tools:` frontmatter line is a permission grant, matched
+// literally by the host: `Bash(npx -y <pkg>@0.1.0 *)` DENIES an `@latest`
+// call, silently, at runtime. It drifted once because the checks above only
+// ever looked at prose, so it is asserted on its own here.
+test('every Bash(npx ...) grant in a skill\'s allowed-tools is pinned to @latest', () => {
+  const offenders = [];
+  for (const file of markdownFiles(join(PKG_ROOT, 'skills'))) {
+    for (const line of readFileSync(file, 'utf8').split('\n')) {
+      if (!line.startsWith('allowed-tools:')) continue;
+      for (const grant of line.matchAll(/Bash\(npx[^)]*\)/g)) {
+        for (const match of grant[0].matchAll(/(@execuro-sw-ecosystem\/[a-z0-9-]+)(@[A-Za-z0-9.-]+)?/g)) {
+          if (match[2] === '@latest') continue;
+          offenders.push(`${file.replace(PKG_ROOT + '/', '')}  ${grant[0]}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(offenders, [],
+    `allowed-tools npx grants not pinned to @latest:\n${offenders.join('\n')}`);
 });

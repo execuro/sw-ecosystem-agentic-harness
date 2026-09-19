@@ -135,7 +135,7 @@ test('a status with drift never collapses it into a count', () => {
     ok: true, command: 'status', version: '0.1.6', installed_version: '0.1.6',
     state: 'drift', next_step: 'Run plan.', help: ['sw-ecosystem-agentic-harness plan'],
     agents: [{ id: 'claude-code', detected: true, state: 'drift', installed: { skills: 10, agents: 7 }, notes: [] }],
-    extra_components: [], declined: [], manual: [], errors: [],
+    declined: [], manual: [], errors: [],
     drift: [{ target: '.mcp.json', reason: 'edited since install', remedy: 're-run apply --yes' }],
   });
   assert.match(text, /\.mcp\.json/);
@@ -150,7 +150,7 @@ test('a status conflict is labelled a conflict, not an edit the user made', () =
     ok: true, command: 'status', version: '0.1.6', installed_version: '0.1.6',
     state: 'conflict', next_step: 'Run plan.', help: ['sw-ecosystem-agentic-harness plan'],
     agents: [{ id: 'claude-code', detected: true, state: 'conflict', installed: { skills: 10, agents: 7 }, notes: [] }],
-    extra_components: [], declined: [], manual: [], errors: [],
+    declined: [], manual: [], errors: [],
     drift: [
       { target: '.claude/agents/foreign.md', state: 'conflict', reason: 'written by someone else', remedy: 'move it aside, then re-run apply' },
       { target: '.mcp.json', state: 'drift', reason: 'edited since install', remedy: 're-run apply --yes' },
@@ -178,7 +178,7 @@ test('status names only the agents this project actually installed', () => {
       { id: 'codex', detected: false, state: 'absent', installed: {}, notes: [] },
       { id: 'cursor', detected: false, state: 'absent', installed: {}, notes: [] },
     ],
-    extra_components: [], drift: [], declined: [], manual: [], errors: [],
+    drift: [], declined: [], manual: [], errors: [],
   });
   assert.match(text, /Claude Code/);
   for (const name of ['Codex', 'Cursor', 'GitHub Copilot', 'copilot']) {
@@ -243,4 +243,17 @@ test('ANSI is emitted only when the caller says the stream is a terminal', () =>
   const body = applyBody();
   assert.doesNotMatch(render(body), /\[/);
   assert.match(render(body, { color: true }), /\[/);
+});
+
+test('a run that only moved the lock says so instead of claiming nothing happened', () => {
+  const text = render({
+    ok: true, command: 'apply',
+    summary: { created: 0, updated: 0, unchanged: 12, conflict: 0, drift: 0, manual: 0, failed: 0 },
+    lock_file: 'var/sw-ai-sdk/harness.lock.json',
+    migrated: [{ target: '.gitignore', detail: 'removed the managed `.sw-ai-sdk/` line — the lock now lives in var/sw-ai-sdk/, which this project already ignores' }],
+    agents: [], actions: [], manual: [], errors: [],
+    next_step: 'Restart the coding agents listed in `help`.', help: [],
+  }, { color: false });
+  assert.match(text, /already up to date/);
+  assert.match(text, /\.gitignore: removed the managed/);
 });

@@ -5,7 +5,7 @@ The Tender Discovery Tool: a local live page for one analysis document. The skil
 **The protocol is not in this file.** Run
 
 ```
-npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0 guide
+npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@latest guide
 ```
 
 and follow it: it is the single source for the xlsx import, start, the batch kinds, poll, emit, redelivery and close, and every command ends with a `next_step:` line. An installed copy of any of that goes stale against a newer CLI. This file adds only what `guide` cannot know — the install gate, the row-batch setting, which opening batch to post, the subagent brief, the follow-up queueing grammar and the close report.
@@ -58,7 +58,7 @@ Invoke it with the Skill tool: skill "sw-discover-tender", args "<analysis path>
 Append the session's row-batch setting to the args when it is not the default: <--batch n | --batch all>.
 If the Skill tool is not available to you, read the SKILL.md of the `sw-discover-tender` skill and follow it exactly, including its "Editor mode" section.
 Rules: never ask the user a question with a structured question tool (Claude Code: `AskUserQuestion`; Codex: `request_user_input`); every gap becomes a §5 block with options; emit progress with
-  npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0 emit progress "<step>" --batch <id>
+  npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@latest emit progress "<step>" --batch <id>
   before each procedure step and before/after each agent wave; never change a [x] or [-] except by reconciling it; keep every [ ] line whose
   Evidence / risk or Risk to says "partner"; frozen accepted/rejected lines stay byte-identical; never edit the client's file.
 Context — last chat entries (newest last):
@@ -111,5 +111,5 @@ Invoked by the editor session (`reference/editor-session.md` in this skill's dir
 - **Notes.** `comment` notes carry `block`, `blockKind`, `path` (section breadcrumb), `line`–`endLine`, `md` (the block's source line), `quote`, `hash` and sometimes `selection` (the exact text the user highlighted). Open the file at that range under that path, confirm the text matches `md`, fall back to searching for `quote` when lines shifted. By `blockKind`: `req` → the note questions the class, mechanism or estimate: re-spawn the architect for that row only and rewrite the `req` line; `assume` / `global` → rewrite the statement as a new `[ ]` line (a frozen line is never edited; a proposed line may be replaced in place), or adjust `PD saved` when the note is about the figure; `clarify` → the decision text; `question` → reword or re-option the block (keep its id); `section` / `paragraph` / `row` → that text. `free` notes and `chat` are the briefing for the run. No PD figure ever comes from the page: a note asking for a different number is an architect question, not a hand edit.
 - **A note on a row still `queued` or `analysing`** is not an immediate re-spawn: carry it into that row's own estimate batch and answer it there.
 - **Preserve on every write.** Frozen `accepted <date>` / `rejected <date>` lines byte-identical; every `[x]` / `[-]` untouched except by reconciling it; partner-proposed `[ ]` lines; `X-n` exclusions the page added; §1.1, §1.2, §8, §9 and the nine section headings; the frontmatter block. Rewrite lines in place, never regenerate from the template. Every write must leave the document parseable — the page re-renders on each one.
-- **Progress.** `npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0 emit progress "<step>" --batch <id>` before each procedure step and before and after each spawn wave; the page shows it. Row status carries the rest: `queued` → `analysing` → `estimated`.
+- **Progress.** `npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@latest emit progress "<step>" --batch <id>` before each procedure step and before and after each spawn wave; the page shows it. Row status carries the rest: `queued` → `analysing` → `estimated`.
 - **Report.** The 8-line report of step 8 with its `next:` line (plus the 3 export lines); the editor posts it to the page. Never paste the document into the report.

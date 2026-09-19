@@ -41,7 +41,7 @@ scripts** on install, which removes a large part of the usual npm attack
 surface.
 
 Out of scope: vulnerabilities in the coding agents themselves, in the
-separately published extra components (they have their own repositories
+separately published visual editors (they have their own repositories
 and their own reporting), or in a third-party MCP server this package merely
 registers, such as Playwright's (report those upstream).
 

@@ -28,10 +28,10 @@ const COMMANDS = {
 
 const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
 
-  install    [--agent <a>] [--scope project|user] [--root <path>] [--no-extra-components]
+  install    [--agent <a>] [--scope project|user] [--root <path>]
   status     [--agent <a>] [--scope project|user] [--root <path>]
-  plan       [--agent <a>] [--scope project|user] [--root <path>] [--no-extra-components]
-  apply      --yes [--agent <a>] [--scope project|user] [--root <path>] [--no-extra-components]
+  plan       [--agent <a>] [--scope project|user] [--root <path>]
+  apply      --yes [--agent <a>] [--scope project|user] [--root <path>]
   uninstall  --yes [--agent <a>] [--scope project|user] [--root <path>]
   guide      print the install protocol
 
@@ -49,8 +49,10 @@ const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
   --scope defaults to project: nothing is written under your home directory
   unless you ask for it. --root defaults to the current directory.
 
-  --no-extra-components skips the two optional extra-component skills (Specs
-  Editor, Tender Discovery Tool) even when the package is present locally.
+  The two optional visual editors (Specs Editor, Tender Discovery Tool) are
+  not this CLI's business: each ships its own skill inside its own npm
+  package, and the sw-setup skill offers, installs, updates and removes
+  them.
 
   --json      print the result object instead of the human summary
   --verbose   include the per-file detail --json carries

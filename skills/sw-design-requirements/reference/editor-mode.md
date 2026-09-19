@@ -8,8 +8,8 @@ Invoked as `<path> --editor-session <url> --batch <batch.json>` — one note bat
 - **Full pass on request only.** A review request ("check the whole PRD", "reconcile") runs the full flow: step 2, §11 gap review, missing options/marks/notes filled. Otherwise touched questions get options.
 - **Scoped agent runs.** Spawn `sw-product-manager`/`sw-shopware-architect` only when a note touches feasibility, §10, or a §11 block changes (one brief per run); else edit, anchor, log alone.
 - **Preserve on every write:** status tags on item ids (`- **FR-3** [done] …`, also `AC-n`/`BR-n`), the `Diagram:` line, the §11 question blocks and ticks. Rewrite in place; never regenerate.
-- **Diagrams.** Domain diagram: `specs/NNNN-slug.domain.graph.json` (business concepts only). Write/update, run `npx -y @execuro-sw-ecosystem/sw-specs-editor@0.1.0 diagram specs/NNNN-slug.domain.graph.json specs/NNNN-slug.domain.excalidraw`, ensure §4 carries `Diagram: specs/NNNN-slug.domain.excalidraw`; never write `.excalidraw` directly, first request only.
-- **Progress.** Before each step, before/after each spawn: `npx -y @execuro-sw-ecosystem/sw-specs-editor@0.1.0 emit progress "<step>" --batch <id> --doc prd`.
+- **Diagrams.** Domain diagram: `specs/NNNN-slug.domain.graph.json` (business concepts only). Write/update, run `npx -y @execuro-sw-ecosystem/sw-specs-editor@latest diagram specs/NNNN-slug.domain.graph.json specs/NNNN-slug.domain.excalidraw`, ensure §4 carries `Diagram: specs/NNNN-slug.domain.excalidraw`; never write `.excalidraw` directly, first request only.
+- **Progress.** Before each step, before/after each spawn: `npx -y @execuro-sw-ecosystem/sw-specs-editor@latest emit progress "<step>" --batch <id> --doc prd`.
 - **Report:** changed blocks, answers (Q ids → anchor), top remaining gap or `none`, confidence %, status, `Agents: <list or none>`.
 
 Graph shape (`bin/cli.mjs diagram` input): `{ "title", "direction": "LR", "groups": [{id,label}], "nodes": [{id,label,type: entity|actor|service|external|event|store, group?, note?}], "edges": [{from,to,label?}] }`.

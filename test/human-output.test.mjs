@@ -166,7 +166,7 @@ test('--json still prints one parseable object per command, with a next_step', (
 
     const status = parse(run(['status', '--root', root]));
     for (const key of ['state', 'installed_version', 'inventory', 'agents',
-      'extra_components', 'drift', 'declined', 'manual', 'errors']) {
+      'drift', 'declined', 'manual', 'errors']) {
       assert.ok(key in status, `status --json lost the ${key} key`);
     }
     assert.equal(status.agents.length, 4, 'the JSON still reports every supported agent');

@@ -1,7 +1,9 @@
-// The editor CLIs are separate npm packages. A skill must invoke
-// them through a pinned `npx`, never as a bare binary — a bare name only
+// The editor CLIs are separate npm packages. A skill must invoke them
+// through `npx ...@latest`, never as a bare binary — a bare name only
 // resolves on a machine where someone ran `npm link`, which is nobody's
-// machine after this ships.
+// machine after this ships. `sw-setup` installs and updates these packages
+// with `@latest`, so a skill that pinned an exact version would run a CLI
+// older than the skill file it came with.
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -53,16 +55,18 @@ test('no skill invokes an editor CLI as a bare binary', () => {
     `bare editor-CLI invocations found:\n${offenders.join('\n')}`);
 });
 
-test('every editor CLI reference is pinned to an exact version', () => {
+test('every editor CLI reference carries an explicit @latest tag', () => {
   const offenders = [];
   for (const file of markdownFiles(join(PKG_ROOT, 'skills'))) {
     readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
       for (const pkg of Object.values(TOOLS)) {
         if (!line.includes(pkg)) continue;
-        // A floating range would drift out from under the skill's prose.
-        const pinned = new RegExp(`${pkg.replace(/[/@]/g, '\\$&')}@\\d+\\.\\d+\\.\\d+`);
-        const bare = new RegExp(`${pkg.replace(/[/@]/g, '\\$&')}(?!@\\d)`);
-        if (pinned.test(line)) continue;
+        // A bare name lets npx reuse whatever is already in its cache or in
+        // node_modules; an exact pin goes stale the moment sw-setup updates
+        // the editor, which it does with `@latest`. Only `@latest` is both.
+        const tagged = new RegExp(`${pkg.replace(/[/@]/g, '\\$&')}@latest\\b`);
+        const bare = new RegExp(`${pkg.replace(/[/@]/g, '\\$&')}(?!@)`);
+        if (tagged.test(line)) continue;
         // A prose mention of the package name with no version is fine.
         if (!/npx|npm i|npm install/.test(line)) continue;
         if (bare.test(line)) {
@@ -72,10 +76,10 @@ test('every editor CLI reference is pinned to an exact version', () => {
     });
   }
   assert.deepEqual(offenders, [],
-    `unpinned editor-CLI references found:\n${offenders.join('\n')}`);
+    `editor-CLI references not tagged @latest:\n${offenders.join('\n')}`);
 });
 
-test('the allowed-tools lines permit the pinned npx form', () => {
+test('the allowed-tools lines permit the @latest npx form', () => {
   const expectations = {
     // sw-specs-editor itself is not here: it ships inside its own npm package,
     // which owns the skill that drives it.
@@ -89,8 +93,8 @@ test('the allowed-tools lines permit the pinned npx form', () => {
     assert.ok(line, `${skill}: no allowed-tools line`);
     assert.doesNotMatch(line, new RegExp(`Bash\\((sw-specs-editor|sw-tender-discovery-tool) `),
       `${skill}: allowed-tools still permits a bare editor CLI`);
-    assert.ok(line.includes(`npx -y ${pkg}@`),
-      `${skill}: allowed-tools does not permit the pinned npx form for ${pkg}`);
+    assert.ok(line.includes(`npx -y ${pkg}@latest`),
+      `${skill}: allowed-tools does not permit the @latest npx form for ${pkg}`);
   }
 });
 

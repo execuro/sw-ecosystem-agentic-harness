@@ -59,45 +59,88 @@ directly again. Expect `agents[]` in every output this skill reads.
 
 ## 3. Visual editors (optional)
 
-The Specs Editor and the Tender Discovery Tool are **optional add-ons**, not
-part of this plugin. The installer CLI installs them itself, per host — this
-row never runs an extra component's own install command.
+The Specs Editor and the Tender Discovery Tool are **optional add-ons** in
+their own npm packages. Each ships its own skill and installs it itself. The
+installer CLI has nothing to do with them: it does not detect them, does not
+report them, and never fetches them — this skill owns their whole lifecycle,
+and this row is the only place that lifecycle lives.
 
-So this row never blocks readiness. It asks.
+So this row never blocks readiness, and it never probes. It asks.
 
-- **Check:** read `extra_components[]` from the `status` output the skill already
-  ran in step 1 — each entry's `available`, `installed_for` (the coding agents
-  it is placed in), and `install` (the npm command, when missing). Never probe a
-  path and never run an extra component by hand; the CLI owns both.
-- **Ticked:** `[x]` when an extra component's `available` is true and
-  `installed_for` includes this agent; `[-]` when the user has declined it.
-  Only an unanswered offer shows `[ ]`, and even then it does not hold the
-  table open — report it as optional and move on.
-- **Fix:** offer each missing extra component inside step 3's single question,
-  naming what it buys, not how it works: "Specs Editor — review a PRD or
-  tech spec on a live page, with notes, question answers and diagrams.
-  Install?" — and "Tender Discovery Tool — read a client tender workbook,
-  confirm its column mapping and review the analysis on a live page.
-  Install?" On yes, for each accepted one: `npm i -D <package>@0.1.0` (the
-  `package` field from `extra_components[]`), then re-run
+- **Check:** read `agents[]` from the `status --json` output step 1 already
+  ran. Each entry carries `id` and `skills_dir` — the directory that agent
+  actually reads skills from. For each agent whose `state` is not `absent`,
+  list `<skills_dir>/sw-specs-editor/` and
+  `<skills_dir>/sw-tender-discovery-tool/`: a `SKILL.md` there means that
+  editor is installed for that agent. That directory read is the whole check —
+  never run an editor's CLI to find out, never `npm view`, never `npx
+  --no-install`. All three reach the network, and a missing editor is a normal
+  state, not something to go looking for. Also read
+  `sw-setup-editors.json` from the installer's own state directory if it
+  exists — this skill's note of what the user has already declined
+  (`{"sw-specs-editor": "declined"}`). That directory is whatever `lock_file`
+  in the step-1 `status --json` output names, minus the file name — normally
+  `var/sw-ai-sdk/`, which a Shopware project already ignores. Read the path;
+  never hard-code it.
+- **Ticked:** `[x]` when the editor's `SKILL.md` is present in every
+  non-`absent` agent's `skills_dir`; `[-]` when the note records a decline, or
+  when it is installed for some agents but not all (say which). `[ ]` only for
+  an editor that is neither installed nor declined — and even then it does not
+  hold the table open: report it as optional and move on.
+- **Fix:** offer both inside step 3's single question, naming what each buys,
+  not how it works:
+  - "**Specs Editor** — review a PRD or tech spec on a live page, with notes,
+    answered questions and Excalidraw diagrams. It is what backs `--editor` on
+    `sw-design-requirements` and `sw-design-solution`. Install?"
+  - "**Tender Discovery Tool** — read a client tender workbook, confirm its
+    column mapping and review the analysis on a live page. It is what backs
+    `--editor` and the `.xlsx` import on `sw-discover-tender`. Install?"
+
+  On yes, for each accepted editor, run its own installer once per
+  non-`absent` agent, passing that agent's `skills_dir` from `status --json`:
 
   ```
-  npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest apply --yes --json
+  npx -y @execuro-sw-ecosystem/sw-specs-editor@latest install-skill --target <skills_dir>
+  npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@latest install-skill --target <skills_dir>
   ```
 
-  which places one `SKILL.md` per extra component into each selected agent's own
-  skills directory, records it, and removes it again on uninstall. **Never
-  run the extra component's own `install-skill`** — with no `--target` it
-  defaults to Claude Code's own skills directory, wrong for a Codex, Copilot
-  or Cursor install. Needs the Node row ticked.
-- **On no:** record the decline and do not re-ask on the next run. `apply`
-  keeps reporting that skill as `skipped` — the intended steady state, not a
-  fault. `--editor` on `sw-design-requirements` / `sw-design-solution` /
-  `sw-discover-tender` then stops with one line naming this skill.
-- **Blocks:** Specs Editor missing → `sw-design-requirements --editor`,
-  `sw-design-solution --editor`, the `sw-specs-editor` skill. Tender
-  Discovery Tool missing → `sw-discover-tender --editor` and its `.xlsx`
-  import, plus the `sw-tender-discovery-tool` skill.
+  Never omit `--target`: with no target these default to Claude Code's own
+  skills directory, which is wrong for a Codex, Copilot or Cursor install.
+  Never pass a hard-coded path either — `skills_dir` is what that agent reads,
+  and for Cursor it is deliberately Claude's tree when one exists. Needs the
+  Node row ticked. Report each command's own output; a failure is that
+  editor's failure, never an unticked environment.
+- **Updating:** re-run exactly the same `install-skill` line. `@latest`
+  fetches the newest package and the editor's own installer recognises a copy
+  that is already current and says so, so re-running is idempotent and is the
+  one command that updates an editor. There is nothing else to run and nothing
+  to un-install first.
+- **Removal:** the same shape with `uninstall-skill`:
+
+  ```
+  npx -y @execuro-sw-ecosystem/sw-specs-editor@latest uninstall-skill --target <skills_dir>
+  ```
+
+  `uninstall-skill` is newer than `install-skill`. An editor package that
+  predates it answers with "unknown command", "unknown subcommand" or a usage
+  dump, and `npx` may exit non-zero. That is not a failure of this row and not
+  a reason to delete anything by hand: report it in one line — "this version
+  of the Specs Editor cannot remove its own skill; update it with `npx -y
+  @execuro-sw-ecosystem/sw-specs-editor@latest install-skill --target
+  <skills_dir>` and re-run the removal" — and carry on with the other agents
+  and the other editor.
+- **On no:** write the decline to `sw-setup-editors.json` in the directory
+  `lock_file` names (create the file, and that directory, if absent; it is
+  never tracked) and do not
+  offer that editor again on any later run. The user asking for it by name is
+  the only thing that re-opens it — then delete its key and install. `--editor`
+  on `sw-design-requirements` / `sw-design-solution` / `sw-discover-tender`
+  stops with one line naming this skill, which is the intended steady state,
+  not a fault.
+- **Blocks:** nothing. Specs Editor missing → `sw-design-requirements
+  --editor`, `sw-design-solution --editor` and the `sw-specs-editor` skill are
+  unavailable. Tender Discovery Tool missing → `sw-discover-tender --editor`
+  and its `.xlsx` import, plus the `sw-tender-discovery-tool` skill.
 
 ## 4. shopware-cli
 
@@ -220,8 +263,9 @@ So this row never blocks readiness. It asks.
   var/verification-screenshots/
   ```
   (`/specs/.editor/` and `/specs/.rfp/` are already present in this project's
-  `.gitignore`; check the other four independently. `.sw-ai-sdk/` is not on
-  this list — the installer CLI adds that one itself.)
+  `.gitignore`; check the other four independently. The installer's own state
+  is not on this list — it lives in `var/sw-ai-sdk/`, which the
+  `###> shopware/core ###` recipe block already ignores through `/var/*`.)
 
   Do **not** add `specs/<rfp-basename>/`. The tender tool's normalised source
   export and its `import-map.json` live there and are committed on purpose —
@@ -237,39 +281,32 @@ So this row never blocks readiness. It asks.
 
 ## 12. Package updates (optional)
 
-The KB MCP is excluded — it is registered as `@latest` and re-resolves on
-every host launch, so there is nothing to update (see row 5). This row covers
-only the three versioned packages: the harness itself, the Specs Editor and
-the Tender Discovery Tool.
+This row covers **the harness package only**. The KB MCP is excluded — it is
+registered as `@latest` and re-resolves on every host launch, so there is
+nothing to update (see row 5). The two visual editors are excluded too: they
+are no longer version-matched against a harness pin, they are invoked as
+`@latest` everywhere, and row 3's `install-skill` line both installs and
+updates them. Never report an editor version here.
 
 This row never blocks readiness. It folds into step 3's single question.
 
-- **Check:** three `npm view <pkg> version` calls, each with a 10-second
-  timeout — `npm view @execuro-sw-ecosystem/sw-ecosystem-agentic-harness
-  version`, `npm view @execuro-sw-ecosystem/sw-specs-editor version`,
-  `npm view @execuro-sw-ecosystem/sw-tender-discovery-tool version`. Installed
-  versions come from three different places: the harness's from
-  `installed_version` in the `status` JSON the skill already ran in step 1
-  (from the lock file); the Specs Editor's from `version` in
-  `node_modules/@execuro-sw-ecosystem/sw-specs-editor/package.json`; the
-  Tender Discovery Tool's the same way, in its own `node_modules` path. A
-  failed or timed-out `npm view` call reports "could not check" for that
-  package only — never an unticked row, never an error, never a blocked run.
-  No network is a normal condition, not a fault.
-- **Ticked:** all three packages at their target version — the harness at
-  npm's latest, each editor at the pin its own `status` output names
-  (`extra_components[].version`), not at npm's latest.
-- **Unticked:** one line per stale package, `installed → available` — e.g.
-  `harness 0.1.1 → 0.1.3`, `Specs Editor 0.1.0 → 0.1.0 (pinned)` when current.
-  An editor whose npm latest is ahead of the pin is a harness-release lag,
-  not a missing update: report it, but do not offer to install that newer
-  version — only a newer harness can raise the pin.
-- **Fix:** update the harness first — a newer harness may carry newer pins:
-  `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install`.
+- **Check:** one `npm view @execuro-sw-ecosystem/sw-ecosystem-agentic-harness
+  version` call with a 10-second timeout. The installed version is
+  `installed_version` in the `status --json` output step 1 already ran (it
+  comes from the lock file). A failed or timed-out `npm view` reports "could
+  not check" and nothing else — never an unticked row, never an error, never a
+  blocked run. No network is a normal condition, not a fault.
+- **Ticked:** the installed harness version equals npm's latest.
+- **Unticked:** one line, `installed → available` — e.g. `harness 0.1.1 →
+  0.1.8`.
+- **Fix:**
+
+  ```
+  npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install
+  ```
+
   That command rewrites the installed `sw-setup` skill itself, so the newer
-  skill takes effect on the next run — which step 3 already causes by
-  re-running step 1. Re-read the new `status` output, then for each stale
-  editor run the same `npm i -D <package>@<version>` shape row 3's Fix uses,
-  with `<package>` and `<version>` taken from that editor's own
-  `extra_components[]` entry in the re-read `status`.
+  skill takes effect on the next run — which step 3 already causes by re-running
+  step 1. For the editors, see row 3: re-running their `install-skill` line is
+  their update.
 - **Blocks:** nothing. Out of date is not broken.

@@ -3,7 +3,7 @@ name: sw-design-solution
 description: Turn a PRD (specs/NNNN-slug.md) into a technical spec at specs/NNNN-slug-spec.md. Applies TDD — every acceptance criterion gets an implementation plan and e2e coverage, with Shopware toolchain (shopware-cli/PHPStan/ESLint/Stylelint) conventions baked into decisions up front. Runs a clarification loop for the gaps that change the implementation plan, and on the user's say-so extracts project-wide architecture/stack decisions into ADR files (specs/NNNN-slug-adr-<topic>.md) that gate readiness while proposed. Pre-checks vendor/ and the KB before it starts. Use when asked to write, draft, refine, or continue a tech spec / implementation plan. Never edits the source PRD or answers business/requirements questions — that's sw-design-requirements.
 when_to_use: Trigger phrases — "write the tech spec for PRD 0007", "create an implementation plan for this PRD", "draft the spec", "continue spec 0007", "is this spec ready for implementation".
 argument-hint: '[specs/NNNN-slug.md | specs/NNNN-slug-spec.md] [--editor]'
-allowed-tools: Read Write Edit Glob Grep AskUserQuestion Agent Skill Bash(ls *) Bash(npx -y @execuro-sw-ecosystem/sw-specs-editor@0.1.0 *) WebSearch WebFetch mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
+allowed-tools: Read Write Edit Glob Grep AskUserQuestion Agent Skill Bash(ls *) Bash(npx -y @execuro-sw-ecosystem/sw-specs-editor@latest *) WebSearch WebFetch mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
 ---
 
 # sw-design-solution

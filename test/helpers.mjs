@@ -4,10 +4,10 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
-  chmodSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync,
+  mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve, sep } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -93,12 +93,22 @@ export function mtimes(root, skip = /harness\.lock\.json$/) {
   return out;
 }
 
+/** The lock, from wherever this root keeps it — `var/` when it has one. */
 export function readLock(root) {
-  try {
-    return JSON.parse(readFileSync(join(root, '.sw-ai-sdk', 'harness.lock.json'), 'utf8'));
-  } catch {
-    return null;
+  for (const dir of ['var/sw-ai-sdk', '.sw-ai-sdk']) {
+    try {
+      return JSON.parse(readFileSync(join(root, ...dir.split('/'), 'harness.lock.json'), 'utf8'));
+    } catch { /* try the other location */ }
   }
+  return null;
+}
+
+/** A throwaway repository that looks like a Shopware project: it has a `var/`,
+ * which the `shopware/core` Flex recipe ignores wholesale. */
+export function shopwareRepo(options = {}) {
+  const root = hostRepo(options);
+  mkdirSync(join(root, 'var'), { recursive: true });
+  return root;
 }
 
 export function readJson(root, path) {
@@ -118,47 +128,4 @@ export function exists(root, path) {
   }
 }
 
-/**
- * A fake `npx` on `PATH` that answers `--no-install <spec> install-skill
- * --print` for the extra-component ids named in `bodies` (keyed by id, e.g.
- * `sw-specs-editor`) and exits 1 for everything else — the shape of a real
- * `npx --no-install` against a package that is not installed locally. Every
- * invocation's argv is appended to `logFile` as one JSON array per line, so a
- * test can assert what was — or was not — spawned.
- */
-export function fakeNpx({ bodies = {} } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), 'sw-fakenpx-'));
-  const logFile = join(dir, 'argv.log');
-  writeFileSync(logFile, '');
-  const script = `#!/usr/bin/env node
-const fs = require('fs');
-const args = process.argv.slice(2);
-fs.appendFileSync(${JSON.stringify(logFile)}, JSON.stringify(args) + '\\n');
-const bodies = ${JSON.stringify(bodies)};
-const spec = args[1] || '';
-const id = spec.replace(/^.*\\//, '').replace(/@\\d+\\.\\d+\\.\\d+$/, '');
-if (args[0] === '--no-install' && args[2] === 'install-skill' && args[3] === '--print'
-    && Object.prototype.hasOwnProperty.call(bodies, id)) {
-  process.stdout.write(bodies[id]);
-  process.exit(0);
-}
-process.stderr.write('npm error 404 Not Found - ' + spec + ' is not in this registry\\n');
-process.exit(1);
-`;
-  const bin = join(dir, 'npx');
-  writeFileSync(bin, script);
-  chmodSync(bin, 0o755);
-  return { dir, logFile };
-}
-
-/** `PATH` with the fake `npx` shim ahead of everything else. */
-export function withNpx(shimDir) {
-  return { ...process.env, PATH: `${shimDir}${sep === '\\' ? ';' : ':'}${process.env.PATH}` };
-}
-
-/** Read a fake-npx argv log back as an array of argv arrays. */
-export function readArgvLog(logFile) {
-  return readFileSync(logFile, 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l));
-}
-
-export { join, sep };
+export { join };

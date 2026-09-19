@@ -43,16 +43,20 @@ identity, not an npm package name — and can be run standalone in any stdio MCP
 client without this harness.
 
 The two editors are **optional add-ons**, and each ships its own skill inside
-its package rather than here. `sw-setup` offers to install them; a host that
-declines is fully set up without them, and `--editor` on `sw-design-requirements`,
-`sw-design-solution` or `sw-discover-tender` then stops with one line saying so.
+its package rather than here. They are not this CLI's business at all: it
+neither detects nor installs them. `sw-setup` owns their whole lifecycle —
+it offers them, and installs, updates and removes each one with that
+package's own `install-skill`/`uninstall-skill --target <skills dir>`. A
+project that declines is fully set up without them, and `--editor` on
+`sw-design-requirements`, `sw-design-solution` or `sw-discover-tender` then
+stops with one line saying so.
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
 | `install` | installs into the resolved coding agent(s) (see Flags below); the same as `apply --yes` |
-| `status` | read-only; what is installed, what drifted, which optional extra components are present |
+| `status` | read-only; what is installed, what drifted, and each agent's `skills_dir` |
 | `plan` | the exact changes, written as a diff; writes nothing |
 | `apply --yes` | performs them |
 | `uninstall --yes` | removes what the lock file records |
@@ -61,8 +65,7 @@ declines is fully set up without them, and `--editor` on `sw-design-requirements
 Flags: `--agent claude-code|codex|copilot|cursor` (repeatable), `--scope
 project|user` (default `project`), `--root <path>` (default the current
 directory), `--yes` (required by `apply` and `uninstall` — `install` implies
-it), `--no-extra-components` (skip detection of the optional editor
-packages), `--json` and `--verbose` (see Output below).
+it), `--json` and `--verbose` (see Output below).
 
 `install`/`apply` resolve which coding agent(s) to write into, in order:
 `--agent` if given; else the agents a lock file already records (a re-run
@@ -118,6 +121,17 @@ unless you ask.
 `AGENTS.md` gets a managed block too — Codex, Copilot and Cursor read it, and
 Codex never reads `CLAUDE.md`.
 
+The installer's own state — the lock file recording what it wrote — goes to
+`var/sw-ai-sdk/harness.lock.json`. A Shopware project already ignores the whole
+of `var/` through the `shopware/core` Flex recipe (`/var/*`) and already keeps
+its machine-local state there, so the repository root stays clean and **no
+`.gitignore` line is written at all**. A root with no `var/` — `--scope user`
+under your home directory, or a checkout that is not a Shopware project —
+falls back to `.sw-ai-sdk/` and gets the managed `.gitignore` line as before.
+An install recorded at the old path is moved on the next `install`, which also
+takes back the `.gitignore` line it no longer needs; nothing is reinstalled and
+no declined rule is forgotten.
+
 ### What it will not do
 
 - **It never overwrites a file it did not install.** A file already at one of
@@ -137,7 +151,7 @@ Undo everything with:
 npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest uninstall --yes
 ```
 
-It removes exactly what the lock file at `.sw-ai-sdk/harness.lock.json` records,
+It removes exactly what the lock file at `var/sw-ai-sdk/harness.lock.json` records,
 keeps anything you hand-edited, and tells you what it kept.
 
 ### From a skill
@@ -160,16 +174,16 @@ Three things update on different schedules.
 | --- | --- |
 | This package — skills, sub-agents, permission rules, MCP registrations | `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install` |
 | The MCP servers (`ShopwareDevKnowledgeBase`, `playwright`) | By themselves. They are registered as `@latest`, so your agent fetches the newest build the next time it starts one. Nothing to run. |
-| Specs Editor, Tender Discovery Tool | You update them. Each has its own line — see below. |
+| Specs Editor, Tender Discovery Tool | `sw-setup` does, by re-running each package's own `install-skill` at `@latest` — see below. |
 
 ### The optional editors
 
-Install or update each at the exact version this release pins — the CLI
-probes for that version and skips the skill if it finds another:
+They are installed, updated and removed by the `sw-setup` skill, not by this
+CLI, and there is no version to match against this package:
 
 ```bash
-npm i -D @execuro-sw-ecosystem/sw-specs-editor@0.1.0
-npm i -D @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0
+npx -y @execuro-sw-ecosystem/sw-specs-editor@latest install-skill --target <skills dir>
+npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@latest install-skill --target <skills dir>
 ```
 
 - `sw-specs-editor` backs the `--editor` flag on `sw-design-requirements` and
@@ -177,9 +191,11 @@ npm i -D @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0
 - `sw-tender-discovery-tool` backs the `--editor` flag and the `.xlsx` import
   on `sw-discover-tender`.
 
-Re-run `install` afterwards so the new skill lands in each host. `status`'s
-`extra_components[]` array reports the pinned `version` and the exact `install`
-command for whichever one is missing (`status --json`).
+`<skills dir>` is the `skills_dir` this CLI reports for that agent in
+`status --json`. Re-running the same line is the update — `@latest` plus the
+editor's own "already current" path makes it idempotent — and
+`uninstall-skill` with the same `--target` removes it. Nothing needs to be
+re-run here afterwards.
 
 Re-running `install` is safe at any time: it rewrites only what it owns,
 leaves anything you hand-edited alone (reported as drift), and records the new
@@ -192,8 +208,8 @@ in this project's `node_modules`, so you would silently keep running the
 version you first installed.
 
 To look before you change anything: `... @latest status` reports
-`installed_version`, any drift, and which extra components are present. It
-writes nothing.
+`installed_version`, any drift, and each agent's `skills_dir`. It writes
+nothing.
 
 ## Prerequisites
 
