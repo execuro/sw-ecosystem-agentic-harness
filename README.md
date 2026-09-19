@@ -51,26 +51,39 @@ declines is fully set up without them, and `--editor` on `sw-design-requirements
 
 | Command | What it does |
 | --- | --- |
-| `install` | installs into the resolved host(s) (see Flags below); the same as `apply --yes` |
+| `install` | installs into the resolved coding agent(s) (see Flags below); the same as `apply --yes` |
 | `status` | read-only; what is installed, what drifted, which optional extra components are present |
 | `plan` | the exact changes, written as a diff; writes nothing |
 | `apply --yes` | performs them |
 | `uninstall --yes` | removes what the lock file records |
 | `guide` | the install protocol, the single source of truth |
 
-Flags: `--host claude-code|codex|copilot|cursor` (repeatable), `--scope
+Flags: `--agent claude-code|codex|copilot|cursor` (repeatable), `--scope
 project|user` (default `project`), `--root <path>` (default the current
 directory), `--yes` (required by `apply` and `uninstall` — `install` implies
-it), and `--no-extra-components` (skip detection of the optional editor
-packages).
+it), `--no-extra-components` (skip detection of the optional editor
+packages), `--json` and `--verbose` (see Output below).
 
-`install`/`apply` resolve which host(s) to write into, in order: `--host` if
-given; else the hosts a lock file already records (a re-run needs no
-question); else, with a terminal attached, an interactive picker; else exit 2
-with the four `install --host <h>` commands as `help` — it never guesses and
-never hangs. `status` and `uninstall` are unaffected by this and keep
-covering every host by default; `plan` writes nothing, so with no `--host` and
-no lock it previews all four and says so.
+`install`/`apply` resolve which coding agent(s) to write into, in order:
+`--agent` if given; else the agents a lock file already records (a re-run
+needs no question); else, with a terminal attached, an interactive picker;
+else exit 2 with the four `install --agent <a>` commands as `help` — it never
+guesses and never hangs. `status` and `uninstall` are unaffected by this and
+keep covering every agent by default; `plan` writes nothing, so with no
+`--agent` and no lock it previews all four and says so.
+
+### Output
+
+`install`, `status`, `plan` and `uninstall` print a short human summary on
+stdout — what changed, grouped by coding agent, and the restart each one
+needs. When nothing changed, that is a single line. Conflicts, drift and
+manual steps are always shown in full, with the file and the remedy, because
+those are the only things you have to act on.
+
+`--json` prints the result object instead: the same body, with the per-file
+detail, a `next_step` on every success and a `help` array of runnable commands
+on every error. **Anything parsing this output must pass `--json`.**
+`--verbose` keeps the human summary but adds the per-file detail.
 
 ## Install
 
@@ -86,9 +99,9 @@ The command's output tells you which ones and how.
 
 `apply` refuses without `--yes`. Neither `apply` nor `install` prompts for
 consent — typing the verb, or passing `--yes`, is the consent — but with no
-`--host`, no existing lock and no terminal (Codex's question tool does not
+`--agent`, no existing lock and no terminal (Codex's question tool does not
 block outside Plan mode, and CI has no terminal either), it exits 2 rather
-than guess. Add `--host claude-code` (repeatable) to install into one agent,
+than guess. Add `--agent claude-code` (repeatable) to install into one agent,
 and `--scope user` to install into your home directory instead of this
 repository. The default scope is the project — nothing is written under `~`
 unless you ask.
@@ -129,10 +142,11 @@ keeps anything you hand-edited, and tells you what it kept.
 
 ### From a skill
 
-`sw-setup` is a stub: it runs `status`, renders the table, asks once, and runs
-`apply --yes`. It deliberately restates none of the protocol, because an
-installed skill file goes stale and the CLI does not. Anything that needs the
-protocol runs:
+`sw-setup` is a stub: it runs `status --json`, renders the table, asks once,
+and runs `apply --yes --json`. A skill always passes `--json`; the bare
+commands print the human summary. It deliberately restates none of the
+protocol, because an installed skill file goes stale and the CLI does not.
+Anything that needs the protocol runs:
 
 ```bash
 npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest guide
@@ -165,12 +179,13 @@ npm i -D @execuro-sw-ecosystem/sw-tender-discovery-tool@0.1.0
 
 Re-run `install` afterwards so the new skill lands in each host. `status`'s
 `extra_components[]` array reports the pinned `version` and the exact `install`
-command for whichever one is missing.
+command for whichever one is missing (`status --json`).
 
 Re-running `install` is safe at any time: it rewrites only what it owns,
 leaves anything you hand-edited alone (reported as drift), and records the new
-version in the lock file. Restart your coding agent afterwards — every host
-reads its configuration at startup.
+version in the lock file. It prints one line when there was nothing to change.
+Restart your coding agent afterwards — every host reads its configuration at
+startup.
 
 `@latest` matters. Without it, `npx` can reuse a copy already in its cache or
 in this project's `node_modules`, so you would silently keep running the
@@ -334,7 +349,7 @@ repository is development-only.**
 
 ### Every `SKILL.md` is capped at 8 KB
 
-Codex's effective skill-body limit is the smallest of the four hosts', so it is
+Codex's effective skill-body limit is the smallest of the four coding agents', so it is
 the budget every skill is written to. Overflow lives in `reference/*.md` beside
 each `SKILL.md`, loaded on demand. A test enforces the cap, so the gate is
 mechanical rather than a review habit.
@@ -343,7 +358,7 @@ mechanical rather than a review habit.
 
 | Symptom | What it means | What to do |
 | --- | --- | --- |
-| `state: "conflict"` | A file we did not install already sits at that path. It is never overwritten. | Move or delete the existing file, or `--host`-scope the run away from it, then re-run `apply`. |
+| `state: "conflict"` | A file we did not install already sits at that path. It is never overwritten. | Move or delete the existing file, or `--agent`-scope the run away from it, then re-run `apply`. |
 | `state: "drift"` | You (or something else) edited a file this installer wrote. It is left alone on every later run. | Nothing to fix — this is by design. Re-run `status` to confirm it is the only thing reported. |
 | A manual step for `.vscode/mcp.json` | That file is JSONC (comments or trailing commas). Rewriting it would destroy your notes, so it is never touched automatically. | Add the printed snippet to `.vscode/mcp.json` yourself, under the `servers` key. |
 | `.codex/` reported read-only | Codex's default workspace-write sandbox makes `.codex/` and `.agents/` read-only from inside a Codex session. | Run the installer from a plain shell, not from inside Codex. |

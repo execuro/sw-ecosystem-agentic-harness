@@ -7,6 +7,39 @@ release.
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: `install`, `status`, `plan` and `uninstall` print a human
+  summary, not JSON.** Typing `install` and getting several hundred lines of
+  JSON made success unreadable; the result object is now rendered for a
+  person on stdout — what changed, grouped by coding agent, and the restart
+  each one needs. A run with nothing to do is one line. Conflicts, drift and
+  manual steps are never collapsed: each names its file and its remedy, and
+  an agent this project has not installed is never named at all. Pass
+  `--json` for the previous object, unchanged apart from the key rename
+  below, and `--verbose` for the per-file detail alongside the summary.
+  **Every skill, script or agent parsing this output must add `--json`.**
+- **BREAKING: `--host` is now `--agent`, with no alias.** `--host` is
+  rejected as an unknown option (exit 2, with runnable `--agent` help), the
+  `hosts` key in every result body is now `agents`, and the lock file records
+  `agents`. A lock written by an earlier version under `hosts` is still read
+  and is rewritten as `agents` on the next run, so an existing install keeps
+  its recorded selection. Consistent with the earlier
+  `--no-companions` -> `--no-extra-components` break.
+  **WARNING — the lock migration is one-way:** writing `agents` drops the
+  legacy `hosts` key, so after any run of this version an older pinned CLI
+  (`npx …@0.1.6`) exits 2 in that repository with "no --host given, this
+  repository has no recorded install". Verified against the published 0.1.6
+  tarball.
+- `install` invoked with a bad flag now reports `install`, not `apply`, in
+  its usage help.
+
+### Fixed
+
+- `status` no longer labels a conflict as "edited since install". Its
+  `drift[]` entries now carry the action's `state`, and the human renderer
+  titles conflicts as conflicts.
+
 ## [0.1.6] - 2026-09-18
 
 ### Changed

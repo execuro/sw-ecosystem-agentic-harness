@@ -16,7 +16,7 @@ test('every combination of markers detects exactly the right hosts', () => {
     const root = hostRepo({ dirs });
     try {
       const body = parse(run(['status', '--root', root]));
-      const detected = new Set(body.hosts.filter((h) => h.detected).map((h) => h.id));
+      const detected = new Set(body.agents.filter((h) => h.detected).map((h) => h.id));
       const wanted = new Set(dirs.map((d) => EXPECT[d]));
       assert.deepEqual([...detected].sort(), [...wanted].sort(), `markers: ${dirs.join(',') || 'none'}`);
     } finally { cleanup(root); }
@@ -27,7 +27,7 @@ test('a marker that is a file, not a directory, does not count', () => {
   const root = hostRepo({ files: { '.claude': 'not a directory' } });
   try {
     const body = parse(run(['status', '--root', root]));
-    assert.equal(body.hosts.find((h) => h.id === 'claude-code').detected, false);
+    assert.equal(body.agents.find((h) => h.id === 'claude-code').detected, false);
   } finally { cleanup(root); }
 });
 
@@ -55,7 +55,7 @@ test('a read-only Codex marker is reported, not treated as a write failure', { s
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
     chmodSync(join(root, '.codex'), 0o555);
-    const codex = parse(run(['status', '--root', root])).hosts.find((h) => h.id === 'codex');
+    const codex = parse(run(['status', '--root', root])).agents.find((h) => h.id === 'codex');
     assert.equal(codex.writable, false);
     assert.match(codex.notes.join(' '), /read-only|sandbox/i);
   } finally {
@@ -67,7 +67,7 @@ test('a read-only Codex marker is reported, not treated as a write failure', { s
 test('Cursor reports that it reads the Claude trees directly', () => {
   const root = hostRepo({ dirs: ['.cursor', '.claude/skills', '.claude/agents'] });
   try {
-    const cursor = parse(run(['status', '--root', root])).hosts.find((h) => h.id === 'cursor');
+    const cursor = parse(run(['status', '--root', root])).agents.find((h) => h.id === 'cursor');
     assert.match(cursor.notes.join(' '), /\.claude/);
   } finally { cleanup(root); }
 });

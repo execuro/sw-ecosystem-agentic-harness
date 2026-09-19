@@ -28,23 +28,23 @@ const COMMANDS = {
 
 const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
 
-  install    [--host <h>] [--scope project|user] [--root <path>] [--no-extra-components]
-  status     [--host <h>] [--scope project|user] [--root <path>]
-  plan       [--host <h>] [--scope project|user] [--root <path>] [--no-extra-components]
-  apply      --yes [--host <h>] [--scope project|user] [--root <path>] [--no-extra-components]
-  uninstall  --yes [--host <h>] [--scope project|user] [--root <path>]
+  install    [--agent <a>] [--scope project|user] [--root <path>] [--no-extra-components]
+  status     [--agent <a>] [--scope project|user] [--root <path>]
+  plan       [--agent <a>] [--scope project|user] [--root <path>] [--no-extra-components]
+  apply      --yes [--agent <a>] [--scope project|user] [--root <path>] [--no-extra-components]
+  uninstall  --yes [--agent <a>] [--scope project|user] [--root <path>]
   guide      print the install protocol
 
   install is apply --yes under a friendlier name: the whole install in one
   command, no --yes needed — typing the verb is the consent for that write;
-  it can still ask which host(s), see below.
+  it can still ask which coding agent(s), see below.
 
-  <h> is one of: claude-code, codex, copilot, cursor. Repeat --host to select
-  several. install/apply resolve which host(s) to use, in order: --host if
-  given; else the hosts already recorded in the lock file, if one exists;
+  <a> is one of: claude-code, codex, copilot, cursor. Repeat --agent to select
+  several. install/apply resolve which agent(s) to use, in order: --agent if
+  given; else the agents already recorded in the lock file, if one exists;
   else, with a terminal attached, an interactive picker; else exit 2 with
-  the four "... install --host <h>" commands as help. status and uninstall
-  keep covering every host by default.
+  the four "... install --agent <a>" commands as help. status and uninstall
+  keep covering every agent by default.
 
   --scope defaults to project: nothing is written under your home directory
   unless you ask for it. --root defaults to the current directory.
@@ -52,8 +52,12 @@ const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
   --no-extra-components skips the two optional extra-component skills (Specs
   Editor, Tender Discovery Tool) even when the package is present locally.
 
-Every command prints one JSON object on stdout carrying a next_step. Run
-\`sw-ecosystem-agentic-harness guide\` first — it is the install protocol.`;
+  --json      print the result object instead of the human summary
+  --verbose   include the per-file detail --json carries
+
+install, status, plan and uninstall print a short human summary on stdout.
+Add --json for the machine-readable object, which always carries a next_step.
+Run \`sw-ecosystem-agentic-harness guide\` first — it is the install protocol.`;
 
 const argv = process.argv.slice(2);
 const cmd = argv[0];

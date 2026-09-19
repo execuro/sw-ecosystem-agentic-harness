@@ -3,7 +3,7 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { ALL_HOST_FLAGS, ALL_MARKERS, cleanup, exists, hostRepo, parse, readLock, run, snapshot } from './helpers.mjs';
+import { ALL_AGENT_FLAGS, ALL_MARKERS, cleanup, exists, hostRepo, parse, readLock, run, snapshot } from './helpers.mjs';
 
 test('guide exits 0 and prints the protocol', () => {
   const r = run(['guide']);
@@ -29,8 +29,8 @@ test('an unknown command exits 2 with runnable help', () => {
   }
 });
 
-test('an unknown --host and --scope exit 2 and name the valid values', () => {
-  for (const args of [['status', '--host', 'emacs'], ['status', '--scope', 'global']]) {
+test('an unknown --agent and --scope exit 2 and name the valid values', () => {
+  for (const args of [['status', '--agent', 'emacs'], ['status', '--scope', 'global']]) {
     const r = run(args);
     assert.equal(r.code, 2, args.join(' '));
     assert.ok(parse(r).help.length > 0);
@@ -112,7 +112,7 @@ function comparableLock(lock, root) {
   const clone = normaliseRoot(structuredClone(lock), root);
   delete clone.installed_at;
   delete clone.updated_at;
-  for (const host of Object.values(clone.hosts ?? {})) delete host.installed_at;
+  for (const host of Object.values(clone.agents ?? {})) delete host.installed_at;
   return clone;
 }
 
@@ -120,8 +120,8 @@ test('install produces the same files and lock content as apply --yes', () => {
   const installRoot = hostRepo({ dirs: ALL_MARKERS });
   const applyRoot = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const installResult = run(['install', ...ALL_HOST_FLAGS, '--root', installRoot]);
-    const applyResult = run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', applyRoot]);
+    const installResult = run(['install', ...ALL_AGENT_FLAGS, '--root', installRoot]);
+    const applyResult = run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', applyRoot]);
     assert.equal(installResult.code, 0);
     assert.equal(applyResult.code, 0);
 
@@ -138,7 +138,7 @@ test('install produces the same files and lock content as apply --yes', () => {
 test('install\'s JSON carries ok:true, command:"install" and a non-empty next_step', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const body = parse(run(['install', ...ALL_HOST_FLAGS, '--root', root]));
+    const body = parse(run(['install', ...ALL_AGENT_FLAGS, '--root', root]));
     assert.equal(body.ok, true);
     assert.equal(body.command, 'install');
     assert.ok(body.next_step.trim().length > 0);
@@ -149,15 +149,15 @@ test('install needs no --yes; apply without --yes still exits 2', () => {
   const installRoot = hostRepo({ dirs: ALL_MARKERS });
   const applyRoot = hostRepo({ dirs: ALL_MARKERS });
   try {
-    assert.equal(run(['install', ...ALL_HOST_FLAGS, '--root', installRoot]).code, 0);
+    assert.equal(run(['install', ...ALL_AGENT_FLAGS, '--root', installRoot]).code, 0);
     assert.equal(run(['apply', '--root', applyRoot]).code, 2);
   } finally { cleanup(installRoot); cleanup(applyRoot); }
 });
 
-test('install --host claude-code writes the Claude trees and not the Codex ones', () => {
+test('install --agent claude-code writes the Claude trees and not the Codex ones', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    const r = run(['install', '--host', 'claude-code', '--root', root]);
+    const r = run(['install', '--agent', 'claude-code', '--root', root]);
     assert.equal(r.code, 0);
     assert.ok(exists(root, '.claude/skills'));
     assert.ok(!exists(root, '.codex/config.toml'));
@@ -168,8 +168,8 @@ test('install --yes behaves identically to install', () => {
   const plainRoot = hostRepo({ dirs: ALL_MARKERS });
   const yesRoot = hostRepo({ dirs: ALL_MARKERS });
   try {
-    assert.equal(run(['install', ...ALL_HOST_FLAGS, '--root', plainRoot]).code, 0);
-    assert.equal(run(['install', '--yes', ...ALL_HOST_FLAGS, '--root', yesRoot]).code, 0);
+    assert.equal(run(['install', ...ALL_AGENT_FLAGS, '--root', plainRoot]).code, 0);
+    assert.equal(run(['install', '--yes', ...ALL_AGENT_FLAGS, '--root', yesRoot]).code, 0);
 
     assert.deepEqual(Object.keys(snapshot(plainRoot)).sort(), Object.keys(snapshot(yesRoot)).sort());
     assert.deepEqual(comparableLock(readLock(plainRoot), plainRoot), comparableLock(readLock(yesRoot), yesRoot));

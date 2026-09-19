@@ -13,10 +13,18 @@ import { fileURLToPath } from 'node:url';
 export const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const CLI = join(PKG_ROOT, 'bin', 'cli.mjs');
 
-/** Run the real CLI. Never throws on a non-zero exit — the exit code is data. */
-export function run(args, { cwd = PKG_ROOT, env } = {}) {
+/**
+ * Run the real CLI. Never throws on a non-zero exit — the exit code is data.
+ *
+ * `--json` is appended here rather than at every call site: the CLI's default
+ * output is now the human summary, and every suite in this directory asserts
+ * against the result object. Pass `{ json: false }` to exercise the human
+ * renderer instead — only the suites that are about the output itself do.
+ */
+export function run(args, { cwd = PKG_ROOT, env, json = true } = {}) {
+  const argv = json ? [...args, '--json'] : [...args];
   try {
-    const stdout = execFileSync(process.execPath, [CLI, ...args], {
+    const stdout = execFileSync(process.execPath, [CLI, ...argv], {
       cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: env ?? process.env,
     });
     return { code: 0, stdout, stderr: '' };
@@ -52,12 +60,12 @@ export function cleanup(root) {
 
 export const ALL_MARKERS = ['.claude', '.codex', '.github', '.cursor'];
 
-/** `--host` for every host, spread into argv — `run()` has no TTY (it is a
- * child process spawned with a piped stdin), so any test exercising a bare
- * "install every host" run must say so explicitly now that host resolution
- * no longer defaults to every host on its own. */
-export const ALL_HOST_FLAGS = [
-  '--host', 'claude-code', '--host', 'codex', '--host', 'copilot', '--host', 'cursor',
+/** `--agent` for every coding agent, spread into argv — `run()` has no TTY (it
+ * is a child process spawned with a piped stdin), so any test exercising a bare
+ * "install every agent" run must say so explicitly now that agent resolution
+ * no longer defaults to every agent on its own. */
+export const ALL_AGENT_FLAGS = [
+  '--agent', 'claude-code', '--agent', 'codex', '--agent', 'copilot', '--agent', 'cursor',
 ];
 
 /** path -> sha256 for every file under a root. */

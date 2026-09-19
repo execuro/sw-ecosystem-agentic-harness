@@ -8,7 +8,7 @@ import { test } from 'node:test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  ALL_HOST_FLAGS, ALL_MARKERS, cleanup, exists, hostRepo, parse, readJson, readLock, readText, run, snapshot,
+  ALL_AGENT_FLAGS, ALL_MARKERS, cleanup, exists, hostRepo, parse, readJson, readLock, readText, run, snapshot,
 } from './helpers.mjs';
 
 const USER_FILES = {
@@ -25,7 +25,7 @@ test('a full round trip restores the repository', () => {
   const root = hostRepo({ dirs: ALL_MARKERS, files: USER_FILES });
   try {
     const before = snapshot(root);
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     const body = parse(run(['uninstall', '--yes', '--root', root]));
     assert.equal(body.summary.failed, 0);
     assert.deepEqual(body.kept, []);
@@ -48,7 +48,7 @@ test('a full round trip restores the repository', () => {
 test('a repository that had nothing is emptied of everything we added', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     run(['uninstall', '--yes', '--root', root]);
     for (const path of ['.mcp.json', '.vscode/mcp.json', '.cursor/mcp.json',
       '.claude/settings.json', '.codex/config.toml', 'AGENTS.md', '.gitignore']) {
@@ -60,7 +60,7 @@ test('a repository that had nothing is emptied of everything we added', () => {
 test('only our rules are removed; the user keeps theirs', () => {
   const root = hostRepo({ dirs: ALL_MARKERS, files: USER_FILES });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     run(['uninstall', '--yes', '--root', root]);
     const perms = readJson(root, '.claude/settings.json').permissions;
     assert.deepEqual(perms.deny, ['Edit(secrets/**)']);
@@ -71,7 +71,7 @@ test('only our rules are removed; the user keeps theirs', () => {
 test('a container we did not create is kept', () => {
   const root = hostRepo({ dirs: ALL_MARKERS, files: USER_FILES });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     run(['uninstall', '--yes', '--root', root]);
     assert.deepEqual(Object.keys(readJson(root, '.mcp.json').mcpServers), ['mine']);
   } finally { cleanup(root); }
@@ -80,7 +80,7 @@ test('a container we did not create is kept', () => {
 test('a hand-edited file is kept and reported, never deleted', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     const target = join(root, '.claude', 'agents', 'sw-qa-engineer.md');
     writeFileSync(target, 'mine now\n');
     const body = parse(run(['uninstall', '--yes', '--root', root]));
@@ -98,7 +98,7 @@ test('a fence written with CRLF round-trips — line-ending style is not hand-ed
   // content it wrote itself.
   const root = hostRepo({ dirs: ALL_MARKERS, files: { 'AGENTS.md': '# my notes\r\n\r\nProject uses pnpm.\r\n' } });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     assert.match(readFileSync(join(root, 'AGENTS.md'), 'utf8'), /\r\n/, 'the fixture stayed CRLF');
     const body = parse(run(['uninstall', '--yes', '--root', root]));
     assert.deepEqual(body.kept, []);
@@ -109,7 +109,7 @@ test('a fence written with CRLF round-trips — line-ending style is not hand-ed
 test('a hand-edited managed fence is kept', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     const file = join(root, 'AGENTS.md');
     writeFileSync(file, readFileSync(file, 'utf8').replace('## Shopware agentic harness', '## My heading'));
     const body = parse(run(['uninstall', '--yes', '--root', root]));
@@ -133,7 +133,7 @@ test('uninstall with no lock does nothing and says so', () => {
 test('a lock from an unknown content version is refused with an upgrade hint', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     const file = join(root, '.sw-ai-sdk', 'harness.lock.json');
     const lock = JSON.parse(readFileSync(file, 'utf8'));
     lock.content_version = 99;
@@ -147,11 +147,11 @@ test('a lock from an unknown content version is refused with an upgrade hint', (
   } finally { cleanup(root); }
 });
 
-test('uninstall --host removes one host and leaves the others installed', () => {
+test('uninstall --agent removes one host and leaves the others installed', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
-    run(['uninstall', '--yes', '--host', 'codex', '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
+    run(['uninstall', '--yes', '--agent', 'codex', '--root', root]);
     assert.equal(exists(root, '.codex/agents/sw-qa-engineer.toml'), false);
     assert.ok(exists(root, '.claude/agents/sw-qa-engineer.md'));
     assert.ok(readLock(root), 'the lock must survive a partial uninstall');
@@ -161,10 +161,10 @@ test('uninstall --host removes one host and leaves the others installed', () => 
 test('apply after uninstall reinstalls cleanly', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     const first = snapshot(root);
     run(['uninstall', '--yes', '--root', root]);
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     const second = snapshot(root);
     delete first['.sw-ai-sdk/harness.lock.json'];
     delete second['.sw-ai-sdk/harness.lock.json'];

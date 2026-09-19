@@ -2,19 +2,25 @@
 
 Twelve environment rows. Each: check (read-only), what "ticked" means, the fix
 (only run on approval, in this order), and which skills the row blocks when
-unticked. Host configuration files (`.mcp.json` entries, `.gitignore` lines,
-permission grants) are not rows here — the installer CLI owns them and
-reports their state in its own `status`/`plan` output; see `SKILL.md`.
+unticked. Coding-agent configuration files (`.mcp.json` entries, `.gitignore`
+lines, permission grants) are not rows here — the installer CLI owns them and
+reports their state in its own `status --json`/`plan --json` output; see
+`SKILL.md`.
 
-When that `status` call reports no install at all (no lock file, so no
-recorded hosts), the installer CLI's `apply --yes`/`install` has no `--host`
+Every installer-CLI call this skill makes passes `--json`. Without it the CLI
+prints a short human summary instead of the object these rows read — that
+summary is for the person typing the command, never for a skill parsing it.
+
+When that `status --json` call reports no install at all (no lock file, so no
+recorded agents), the installer CLI's `apply --yes`/`install` has no `--agent`
 to reuse and, run from this skill, no terminal to ask on — it would exit 2.
-Do not pass a guessed `--host`. Report this to the user instead: the first
+Do not pass a guessed `--agent`. Report this to the user instead: the first
 install must be run by them directly in a terminal, e.g.
 `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install`,
-which then either takes their `--host` or prompts them interactively. Re-run
-this skill's `status` check afterwards — every later `apply --yes` reuses the
-hosts that first run recorded, and this skill can call it directly again.
+which then either takes their `--agent` or prompts them interactively. Re-run
+this skill's `status` check afterwards — every later `apply --yes --json`
+reuses the agents that first run recorded, and this skill can call it
+directly again. Expect `agents[]` in every output this skill reads.
 
 ## 1. vendor/
 
@@ -60,11 +66,11 @@ row never runs an extra component's own install command.
 So this row never blocks readiness. It asks.
 
 - **Check:** read `extra_components[]` from the `status` output the skill already
-  ran in step 1 — each entry's `available`, `installed_for` (the hosts it is
-  placed in), and `install` (the npm command, when missing). Never probe a
+  ran in step 1 — each entry's `available`, `installed_for` (the coding agents
+  it is placed in), and `install` (the npm command, when missing). Never probe a
   path and never run an extra component by hand; the CLI owns both.
 - **Ticked:** `[x]` when an extra component's `available` is true and
-  `installed_for` includes this host; `[-]` when the user has declined it.
+  `installed_for` includes this agent; `[-]` when the user has declined it.
   Only an unanswered offer shows `[ ]`, and even then it does not hold the
   table open — report it as optional and move on.
 - **Fix:** offer each missing extra component inside step 3's single question,
@@ -76,10 +82,10 @@ So this row never blocks readiness. It asks.
   `package` field from `extra_components[]`), then re-run
 
   ```
-  npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest apply --yes
+  npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest apply --yes --json
   ```
 
-  which places one `SKILL.md` per extra component into each selected host's own
+  which places one `SKILL.md` per extra component into each selected agent's own
   skills directory, records it, and removes it again on uninstall. **Never
   run the extra component's own `install-skill`** — with no `--target` it
   defaults to Claude Code's own skills directory, wrong for a Codex, Copilot

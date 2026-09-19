@@ -7,7 +7,7 @@ import { mcpServers, wrapCommand } from '../lib/content.mjs';
 import { buildPlan } from '../lib/hosts.mjs';
 import { rel, abs } from '../lib/fsx.mjs';
 import { EXTRA_COMPONENTS, probeArgs } from '../lib/extra-components.mjs';
-import { ALL_HOST_FLAGS, ALL_MARKERS, cleanup, hostRepo, readLock, run } from './helpers.mjs';
+import { ALL_AGENT_FLAGS, ALL_MARKERS, cleanup, hostRepo, readLock, run } from './helpers.mjs';
 
 test('npx is wrapped in cmd /c on win32 and left bare elsewhere', () => {
   const spec = { command: 'npx', args: ['-y', 'pkg'] };
@@ -20,7 +20,7 @@ test('npx is wrapped in cmd /c on win32 and left bare elsewhere', () => {
 test('no win32 plan anywhere emits a bare "command": "npx"', () => {
   const ctx = {
     root: '/repo', scope: 'project', platform: 'win32',
-    hosts: ['claude-code', 'codex', 'copilot', 'cursor'], lock: null, version: '0.1.0',
+    agents: ['claude-code', 'codex', 'copilot', 'cursor'], lock: null, version: '0.1.0',
   };
   const offenders = [];
   const scan = (value, where) => {
@@ -39,7 +39,7 @@ test('no win32 plan anywhere emits a bare "command": "npx"', () => {
 
 test('the Codex TOML block uses cmd /c on win32', () => {
   const ctx = {
-    root: '/repo', scope: 'project', platform: 'win32', hosts: ['codex'], lock: null, version: '0.1.0',
+    root: '/repo', scope: 'project', platform: 'win32', agents: ['codex'], lock: null, version: '0.1.0',
   };
   const block = buildPlan(ctx).find((a) => a.block === 'mcp_servers');
   assert.match(block.body, /command = "cmd"/);
@@ -55,7 +55,7 @@ test('mcpServers resolves the project-wiki path rather than emitting a variable'
 test('paths in output and the lock are POSIX on every platform', () => {
   const root = hostRepo({ dirs: ALL_MARKERS });
   try {
-    run(['apply', '--yes', ...ALL_HOST_FLAGS, '--root', root]);
+    run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     for (const key of Object.keys(readLock(root).files)) {
       assert.doesNotMatch(key, /\\/, `lock key is not POSIX: ${key}`);
     }
