@@ -1,6 +1,6 @@
 {
   "name": "@execuro-sw-ecosystem/sw-ecosystem-agentic-harness",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Shopware 6 agentic harness: sw-* skills and sub-agents, plus an installer that writes them into Claude Code, Codex, GitHub Copilot and Cursor.",
   "license": "MIT",
   "author": "Execuro UG (haftungsbeschränkt)",

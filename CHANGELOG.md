@@ -7,6 +7,8 @@ release.
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-09-19
+
 ### Changed
 
 - **The lock file moved to `var/sw-ai-sdk/harness.lock.json`, and the
