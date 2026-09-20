@@ -6,7 +6,9 @@ What is checked is the **skill**, `sw-specs-editor`, because that is what `sw-se
 
 Check: is the `sw-specs-editor` skill available in this session?
 
-**Available** → hand off to it with the document path, and stop. Nothing else runs.
+**Available** → hand off to it with the PRD path, and stop. Nothing else runs.
+
+The session it opens serves the **PRD alone** — there is no spec tab and no way to reach the spec from it; the tech spec is a separate session with its own chat, queue and port. The filename is what picks the mode, so the path must be a PRD: given a `-spec.md` path, stop with one line — "That is a tech spec; run `sw-design-solution <path> --editor`." — and hand off nothing.
 
 **Not available** → **stop the run here**. Say, in one line:
 

@@ -28,7 +28,7 @@ Tech decisions belong to `sw-design-solution`. Consult `sw-shopware-architect` (
 | Path to `specs/NNNN-*.md` | **Continue mode** — load, keep its number, advance |
 | Any other file path, or free text | **New PRD** — used as source brief |
 | Nothing | Ask for the feature in one sentence, then proceed |
-| `<path> --editor` | **Editor hand-off** — step 0 checks the optional `sw-specs-editor` skill is installed, then invokes it on `<path>` and stops. Nothing else runs. |
+| `<path> --editor` | **Editor hand-off** — step 0 checks the optional `sw-specs-editor` skill is installed, then invokes it on `<path>` and stops. Nothing else runs. The session edits the PRD only; the tech spec, if it exists, is reference only and has its own session. A `-spec.md` path is refused here. |
 | `<path> --editor-session <url> --batch <file>` | **Editor mode** — continue mode driven by one note batch; see `reference/editor-mode.md` in this skill's directory. |
 
 Images, notes, tickets, transcripts count as sources; extract requirements, discard narrative.
@@ -37,7 +37,7 @@ Images, notes, tickets, transcripts count as sources; extract requirements, disc
 
 ### 0. Editor flags
 
-`--editor` → run the gate in `reference/editor-gate.md` in this skill's directory first; the Specs Editor is optional and may not be installed, in which case stop there. Available → call Skill `sw-specs-editor` with the document path, stop; nothing else runs. `--editor-session` → continue mode under `reference/editor-mode.md` in this skill's directory.
+`--editor` → run the gate in `reference/editor-gate.md` in this skill's directory first; the Specs Editor is optional and may not be installed, in which case stop there. Available → call Skill `sw-specs-editor` with the PRD path, stop; nothing else runs. `--editor-session` → continue mode under `reference/editor-mode.md` in this skill's directory.
 
 ### 1. Establish the target file
 

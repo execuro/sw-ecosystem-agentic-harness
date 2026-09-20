@@ -194,7 +194,9 @@ npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@latest install-skill --tar
 ```
 
 - `sw-specs-editor` backs the `--editor` flag on `sw-design-requirements` and
-  `sw-design-solution`.
+  `sw-design-solution`. Each flag opens its own single-document session — the PRD
+  and the tech spec never share one — and `sw-design-solution --editor` on a PRD
+  path resolves to the spec, creating it from the template if it does not exist.
 - `sw-tender-discovery-tool` backs the `--editor` flag and the `.xlsx` import
   on `sw-discover-tender`.
 

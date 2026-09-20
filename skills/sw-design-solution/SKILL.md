@@ -21,7 +21,7 @@ Answers **how**, never **what**/**why**. Never re-litigate, question, or change 
 | `specs/NNNN-slug-spec.md` | **Continue mode** — load, keep its number, advance |
 | `specs/NNNN-slug.md` (a PRD) | **New spec** — PRD is the source of truth |
 | Nothing | Ask for the PRD path |
-| `<path> --editor` | **Editor hand-off**, first reference file below |
+| `<path> --editor` | **Editor hand-off**, first reference file below. The path may be the PRD or the spec; it always resolves to `specs/NNNN-slug-spec.md`, created from the template if missing, and the session edits the spec only — the PRD is reference only, with its own session |
 | `<path> --editor-session <url> --batch <file>` | **Editor mode** — see `reference/editor-mode.md` |
 
 ## Procedure
