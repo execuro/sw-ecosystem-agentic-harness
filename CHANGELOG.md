@@ -7,6 +7,16 @@ release.
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-09-20
+
+### Changed
+
+- **The design skills follow the Specs Editor's split of PRD and tech-spec
+  workflows.** `sw-design-requirements` and `sw-design-solution` (their
+  `SKILL.md`, editor-mode, editor-gate, readiness and pre-check references) and
+  `README.md` now describe one session per document, with `--doc` naming the
+  document, and a feature's PRD and spec as two independent sessions.
+
 ## [0.1.9] - 2026-09-19
 
 ### Changed
