@@ -22,9 +22,18 @@ Implement one feature from its technical spec, under TDD, then hand off to full 
 
 ### 0. Pre-check
 
-Invoke `sw-setup` once. Rows an AC's tests need — vendor/ (PHPUnit); Acceptance-test project, Playwright browsers, ATS env (e2e); Plugin tests (target plugin) — must be ticked; unticked → stop, tell the user to run `/sw-setup`. Never mark an AC `partly` for a missing environment.
+**Probe what this run is about to use, never the whole environment.** Check only what the ACs in this run actually need, as file existence — never invoke `sw-setup`, which surveys twelve rows behind an `npx` registry call to answer two or three of them:
 
-**Shopware version — detect once, before spawning anything, never assume:** `vendor/shopware/core/composer.json` `version` → `composer.lock` → `composer.json` constraint ("unconfirmed"); PHP from the project runtime (`compose.yaml`, `.ddev/config.yaml`, `Dockerfile`), not the host. State it with evidence in every Agent-tool brief below — implementer spawns, architect escalation, QA e2e runs — so no sub-agent has to re-derive it; a version with no evidence must still be passed on as unconfirmed (e.g. constraint-only), never treated as certain. Unknown → ask the user.
+| This run has… | Probe |
+| --- | --- |
+| any AC | `vendor/shopware/core`, plus `vendor/bin/phpunit` for a PHPUnit AC |
+| an e2e AC | `tests/acceptance/package.json`, `tests/acceptance/playwright.config.ts`, and `tests/acceptance/.env` defining `APP_URL`, `SHOPWARE_ADMIN_USERNAME`, `SHOPWARE_ADMIN_PASSWORD` |
+| an e2e AC | Playwright browsers — the cache directory (`~/.cache/ms-playwright`, or the project-local browsers path). Never `npx playwright install --dry-run`: it reaches the network |
+| a PHPUnit or Jest AC | in the target plugin: `phpunit.xml.dist`, `tests/TestBootstrap.php`, and `jest.admin.config.js` / `jest.storefront.config.js` only for the surface that AC touches |
+
+An API-only feature never probes Playwright. Anything missing → stop, tell the user to run `/sw-setup` — it is the one place the environment is fixed, and this skill neither invokes nor repairs it. Never mark an AC `partly` for a missing environment.
+
+**Shopware version — detect once, before spawning anything, never assume** (the first path is also the vendor/ probe above, so read it once): `vendor/shopware/core/composer.json` `version` → `composer.lock` → `composer.json` constraint ("unconfirmed"); PHP from the project runtime (`compose.yaml`, `.ddev/config.yaml`, `Dockerfile`), not the host. State it with evidence in every Agent-tool brief below — implementer spawns, architect escalation, QA e2e runs — so no sub-agent has to re-derive it; a version with no evidence must still be passed on as unconfirmed (e.g. constraint-only), never treated as certain. Unknown → ask the user.
 
 
 Then work through the three reference files in this skill's directory, in order:

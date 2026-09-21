@@ -28,16 +28,18 @@ Tech decisions belong to `sw-design-solution`. Consult `sw-shopware-architect` (
 | Path to `specs/NNNN-*.md` | **Continue mode** — load, keep its number, advance |
 | Any other file path, or free text | **New PRD** — used as source brief |
 | Nothing | Ask for the feature in one sentence, then proceed |
-| `<path> --editor` | **Editor hand-off** — step 0 checks the optional `sw-specs-editor` skill is installed, then invokes it on `<path>` and stops. Nothing else runs. The session edits the PRD only; the tech spec, if it exists, is reference only and has its own session. A `-spec.md` path is refused here. |
+| `<path> --editor` | **Editor hand-off** — step 0 checks the optional `sw-specs-editor` skill, invokes it on `<path>`, stops; nothing else runs. The session edits the PRD alone — the tech spec is reference only, with its own session. A `-spec.md` path is refused. |
 | `<path> --editor-session <url> --batch <file>` | **Editor mode** — continue mode driven by one note batch; see `reference/editor-mode.md` in this skill's directory. |
 
 Images, notes, tickets, transcripts count as sources; extract requirements, discard narrative.
 
 ## Procedure
 
-### 0. Editor flags
+### 0. Flags and preconditions
 
-`--editor` → run the gate in `reference/editor-gate.md` in this skill's directory first; the Specs Editor is optional and may not be installed, in which case stop there. Available → call Skill `sw-specs-editor` with the PRD path, stop; nothing else runs. `--editor-session` → continue mode under `reference/editor-mode.md` in this skill's directory.
+`--editor` → the gate in `reference/editor-gate.md` in this skill's directory settles it, hand-off or stop; nothing else runs. `--editor-session` → continue mode under `reference/editor-mode.md` in this skill's directory.
+
+Then *Preconditions* in `reference/consistency-probes.md`: probe `vendor/` and the KB before writing anything — either missing stops the run.
 
 ### 1. Establish the target file
 
@@ -91,7 +93,7 @@ Work through `reference/readiness-and-report.md` in this skill's directory: appl
 
 All under `reference/` in this skill's directory:
 
-- `reference/consistency-probes.md` — step 2: what counts as a conflict, where to look, the KB stock-behaviour lookup
+- `reference/consistency-probes.md` — step 0's preconditions; step 2: conflicts, where to look, the KB stock-behaviour lookup
 - `reference/prd-template.md` — step 3: section structure to fill
 - `reference/splitting-guidelines.md` — steps 3 and 6: when one PRD should have been two
 - `reference/clarification-loop.md` — step 4: the question loop, recommended-option rules, anchoring answers

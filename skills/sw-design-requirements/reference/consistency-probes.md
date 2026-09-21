@@ -2,6 +2,20 @@
 
 Run before drafting. Every conflict becomes a clarification question — never a silent assumption, never a resolution you pick yourself.
 
+## 0. Preconditions (step 0, before anything is written)
+
+**Probe what this run is about to use, never the whole environment.** Two things, both load-bearing for every probe below:
+
+- `vendor/shopware/core/composer.json` exists — the version-matched cross-check in probe 4 has nothing to stand on without it.
+- One `mcp__ShopwareDevKnowledgeBase__kb_status` reports `platform` as `implemented` — probe 6 is the stock-behaviour lookup.
+
+Either missing → **stop**, write nothing, one line naming the fix:
+
+> `vendor/` is not installed. Run `sw-setup`, then re-run this skill.
+> The ShopwareDevKnowledgeBase MCP is not available. Run `sw-setup`, then re-run this skill.
+
+Never invoke `sw-setup` from here, never fix it yourself, never ask about it: surveying and repairing the environment is its own run, up front, and it costs an `npx` registry resolution plus twelve rows to answer these two. Nothing else is probed — no other row of that table can affect a PRD run. In an editor session the stop still has to release the document: post that line as the run's reply and change nothing.
+
 ## 1. Against earlier answers in this PRD
 
 Continue mode: re-read §12 Clarification Log and §5 before writing. A new answer that contradicts a logged decision is a conflict, not an update.
@@ -62,4 +76,4 @@ Internal contradictions are fixed by editing, not by asking — unless the fix c
 `platform/func` only; `platform/dev` off limits.
 - Once per run: `read_doc { path: "platform/index.md" }`.
 - Per feature noun: `grep_docs { pattern: "<noun>", path: "platform/func" }`, read the page; try `platform/synonyms.md` when empty.
-- Use results only to name stock features and raise a conflict question quoting the doc path — never an FR, §9 line, or design hint. `platform` not `implemented`, or unavailable → say so once, use the `vendor/` grep.
+- Use results only to name stock features and raise a conflict question quoting the doc path — never an FR, §9 line, or design hint. Step 0 already established that the KB answers; a call that fails after that is a stop naming `sw-setup`, not a silent fallback.

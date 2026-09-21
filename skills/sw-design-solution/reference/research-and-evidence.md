@@ -10,7 +10,7 @@ Every `FR-n` and AC — the fixed contract, never added, removed or reinterprete
 
 **Shopware version — detect once, never assume:** `vendor/shopware/core/composer.json` `version` → `composer.lock` → `composer.json` constraint ("unconfirmed"); PHP from the project runtime (`compose.yaml`, `.ddev/config.yaml`, `Dockerfile`), not the host. Pass version + source to every spawned agent; unknown → ask the user.
 
-Per central mechanism, one `mcp__ShopwareDevKnowledgeBase__grep_docs { pattern: "<mechanism>", path: "platform/dev/<version>", mode: "files" }` — candidate KB paths only, never `read_doc`/`list_docs` a version directory (~340 KB index). Hand paths to the architect, which reads full pages and verifies; empty grep → `platform/synonyms.md`, then `platform/hubs`. `vendor/` missing → step 0.5 already asked; `(unverified — vendor/ not installed)` applies only after the user chose to proceed.
+Per central mechanism, one `mcp__ShopwareDevKnowledgeBase__grep_docs { pattern: "<mechanism>", path: "platform/dev/<version>", mode: "files" }` — candidate KB paths only, never `read_doc`/`list_docs` a version directory (~340 KB index). Hand paths to the architect, which reads full pages and verifies; empty grep → `platform/synonyms.md`, then `platform/hubs`.
 
 Evidence rules, carried in every step-4 brief:
 1. **Live call site, not a fixture, same shape.** DI/service registration, a call site, or a passing test assertion — never a `*/Test*/**` class only a test instantiates; verified only by a live usage of the same shape of change (an `EntityExtension` adding associations doesn't verify one adding a scalar field). Fixture-only or no same-shape usage = unverified, raise it.

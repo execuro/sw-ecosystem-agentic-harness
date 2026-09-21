@@ -37,7 +37,7 @@ _Source: `sw-shopware-architect`'s report, verified in-agent per its evidence ru
 | <!-- one line, "what will exist" --> | <!-- event/subscriber, tag, route, decoration target --> | <!-- entity/field/migration, or "none" --> | <!-- upgrade risk, performance, coupling, testability --> | <!-- file:line citation, or "per official docs: '<sentence>'" — never a bare link, never a fixture/Test-folder class with no call site --> |
 
 **Verified assumptions:** <!-- mechanisms confirmed by real usage + docs, one line each -->
-**Unverified / at risk:** <!-- anything marked `(unverified — vendor/ not installed)` or `(unverified — static citation only)` — must also appear in §6 as an open question -->
+**Unverified / at risk:** <!-- anything marked `(unverified — static citation only)` — must also appear in §6 as an open question -->
 
 <!-- Optional, added by the Specs Editor on first request — keep the line exactly in this shape: -->
 <!-- Diagram: specs/NNNN-slug-spec.architecture.excalidraw -->
@@ -90,7 +90,7 @@ Blocks: AC-2
   - [qa] against: one-line reason
 -->
 
-A question earns its place only if it changes architecture, data model, or test strategy, or is a decision still `(unverified — vendor/ not installed)` / `(unverified — static citation only)`. Any open question blocks *Ready for implementation*.
+A question earns its place only if it changes architecture, data model, or test strategy, or is a decision still `(unverified — static citation only)`. Any open question blocks *Ready for implementation*.
 
 Rules: one block per question, a `**Q-n**` line, `[adr]`/`[gate]` tag right after the id for the ADR Extract/Keep and readiness-override asks, optional `Blocks:` line. Options are `- [ ] <Letter>: text`, 2–4 of them, exactly one `(recommended)`. Agent notes are indented `  - [<agent>] text` under the option they judge; a note under the question line only when no option is recommended. An answer is `[x]` on one option, or an own-answer line `- [x] ✎ text`. Older specs (a legacy question table) are converted to this format automatically on the first editor-mode write.
 

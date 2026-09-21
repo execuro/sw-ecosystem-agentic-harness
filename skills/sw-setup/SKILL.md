@@ -1,6 +1,6 @@
 ---
 name: sw-setup
-description: Print one environment-readiness table for the project's development/test setup — vendor/, Node, the editor CLIs, shopware-cli, the KB MCP, the acceptance-test project, Playwright browsers, its .env, per-plugin test scaffolding, the project wiki, `.gitignore` and whether the SW AH npm packages are current, plus the installer CLI's own configuration/drift status. Stops when every row is ticked. When rows are missing, asks one yes/no question and delegates the fix to the installer CLI. Use when asked to set up the project, check if the environment is ready, or bootstrap the tests. Never designs, implements or verifies a feature itself — that's sw-design-solution, sw-implement-feature and sw-verify-feature, which call this skill first. Never writes a coding agent's configuration file itself — that's the installer CLI.
+description: Print one environment-readiness table for the project's development/test setup — vendor/, Node, the editor CLIs, shopware-cli, the KB MCP, the acceptance-test project, Playwright browsers, its .env, per-plugin test scaffolding, the project wiki, `.gitignore` and whether the SW AH npm packages are current, plus the installer CLI's own configuration/drift status. Stops when every row is ticked. When rows are missing, asks one yes/no question and delegates the fix to the installer CLI. Use when asked to set up the project, check if the environment is ready, or bootstrap the tests. Never designs, implements or verifies a feature itself — that's sw-design-solution, sw-implement-feature and sw-verify-feature; run this one up front, before them. Never writes a coding agent's configuration file itself — that's the installer CLI.
 when_to_use: Trigger phrases — "set up the project", "is the environment ready", "bootstrap the tests", "sw-setup".
 allowed-tools: Read Glob Grep AskUserQuestion Skill Bash mcp__ShopwareDevKnowledgeBase__kb_status Bash(npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest *) Bash(npx -y @execuro-sw-ecosystem/sw-specs-editor@latest *) Bash(npx -y @execuro-sw-ecosystem/sw-tender-discovery-tool@latest *)
 ---
@@ -28,10 +28,15 @@ question; it never restates or re-implements the install protocol.
 
 ## Called from other skills
 
-`sw-design-solution`, `sw-implement-feature` and `sw-verify-feature` invoke
-this skill as their own first step and read its table; they never repeat
-these checks themselves. A caller passes no arguments and reads the printed
-table from this run's output — it does not re-run `sw-setup`'s checks.
+`sw-verify-feature` invokes this skill once, before spawning, and passes the
+table to its verifiers as `args`; one run standalone invokes it itself. A
+caller passes no arguments and reads the printed table, never re-running it.
+
+`sw-design-requirements`, `sw-design-solution` and `sw-implement-feature` do
+**not** invoke it: each probes only what its own run uses and stops naming
+`sw-setup` when one is missing. A full table is the price of surveying an
+environment, not of one run's prerequisites — so this skill stays the one place
+it is surveyed and fixed, run up front.
 
 ## Procedure
 

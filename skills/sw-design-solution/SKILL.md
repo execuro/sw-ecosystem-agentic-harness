@@ -30,7 +30,7 @@ Then work through the reference files in this skill's directory, in order:
 
 | File | When | What it decides |
 | --- | --- | --- |
-| `reference/pre-check-and-target.md` | before touching the target file | editor flags, the `sw-setup` pre-check, and how to establish the spec file |
+| `reference/pre-check-and-target.md` | before touching the target file | editor flags, the two preconditions a run cannot work without, and how to establish the spec file |
 | `reference/research-and-evidence.md` | after reading the PRD | version detection, KB lookups, the evidence rules, and the architecture guidelines pass |
 | `reference/draft-and-spawn.md` | drafting the spec | architect/QA spawn briefs, merging their output, spot-checks, and cross-AC dependencies |
 | `reference/toolchain-conformance.md` | while drafting, before finalizing | writing the spec so code conforms to Shopware's linters/static analysis on first write |
