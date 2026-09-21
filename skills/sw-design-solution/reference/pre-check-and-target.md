@@ -8,7 +8,7 @@ Entered before touching the target file. Decides how to handle `--editor`/`--edi
 
 1. **Resolve to the spec path.** `…-spec.md` → that is it. `specs/NNNN-slug.md` (a PRD) → `specs/NNNN-slug-spec.md`, same `NNNN`/slug, per §1's one-spec-per-PRD rule. Anything else → stop with one line naming the two shapes.
 2. **Gate, before any work.** Is the `sw-specs-editor` skill available? It is an optional add-on, installed by `sw-setup`, not part of this plugin. Not available → **stop here** with one line — "The Specs Editor is not installed. Run `sw-setup` to add it, or re-run without `--editor`." — do not fall back to non-editor mode, and never spend a draft on a page that will never open.
-3. **Preconditions, still before any work.** §0.5's two probes. Either missing → **stop** with its one line: nothing is drafted, no skeleton is written and no page is opened, exactly as for a missing Specs Editor.
+3. **Preconditions, still before any work.** §0.5's probes. Either missing → **stop** with its one line: nothing is drafted, no skeleton is written and no page is opened, exactly as for a missing Specs Editor.
 4. **Branch.** At least one AC block in §3 → already drafted: report `Opening <path> — <status>, <N>/5`, hand off at once, never re-draft. Otherwise → step 5 first.
 5. **Draft it first, in the terminal, before the page.** Run the normal flow end to end — §1, *Research and evidence*, *Draft* (both spawns), *Toolchain conformance*, *ADR flow*, *Readiness* — so §1–§5 and §7 carry real content and a real confidence the moment the page opens; a scored first draft is the target, not *Ready for implementation*. Two deviations, because the user answers on the page and not here: a structured question tool (`AskUserQuestion`, `request_user_input`) is **forbidden**, so *Clarification loop*'s rounds and *ADR flow* sub-steps 2 and 5 become advised §6 `**Q-n**` blocks in *Editor mode*'s shape; and progress is one short plain terminal line per phase — no session exists yet, so nothing is emitted, polled or started here.
 6. **Report one line, then hand off** — `Drafted <path> — <status>, <N>/5, §6: <M> question(s)` — and hand off to `sw-specs-editor` with the spec path. Automatic: `--editor` is the consent, never ask whether to open it.
@@ -19,17 +19,19 @@ The Specs Editor opens the page and waits; this skill runs again (*Editor mode*)
 
 Once, before touching the target file. Note the ISO start time (`date -u +%Y-%m-%dT%H:%M:%SZ`) — step 8's Timing line and editor progress prefixes use it. Under `--editor` it runs at §0 step 3, before the draft; when §0 handed off without drafting, the first batch runs it instead.
 
-**Probe what this run is about to use, never the whole environment.** Two things, both of which this skill genuinely cannot work correctly without:
+**Probe what this run is about to use, never the whole environment.** Three things, all of which this skill genuinely cannot work correctly without:
 
+- **The source PRD** — the file this spec is written from: the path given, or in continue mode the one the spec's header names. It has to exist on disk; a well-formed path is not a file.
 - **`vendor/`** — `vendor/shopware/core/composer.json` exists. It is the same file *Research and evidence*'s version detection reads, so read it once and use it for both.
 - **KB MCP** — one `mcp__ShopwareDevKnowledgeBase__kb_status`; `platform` must be `implemented`.
 
-Either missing → **stop**, write nothing, one line naming the fix:
+Any of the three missing → **stop**, write nothing, one line naming the fix:
 
+> `<path>` does not exist. A tech spec is written from a PRD — create one with `sw-design-requirements`, then re-run this skill.
 > `vendor/` is not installed. Run `sw-setup`, then re-run this skill.
 > The ShopwareDevKnowledgeBase MCP is not available. Run `sw-setup`, then re-run this skill.
 
-Never invoke `sw-setup` from here, never fix it yourself, never ask about it, and never offer to proceed unverified — surveying and repairing the environment is `sw-setup`'s own run, up front, and it costs far more than these two probes. Nothing else is checked here: Node, `shopware-cli`, the acceptance-test project, Playwright, plugin tests, the wiki and package updates cannot affect a design run.
+Never invoke `sw-setup` or `sw-design-requirements` from here, never fix it yourself, never ask about it, and never offer to proceed unverified — surveying the environment and writing requirements are those skills' own runs, and both cost far more than these three probes. Nothing else is checked here: Node, `shopware-cli`, the acceptance-test project, Playwright, plugin tests, the wiki and package updates cannot affect a design run.
 
 In an editor session the stop still has to release the document: post that one line as the run's reply (`emit done`) and change nothing in the spec.
 

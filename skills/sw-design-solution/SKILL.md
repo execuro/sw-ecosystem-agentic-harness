@@ -20,7 +20,7 @@ Answers **how**, never **what**/**why**. Never re-litigate, question, or change 
 | --- | --- |
 | `specs/NNNN-slug-spec.md` | **Continue mode** — load, keep its number, advance |
 | `specs/NNNN-slug.md` (a PRD) | **New spec** — PRD is the source of truth |
-| Nothing | Ask for the PRD path |
+| Nothing | Ask for the PRD path — a tech spec is always written from one (§0.5) |
 | `<path> --editor` | **Editor hand-off**, first reference file below. The path may be the PRD or the spec; it always resolves to `specs/NNNN-slug-spec.md`, **drafted in the terminal first** when that file is missing or has no ACs yet, then opened automatically. The session edits the spec only — the PRD is reference only, with its own session |
 | `<path> --editor-session <url> --batch <file>` | **Editor mode** — see `reference/editor-mode.md` |
 
