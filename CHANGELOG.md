@@ -7,6 +7,16 @@ release.
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-09-21
+
+### Changed
+
+- **Environment repair lives in `sw-setup` alone.** The other skills no longer
+  repair the setup themselves; they carry only lean preconditions and defer to
+  `sw-setup` for the fix.
+- **A tech spec is rendered before the editor opens**, so the page shows the
+  document rather than opening onto an unrendered one.
+
 ## [0.1.10] - 2026-09-20
 
 ### Changed
