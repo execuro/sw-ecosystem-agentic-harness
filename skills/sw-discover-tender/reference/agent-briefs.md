@@ -1,135 +1,90 @@
 # Agent briefs
 
-`<work>` = `specs/.rfp/<slug>/`. `<analysis>` = the analysis file.
+Three agents: `sw-tender-editor`, `sw-product-manager`, `sw-shopware-architect`. Every task below is one the named agent's own tools can perform; an agent that never writes files in tender work returns its report as its final message, and the skill saves it. `<doc>` = the working document path. `<work>` = `specs/.rfp/<slug>/`.
 
-## Parallelism, caps, delivery
+Every spawn of `sw-product-manager` or `sw-shopware-architect` receives the detected Shopware version, edition and plan (`context-parameters.md`, Dev Knowledge Base only), section 1's Project information table (the 18 volumes and facts feed the size-up drivers in `estimation-model.md`), and, per scope item, that item's Internal note (read-only) and its rejected proposals, with an instruction never to re-propose them. In tender work neither agent scans `vendor/`, `custom/plugins` or `composer.lock`, and neither re-detects the version from the codebase — project facts come from the Dev Knowledge Base only (`context-parameters.md`); a brief that supplies the version with its Dev Knowledge Base evidence is used as verified, never re-derived.
 
-- Pipeline, not two barriers. Message 1 carries every `sw-product-manager` spawn, PLUS the single `sw-qa-engineer` spawn (it reads no PM report), PLUS the `sw-shopware-architect` spawns for clusters that skip wave 1 entirely (Rows typed *Project*, hosting/operations NFRs, pure contract rows).
-- Each remaining `sw-shopware-architect` is spawned as soon as its OWN cluster's PM report lands — whatever is ready together goes in one message; never wait for the whole PM set to finish before spawning any architect.
-- One estimate group per run: whole clusters totalling at most `<batch>` rows (SKILL.md *Batch size*, default 50; `all` = every row in one run). The spawns below cover that group only.
-- Cap 10 spawns per message. Over the cap: raise rows per cluster to 20.
-- A failed or empty spawn is `not consulted — <reason>` in §1; its rows stay `_TBD_`. Never fill them from memory. A failed response or `sw-tender-editor` spawn stops the export.
-- Every brief carries the detected Shopware and PHP version **with evidence**, the edition, and the hidden-sheet prohibition.
-- **Delivery rule, in every brief.** Agents with a Write tool (`sw-shopware-architect`, `sw-qa-engineer`, the response agents, `sw-tender-editor`) write their report to the file(s) named in the brief and end their turn with one line (path + sum); those files are the only ones they may write. `sw-product-manager` has no Write tool: it delivers its report as its final message, in numbered parts under 7,000 characters each. A cut report is not a result: ask for the parts again.
-- `sw-tender-editor` delivery: one line back, listing only the file(s) its brief named — never the file's content, never a file it wasn't asked to write.
-- Save every PM report as received to `<work>/pm-C<n>.md`. Architect, QA and `§ROWS` briefs read files, never chat.
-- Shared material (baseline with evidence, plan variants, estimation-model excerpt, class definitions, report format, prohibitions) goes once into `<work>/arch-common.md`; each architect brief points at it plus its cluster file and PM report.
-- Rows are passed by file: `<work>/C<n>.md`, one line each: `<id> | <title> | <requirement> | <acceptance or —> | <priority> | <type> | <reference or —>`. Client context: `<work>/context.md`, `meta.md`, `params.md`, `migration.md`, `integrations.md`, `glossary.md` (`§CONTEXT`, spawned alongside `§EXTRACT`).
+## `sw-tender-editor`
 
-## §EXTRACT — `sw-tender-editor`, per source file or table (step 3, before any spawn wave)
+Tools: Read, Write, Edit — no Glob or Grep. Never asked to search; every brief names the exact file(s) to read. Never judges Requirement Coverage or Estimation. Exactly two jobs, one per spawn.
 
-> Extract requirement rows from tender source. Source `<file>`, table `<t>` (`<sheet or section name>`), `<client>`, RFP language `<en|de>`.
+**`extract`** (procedure step 1) — input is the one named tender file — the runtime's `import-digest.md` (xlsx/csv source) or the PDF itself — plus `reference/project-information.md` for the 18 `PROJECT_INFO` keys:
+
+> Sort the requirements at `<file>` into the tool's own tabs. Read the whole file. The row's own content decides the tab, never its topic: `TABS = Functional, Non-functional, Project & services`. Functional is anything the shop, admin or an interface must do, including a feature required by law or compliance (hazard labelling, VAT-ID validation, newsletter double opt-in, a payment method), an integration, migration or content. Non-functional is a quality attribute or operating constraint — performance, availability, scalability, security posture/access policy, accessibility conformance level, data-protection process, hosting, operations, monitoring, code quality. Project & services is how the project is delivered and supported — method, timeline, team, documentation, training, testing/acceptance, hypercare, warranty/maintenance, handover, references, commercial structure (scope and effort only). A bidder questionnaire sheet (e.g. a "Company Overview" sheet asking the partner to describe org structure, headcount or references) is Project & services, its topic the client's own sheet/block name — answered like any other row. A client "Type" column is a hint, never the decider. `topic` is the most specific grouping the client gives for that row — its own Area/Category column when present, else the block heading, else the sheet name (PDF: the section heading) — strip a leading chapter number ("1. ", "3.3 - ") and use the rest verbatim; never invented, never the tab name. Confirm, correct, or add to the digest's proposed table structure and answer columns (xlsx/csv only) — a sheet the digest called context whose cells are in fact a requirement or vendor-answer table gets its own table the digest never proposed. A row inside a declared table's range that is a heading, a note or a total, not a requirement, goes to `skip`; a row outside every declared range is never listed anywhere. Fill `projectInfo` from the tender's own context sheets or prose for the 18 keys in `project-information.md`; `source` may join several locations with "; "; state what the source gives, qualified when it is not exactly what the key asks; a key the source does not state is simply omitted. A `value` is the client's own fact, kept verbatim, a figure included (EUR 380, €120k, 160,000 EUR) — this table is the one place the money rule does not apply. A numeric compliance-legend rating column (e.g. 0-4) is not yours to fill or change — the runtime writes it at export. Return this JSON as your final message, nothing else:
 >
-> Read only `<file>` (this table). Never open a hidden sheet, or any sheet, table or file whose name starts with `_` — for an xlsx tender they were never written to a CSV at all. When the tender has an `import-map.json` (an xlsx the user steered), that mapping is **authoritative**: it names this table's id column, its requirement and answer columns and the client's allowed tokens, all confirmed by a human — do not re-derive them. Without a mapping (csv, markdown, pdf), fall back to the heuristic: a requirement table has an id-like column (`ID`, `#`, `Nr.`, values like `GEN-01`) and vendor columns (headers starting *Vendor*, *Bidder*, *Supplier*, *Anbieter*, *Antwort*, or *Compliance / Comment / Effort*). Prose sources (pdf, docx text): mint `R-<n>` with page or paragraph.
+> ```json
+> {
+>   "tables": [{ "sheet": "<real sheet name>", "headerRow": 1, "firstDataRow": 2, "lastDataRow": 92,
+>                "tab": "Functional", "topic": null,
+>                "columns": { "id": "A", "priority": "F", "requirement": "E", "topic": "B",
+>                             "compliance": "J", "comment": "K", "effort": "L", "assumptions": null } }],
+>   "overrides": [{ "sheet": "<sheet>", "row": 6, "tab": "Non-functional" }],
+>   "skip":      [{ "sheet": "<sheet>", "row": 40, "why": "sub-heading, not a requirement" }],
+>   "items":     [{ "tab": "Functional", "topic": "<PDF section heading>", "prio": "Must", "text": "<verbatim>", "id": null }],
+>   "projectInfo": [{ "key": "products", "value": "<value>", "source": "<sheet> r<row>" }]
+> }
+> ```
 >
-> Write, disjoint from every other `§EXTRACT` spawn:
-> - `<work>/C<n>.md` per cluster (10–20 rows by area, never spanning a table, source order): one line each `<id> | <title> | <requirement> | <acceptance or —> | <priority> | <type> | <reference or —>`.
-> - `<work>/map-<t>.md`: this table's §1 Source-map row — number, sheet or section name, rows, id column, vendor columns verbatim, allowed tokens as the RFP states them, effort unit, locator — plus minted `R-<n>` ids, cells the client prefilled (kept, noted `prefilled`), hidden or `_`-prefixed sheets ignored by name, warnings (missing attachments, truncated text), and, for a non-requirement table, where its content went (`context → §1.1` / `§1.2` / `§8` / `§9` / `unused — <reason>`).
-> - `<work>/context-<t>.md`: context material this spawn happens to see in its own table (cover, profile, constraints, instructions, weights, glossary), or "none". Do **not** write `meta.md`, `params.md`, `migration.md`, `integrations.md` or `glossary.md` — `§CONTEXT` is their only writer, and a second writer loses rows. `§CONTEXT` reads these dumps.
+> XLSX/CSV: use `tables`, `overrides`, `skip` and `projectInfo`; `items` is empty. A multi-block sheet gets one `tables` entry per block, `topic` = that block's heading. An `overrides` entry sets `topic` only when this row's own grouping differs from its table's `topic` — never restate the table's topic as an override. PDF: use `items` and `projectInfo`; `tables`, `overrides` and `skip` are each an empty array. For each PDF item, `text` is verbatim — never invent one the prose does not state, never merge two into one entry, never split one into two; a descriptive paragraph that states no requirement is not an item, though it may feed `projectInfo`. `prio`: infer from the prose — "must"/"shall"/"required" → Must, "should" → Should, "nice to have"/"could"/"optional" → Nice to have, empty only when the prose gives no such signal; use the document's own word for that level, its first letter capitalised, dropping a trailing qualifier such as ", if time allows". A bullet list under a lead-in sentence that states the priority: every bullet inherits the lead-in's `prio`, but its `text` is the bullet's own wording, never the lead-in's. `topic` is the PDF's section heading (strip a leading chapter number), never empty; `id` is optional (a client id stated in the prose). Do not write a file.
+
+**`context`** (after intake, and again whenever the architect's report or an operator answer changes them):
+
+> Detected Shopware `<version>` `<edition>` plan `<plan>`, per `<evidence>`. Write into `<doc>`: section 1's meta prose (not the Project information or Not taken tables — the runtime writes those), the detected version/edition/plan above; section 3's `### Exclusions` bullets, one per exclusion the client's own document states; section 6 Integrations the tender names, from the source document and the PM's markdown reports; section 7 Glossary of the client's terms. There is no Approach section — a platform, hosting, PSP or CMP decision belongs in a scope item's Client Response, never here. Never touch section 2, a section 4 row, a section 5 block, section 8 Log, section 1's Project information or Not taken tables, or section 3's `### Assumptions` bullets — the runtime writes all of those (section 8 is appended by the runtime's `report` command). Never invent a term, an integration or an exclusion the source does not state; when a section has no material, leave it as the heading alone — write nothing under it. End your turn with one line: which sections you wrote.
+
+## `sw-product-manager`
+
+A shared agent (also used outside tenders); its tools include the Dev Knowledge Base MCP (`kb_status`, `list_docs`, `grep_docs`, `read_doc`), `WebFetch`, `Read`, `Grep` and read-only `Bash`. Never writes the working document, and never writes any file in tender work.
+
+> Check scope item(s) `<ids>` against the Dev Knowledge Base MCP (platform and project). Installed Shopware `<version>` `<edition>` plan `<plan>`, per `<evidence>` (`context-parameters.md`). Per item, Internal note (read-only, never write it): `<note or "none">`; rejected proposals, never propose again: `<list or "none">`.
 >
-> Never invent a row, an id or a token that is not in the source; a cell the source leaves blank stays blank, never `_TBD_` at this stage — that marking is the estimating agents' job.
-> Delivery: these files are the only ones this spawn may write. End the turn with one line: table #, row count, cluster files written, id column.
-
-## §CONTEXT — `sw-tender-editor`, once for every non-requirement table (step 3, same message as `§EXTRACT`)
-
-One spawn, not one per table. The context tables are small (a cover sheet, a profile, a register), and a single key parameter is often stated on two of them — the catalog size on the company sheet, the go-live date on the cover — so one agent has to see them all to fill `params.md` once. It is also the only way the five files have exactly one writer: parallel spawns appending to the same file race and lose rows.
-
-> Extract client context from tender source. Source files `<list>`, tables `<t1 …>` (`<sheet or section names>`), `<client>`, RFP language `<en|de>`.
-> Installed Shopware `<version>` (per `<evidence>`), PHP `<version>` (per `<evidence>`).
+> For each item: report the stock feature that covers it, or state plainly that nothing in the platform or the project covers it; cite the Knowledge Base page or the project's own implementation. Flag an item too vague to assess and draft one client question for it (question text, 2-4 options with their scope effect, a fallback) — the architect turns this into the section 5 block. Never estimate effort, never set Requirement Coverage — the architect decides the final value; where the architect's own check disagrees with this report, that is expected and the architect records it, not this agent.
 >
-> Read only the tables named above (cover, company & context, integrations, migration inventory, glossary, response instructions; a prose tender: the whole document), plus any `<work>/context-<t>.md` dump that already exists — those spawns run beside this one, so read whatever is there and never wait for one. Every value you write comes from the source tables themselves; the dumps only save a second look. Never open a hidden sheet, or any sheet, table or file whose name starts with `_`. Do not read the requirement tables — `§EXTRACT` owns those — except to pick up an interface or a term they name.
->
-> Write, and these five are the only files you may write, under `<work>`:
-> - `meta.md` — the §1.1 Meta field list (`analysis-template.md`), every field present, `_not provided_` when the source is silent, `Source` = source-map number + sheet + row label.
-> - `params.md` — every row P-01…P-50 of `context-parameters.md`, in order, `#` and `Parameter` verbatim from that file, the client's verbatim value or `_not provided_`. Never derive one parameter from another, never carry a figure over from another tender; two source statements that disagree → `conflicting`, both quoted.
-> - `migration.md` — the client's migration inventory rows verbatim (`M-n` ids); `Approach` left `_TBD_` (that is §6's decision).
-> - `integrations.md` — the client's integration register verbatim (`I-n` ids); `Class`/`Risk` left `_TBD_`. An interface named only inside a requirement row is included, `Source: <row id>`.
-> - `glossary.md` — the client's terms verbatim; `Maps to` left `_TBD_`.
->
-> Never invent a value, a term or an interface. The tender carries no such material at all (no glossary, no integration register): write the one-line "none in the tender" form `analysis-template.md` gives for that section, so the gap is stated rather than blank.
-> Delivery: end the turn with one line: files written, and per file its row or field count.
+> Never ask the user a question with a structured question tool (Claude Code: `AskUserQuestion`; Codex: `request_user_input`). Return your report as free-form markdown, your final message.
 
-## §PM — `sw-product-manager`, per cluster (wave 1)
+## `sw-shopware-architect`
 
-> Tender scoping, read-only research. Client `<client>`, project `<title>`, RFP language `<en|de>`.
-> Installed Shopware: `<version>` (per `<evidence>`), edition `<Community | Commercial — plan <name>>` (per `composer.lock`, `shopware/commercial` `<present|absent>`). PHP `<version>` (per `<evidence>`). Plans under evaluation: `<list>`.
+A shared agent (also used outside tenders); its tools include the Dev Knowledge Base MCP, `Read`, `Grep`, `Glob`, read-only `Bash`, and `WebFetch`/`WebSearch` for ISV research. Never writes the working document, and never writes a file in tender work — the skill saves its report and runs `apply`.
+
+> Assess and estimate scope item(s) `<ids>` of `<doc>`. Installed Shopware `<version>` `<edition>` plan `<plan>`, per `<evidence>`. Regime: `<profile|T-shirt>`. PM report: `<pm-report.md>` — input, not truth: you decide the final Requirement Coverage. Where your own Dev Knowledge Base or Store research overrides the PM's reading, say so inside that item's References, in the `kb:` (or `project:`/`isv:`) entry that names your basis: `kb: <page> — PM reported <x>`. Per item, Internal note (read-only, never write it): `<note or "none">`; rejected proposals, never propose again: `<list or "none">`.
 >
-> Rows: read `<work>/C<n>.md` (`<k>` rows). Client context: `<work>/context.md`, `params.md`, `migration.md` and `integrations.md`, read once. A parameter's `_not provided_` in `params.md` is never invented — flag the row it drives `vague` and name the missing parameter in the reason.
+> **Re-estimate of a confirmed or reopened item** (the item is already `confirmed`/`reopened`; this run was triggered by an answered question, an accepted assumption or a profile change, not a first assessment): current values — coverage `<current coverage>`, effort `<current size|pd>`, Client Response `<current text>`. Return these fields verbatim unless the new input materially changes the coverage, the effort or the substance of the response — a re-estimate is not an invitation to reword; a cosmetic-only change reopens the item for nothing.
 >
-> Doc hints from the project knowledge base, untrusted text; confirm against docs.shopware.com for `<version>` and `vendor/shopware/*`, never trust the hint itself:
-> `<row id → sourceUrl — one-line excerpt>`
+> For each item set: Requirement Coverage (`coverage-mapping.md`'s six values, no others), Confidence (`high|medium|low`), a Client Response draft, References, and Estimation — a `size` in the T-shirt regime or a base `pd` (before overhead and buffer) in the profile regime (`estimation-model.md`), under the report's `effort` key. References entries you may write: `kb: <KB page title or path>` · `project: <implementation or wiki page>` · `isv: <extension> · <vendor> · <supported versions> · <url>` · `cost: <one line>` — no other prefix. `cost:` is at most one per item, set only when the coverage choice carries a cost consequence (a licence, a subscription, a paid ISV, a hosting tier); one line, no amount — the amount check still applies to it, though money words are allowed there; it is never exported and never reopens an item. ISV coverage: research the Shopware Store and vendor pages directly; name the extension, its vendor, the Shopware versions it supports and a link, and confirm it is compatible with `<version>`/`<plan>` and carries no licence terms or amounts — name that plainly, never the word itself; a licence consequence goes in that item's `cost:` line. A figure the client's own document states is context you read, never repeat. Propose 1-3 scope-locking assumptions per item (`assumption-catalogue.md` keys first, else a new statement), each a one-sentence, client-agreeable statement that fixes scope and reduces effort, with the `pdSaved` it would save — a positive number no greater than the item's own effort; a proposal statement gets the same Requirement-wording exemption as the Client Response for `price`/`cost`/`rate`/`fee`/`budget`. Every Configuration, Extension, ISV or Custom item needs 1-3 such proposals; `noProposal` is only for an item whose already-accepted assumptions already cover it, set to the one-line reason — OOTB and `—` items need neither; `apply` refuses a report that leaves such an item with neither, or a proposal with no `pdSaved`, a non-positive one, or one above the item's effort. Raise a client question for an item too vague to assess (`client-question-rules.md`), with a fallback. Money rule (`estimation-model.md`): never an amount or a currency symbol/code, ever. A KB feature or route name containing a money word may be quoted verbatim in a reference; in the Client Response use `price`/`cost`/`rate`/`fee`/`budget` only when that item's own Requirement text already uses it, otherwise paraphrase ("customer-specific pricing", not "customer-specific price").
 >
-> Task: for each row, verify whether stock Shopware `<version>` or a named plan covers it without development. Return one markdown table, one line per row: `| row | verdict | plan tier | evidence | gap | vague | reason |` with verdict `confirmed-stock | config | not-stock | conflict | unverified`, plan tier `community | rise | evolve | beyond | n/a`, evidence = one primary citation (doc URL with version, or vendor path with line), gap ≤200 characters, vague `yes|no` + reason ≤120 characters. Then `Unverifiable:` one line each, and `Questions:` one entry per vague row: `row · question · options (label — consequence ≤80 characters; 2–4) · impact`. Do not estimate effort. Do not open the workbook, any hidden sheet, or any sheet, table or file whose name starts with `_`. Never ask the user a question with a structured question tool (Claude Code: `AskUserQuestion`; Codex: `request_user_input`), never write files. Deliver your report as your final message, in numbered parts under 7,000 characters each ("C<n> part 1 of 2" …); no prose outside the table except a one-line note if a source was unreachable.
-
-`unverified` is not a verdict.
-
-## §ARCH — `sw-shopware-architect`, per cluster (as that cluster's PM report lands)
-
-> Tender estimation, planning only: no design document, no code, no state-changing commands.
-> Read in this order: `<work>/arch-common.md`; `<work>/C<n>.md` (the rows); `<work>/pm-C<n>.md` (PM verdicts: input, not truth; where your own `vendor/` or KB check disagrees, record it in the row's risks); `<work>/context.md`, `params.md`, `migration.md` and `integrations.md`; `reference/assumption-catalogue.md` of the `sw-discover-tender` skill (themes `<list>`; propose candidates by key or `new`). A parameter's `_not provided_` in `params.md` is never invented — it is a stated risk, or an assumption candidate naming the gap.
+> Return this JSON as your final message, nothing else — no prose, no file writes:
 >
-> Return, per row, one table line: `| row | class | mechanism | low | mid | high | level | drivers | risks (weight 1–3) | reuse | assumptions | alternative plan (plan: class low/mid/high) | integration or migration line |`. Class `stock | config | plugin | custom | commitment | service`; mechanism one line cited to a `vendor/` path or KB page for `<version>`, verified with Grep or the KB, never from memory; level `detailed | medium | vague`. Rows with no defensible estimate: `low/mid/high` = `blocked`. Assumptions: one entry per candidate, `<row id | global>: <statement> — PD saved <n> (global: per row) — excludes <what> — risk to <who>, weight 1–3 — class if accepted`. Then `Foundation:` name — PD — attach to row (one line each), and `Open questions:` only what the client or the partner can answer. Do not fold overhead or buffer into your numbers. PD only, never a currency amount. Do not double count with other clusters: `<named overlaps>`.
->
-> Delivery: WRITE the report to `<work>/arch-C<n>.md` (the only file you may write), under 12,000 characters. End your turn with one line: the path and the sum of mid PD. Do not paste the report into your final message. Do not open the workbook, any hidden sheet, or any sheet, table or file whose name starts with `_`.
+> ```json
+> {
+>   "cause": "<why this run happened, e.g. 'analyze group 1' or 'CQ-3 answered B'>",
+>   "items": [
+>     {
+>       "id": "<item id>",
+>       "coverage": "OOTB | Configuration | Extension | ISV | Custom | —",
+>       "confidence": "high | medium | low",
+>       "size": "—|XS|S|M|L|XL|XXL",         // T-shirt regime only; "—" for OOTB
+>       "pd": 9.5,                            // profile regime only — base PD before overhead/buffer; 0 for OOTB
+>       "clientResponse": "<text>",
+>       "references": ["kb: ...", "project: ...", "isv: <ext> · <vendor> · <versions> · <url>", "cost: <one line, no amount>"],
+>       "proposals": [ { "statement": "<text>", "pdSaved": 4 } ],
+>       "noProposal": null | "<reason>",       // only when accepted assumptions already cover the item; required when "proposals" is empty and coverage is not OOTB or "—"
+>       "blockedBy": "CQ-3" | "new:0" | null,  // "new:<i>" = index into this report's own "questions" array
+>       "failed": null | "<reason>"
+>     }
+>   ],
+>   "globalProposals": [ { "statement": "<text>", "pdSaved": 6 } ],
+>   "questions": [
+>     {
+>       "items": ["<item id>"],
+>       "question": "<text>",
+>       "options": [ { "key": "A", "text": "<text>", "effect": "<scope effect>" } ],
+>       "fallback": "A"
+>     }
+>   ]
+> }
+> ```
 
-Re-estimate after a clarification or a source change: same brief, `<work>/C<n>.md` replaced by the affected rows and their `.c` lines, report to `<work>/arch-C<n>-r<k>.md`.
+## Delivery rules
 
-## §QA — `sw-qa-engineer`, once (in message 1, with the PM spawns)
-
-> Planning only: no commands, no tests written, no files except the one named below.
-> Installed Shopware `<version>` (per `<evidence>`), PHP `<version>` (per `<evidence>`). Read `<work>/arch-common.md` and `<work>/context.md`, then these rows from the cluster files: `<quality, test concept, load and performance testing, security testing, accessibility testing rows>`. Partner QA overhead in the profile: `<n>%`.
-> Return: a test-concept outline in ≤15 lines; per row one table line `| row | class (service | commitment | custom) | mechanism (tooling) | low | mid | high | drivers |`; one line stating whether `<n>%` QA overhead is plausible for `<total dev PD>` and why; `Risks:` with weight 1–3. PD only, never a currency amount.
-> Delivery: WRITE to `<work>/qa.md` (the only file you may write), under 6,000 characters; end your turn with one line (path + mid-PD sum). Do not open any hidden sheet, or any sheet, table or file whose name starts with `_`.
-
-## §ROWS — `sw-tender-editor`, per cluster (as that cluster's architect report lands, parallel)
-
-> Join cluster C<n> into finished §4 row blocks. `<analysis>` grammar: `analysis-template.md`.
->
-> Read only: `<work>/C<n>.md`, `<work>/pm-C<n>.md`, `<work>/arch-C<n>.md`, `<work>/qa.md` (only when it holds rows of this cluster), `reference/estimation-model.md` and `reference/assumption-catalogue.md`, both in this skill's directory.
->
-> Join rules (same rules as the former §MERGE, now executed here):
-> - Join by row id. Class from the PM verdict unless the architect cites a concrete gap with a mechanism; PD from the architect (QA for its rows). Foundation PD is added to the row it attaches to, on low, mid and high alike, and named in that row's Text.
-> - `vague` = PM vague OR architect level `vague`.
-> - `unverified` → evidence `unverified`; class from the architect's mechanism.
-> - PM stock/config vs architect custom (or the reverse) → `K-n` with the resolution; a swing above 2× on a Must row → `Q-n`. Plugin vs config is not a conflict.
-> - Architect open questions only the client can answer → `CQ-n` candidates; only the partner → `Q-n` candidates; anything else is dropped.
-> - Assumption candidates: de-duplicate by statement; a candidate naming one row becomes `<ROW>.a<n>` under that row; a candidate naming several rows or `global` becomes `A-n` with PD saved per row. Every line is written as `[ ]` with its PD saved, risk to and class-if-accepted. Nothing is applied.
->
-> Write, in analysis-template grammar exactly:
-> - `<work>/rows-C<n>.md`: the finished §4 lines for this cluster's rows — each `req` line plus its `.a` lines, ready to splice verbatim.
-> - `<work>/tail-C<n>.md`: at most 25 lines — PD by area and by priority for this cluster, `A-n` candidates, `K-n` conflicts, CQ/Q candidates. The orchestrator reads only this file, never `pm-C<n>.md` or `arch-C<n>.md` directly, so keep it complete.
->
-> Delivery: these two files are the only ones this spawn may write. End the turn with one line: both paths, row count, mid-PD sum.
-
-## §SPLICE — `sw-tender-editor`, per cluster (sequential)
-
-> Splice cluster C<n>'s finished rows into `<analysis>` §4. Run these spawns one at a time — only one writer may touch the analysis file at once; the page watcher re-renders on every write.
->
-> Read `<work>/rows-C<n>.md` and the current `<analysis>`. By Edit, replace this cluster's rows in §4 — the lines whose status is `queued` or `analysing` for the ids listed — with the content of `<work>/rows-C<n>.md`, in place.
->
-> Never touch: any other cluster's rows, any other section, the frontmatter, a frozen `accepted`/`rejected` line, a `[x]`/`[-]` a human wrote, or a `[ ]` line marked `partner`. §1.1, §1.2, §8 and §9 are never touched by this brief and must survive byte-identical. After the write, all nine sections of the analysis file must remain present and parseable.
->
-> Delivery: `<analysis>` is the only file this spawn may write. End the turn with one line: rows spliced.
-
-## §MERGE
-
-Retired — the join rules formerly here are now executed by `§ROWS`, one spawn per cluster, writing directly to `<work>/rows-C<n>.md` and `<work>/tail-C<n>.md`.
-
-## §RESP — general-purpose agent, per cluster (export)
-
-> Response CSV for cluster C<n> of `<rfp>`. Read `reference/response-rules.md` of the `sw-discover-tender` skill first, then `<work>/resp-common.md` (client header row verbatim, delimiter, quoting, BOM, allowed compliance tokens, RFP language, overhead and buffer as applied), `<work>/C<n>.md` (source rows in order), and in `<analysis>` the §4 lines of those rows and the §3 lines naming them. §1.1, §1.2, §8 and §9 are analysis context, never a response table — do not read them for this file. Context cells come from the source export `<source path>` (the file the analysis read, never the workbook), copied unchanged.
-> Write `<work>/resp-C<n>.csv`: no header, one line per source row in source order, every client column; context cells unchanged; compliance, comment and effort per the rules; every other vendor cell empty. Only `accepted` assumption lines and `.c` / `RC-n` clarifications may appear in a comment, in plain words, no ids. Never open the workbook, a hidden sheet or a `_`-prefixed file; never invent a token or a figure; never a currency amount.
-> Delivery: that file is the only one you may write. End your turn with one line: path + row count.
-
-## §ASSEMBLE — `sw-tender-editor`, per client table (export, after §RESP)
-
-> Assemble and check the final response CSV for table `<n>` (`<table-slug>`) of `<rfp>`. Run after every `§RESP` spawn for this table's clusters has returned.
->
-> Read `<work>/resp-common.md` (client header row verbatim, delimiter, quoting, BOM, allowed compliance tokens) and each `<work>/resp-C<n>.csv` for this table, in source order.
->
-> Write `<source basename>-response-<n>-<table-slug>.csv`: the client's header row verbatim, then this table's cluster CSVs concatenated in source order, no blank lines, no totals row.
->
-> Then check the file just written: row count and id sequence equal the source table; header equals the client's; every compliance value in the allowed list; every effort cell numeric or empty with the blocked comment; no `A-`, `CQ-`, `Q-`, `RC-`, `.a`, `.c`, `PD saved`, `EUR`, `€`; no proposed or rejected assumption text; constant column count across every row; no §1.1, §1.2, §8 or §9 content — they are analysis context, never a response table. (The effort-sums-equal-§2 check stays with the orchestrator, which holds §2.)
->
-> Any check failing → delete the file, do not leave a partial one.
-> Delivery: that file is the only one you may write (and delete, on a failed check). End your turn with one line: path · rows · effort sum per priority (Must / Should / Could) · pass — or, on failure, the single failing check.
+- Cap 10 spawns in one message; a failed or empty spawn leaves the item `failed` with a `failed: <reason>` reference, never filled from memory.
+- `sw-product-manager` and `sw-shopware-architect` never write a file in tender work; the skill is the only writer of the working document, and only through `apply`, `check --write`, and `sw-tender-editor`'s `context` job.
+- Codex and Copilot adapters mirror each agent one-to-one — see the plugin's `agents/` generation.

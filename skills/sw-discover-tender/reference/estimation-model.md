@@ -1,106 +1,70 @@
 # Estimation model
 
-## Unit
+A working document is in one regime at a time. Regime = `profile` when `specs/rfp-partner-profile.md` exists and parses, else `T-shirt`. The runtime applies this rule on every run; the architect never decides the regime.
 
-**PD** = one person-day (8 h) of one senior Shopware developer, including unit tests and code review. Excludes project management, QA, design, content, training, hosting and the ERP partner's work; those enter through overhead or as *Services* rows. If the RFP defines PD differently, the RFP's definition wins and the difference is stated in §1.
+## Regimes
 
-## Three-point per row
-
-The architect returns `low / mid / high` per row:
-- **low** — everything goes right, named reuse applies
-- **mid** — most likely, drivers partly materialise
-- **high** — every listed driver materialises
-
-The PM never estimates. The QA agent estimates only quality, test, security-testing and accessibility rows.
-
-## Level and buffer
-
-| Level | Definition | Buffer |
+| Regime | When | Estimation cell |
 | --- | --- | --- |
-| detailed | Acceptance criteria present, or a quantified specification (volumes, limits, formats) | 0% |
-| medium | Clear intent, no acceptance criteria | 10% |
-| vague | Comparative or totality phrasing, undefined reference, missing counterpart or owner | 25%, and only with a `CQ-n` or a proposed assume line; blocked rows stay empty |
+| profile | a partner profile exists | The architect's base person-day estimate, one figure, before overhead and buffer. The runtime applies the profile's overhead and buffer and writes `<n> PD` (rounded to 0.25). |
+| T-shirt | no profile | The architect gives a `size`; the runtime looks up the default-scale PD and writes `<SIZE> (<n> PD)` — default scale, before overhead and buffer. |
 
-## Assumption lines
+**E-1** One figure per scope item, no low/high range — the architect returns a single `size` (T-shirt) or a single base `pd` (profile) per item in its report JSON; there is no three-point estimate.
 
-Every candidate is a `[ ]` line with a PD saved figure stated against mid: `<ROW>.a<n>` under its row, or `A-n` in §3 with PD saved per row (`STF-01 −5 · STF-03 −3`). A `[ ]`, `rejected` or `suspect` line changes nothing.
+**OOTB effort.** T-shirt regime: the architect gives `size: "—"`; the runtime writes `— (0 PD)`. It also derives `— (0 PD)` when the coverage is OOTB and `size` is omitted, so an architect that forgets the field on an OOTB item is not a validation failure. Profile regime: the architect gives `pd: 0`.
 
-An `accepted` line, and only an accepted line:
-1. removes its PD saved from the row's mid; low and high move proportionally
-2. sets the row's class to the line's class when one is stated
-3. resets the row's level to `detailed` (buffer 0%)
+## Default scale (T-shirt)
 
-A `.c` or `RC-n` clarification replaces the open assumption of its rows; the rows are re-estimated by the architect (re-spawn for those rows only), never adjusted by hand.
+| Size | PD | What makes it this size |
+| --- | --- | --- |
+| — | 0 | OOTB. |
+| XS | 0.5 | A setting, a snippet, a flag. |
+| S | 1.5 | One configuration set, or one hook — subscriber, custom field, Flow action, Rule condition. |
+| M | 4 | One feature on one surface with its own UI, or a plain ISV install and configuration. No new entity. |
+| L | 10 | Administration and Storefront, or a new entity with API and UI, or an ISV integration with real mapping. |
+| XL | 25 | A vertical — domain model, admin module, API, storefront, rules — or a two-way interface. |
+| XXL | 50 | Too large for one scope item; flagged *not decomposed*. |
 
-## Folding
+**Size-up drivers**, one size each, applied by the architect when sizing: an external counterpart the partner does not control · data migration · a hard non-functional requirement · no stock feature to stand on. Section 1's Project information table is size-up evidence, not a separate driver — high order/traffic volumes, a heavy migration or many sales channels/markets/currencies are what makes a driver apply; cite the relevant Parameter row when it is why an item is sized up.
 
-```
-mid'     = mid − Σ PD saved (accepted lines naming the row)
-PD final = mid' × (1 + buffer) × (1 + overhead_pct / 100)      → nearest 0.25
-```
+## Not decomposed
 
-- **Overhead** (PM + QA %) is folded into every row and stated once in §2. If the RFP asks for PM/QA as separate lines, set overhead 0 and add *Services* rows instead.
-- **Risk buffer** per profile: `folded` multiplies every row by `(1 + buffer_pct/100)` after the fold above; `separate` adds one line in §2 and leaves rows untouched. The fixed-price scope = the Must rows in PD, plus the separate buffer line when that mode is used.
-- **Foundation efforts** (theme base, integration framework, environments, migration tooling) are rows in their own right when the RFP has a row for them; otherwise they attach to the row the architect named and that row's Text says so.
-- **No money.** No cell, line or report figure carries a currency amount; nothing in the profile is a rate or a fee.
+**E-2** A scope item is *not decomposed* when its size is `XXL`, or — in the profile regime — its final Estimation figure (the architect's base `pd`, after the runtime applies overhead and a folded buffer — the only figure the working document stores) is above the profile's big calibration point (the wizard's XL anchor). It is flagged on the page, in section 2 and in the run report, and still exports with its estimate.
 
-## Edition flip
+## Totals
 
-Rows whose class changes with the plan carry the architect's alternative (plan: class low/mid/high) in the §4 Evidence / risk cell. Until the plan is decided, §2 shows both variants and the plan choice is `Q-1`. On Community, rows that stock B2B Components would cover become `custom` and typically double.
+**E-3** Section 2 totals by priority (the client's own priority values, verbatim) and by tab (`TABS`, one row per tab with items) always equal the sum of the section 4 Estimation cells; the runtime checks this on every `check` run and refuses to write section 2 otherwise.
 
-## Non-development rows
+**E-4** A blocked scope item (`blocked CQ-n`) counts at its fallback option's estimate, marked as such in section 2's "Blocked (at fallback)" column. A scope item with no estimate yet (`queued`, `analysing`, `failed`) is counted in "Not estimated", never as `0`.
 
-- **Commitments** (process, contract, hosting recommendation, references): 0 PD, class `commitment`.
-- **Services** (training, documentation, test concept, pen-test coordination, go-live support, migration rehearsal): real PD, class `service`, shown as the *of which Services* line in §2.
+**E-5** Every effort figure names its regime — section 2's `Regime:` line, the page, and the run report all state it; an item's Estimation cell format (T-shirt vs plain PD) already carries it.
 
-## Sanity checks
+**E-6** The client's effort column in the export gets the PD number only — no size letter, no unit text.
 
-- The Must total is reported in PD and never compared with the client's stated budget. A partner who wants a lower Must total gets a `Q-n` with the routes in PD: further accepted lines, phasing Should/Could, or the full scope. Never lower a number to fit.
-- Sum per area first, then per priority, then the total; write the area subtotals in §2 and re-add once before writing.
-- A row whose high is more than 3× its low at `medium` level is a `CQ-n` candidate even without vague phrasing.
-- Rows estimated from `reuse` keep the source row's three-point unless the requirement text differs; then re-estimate.
+## Money
+
+No amount, currency symbol or currency code appears in any file the tool writes, ever — that boundary is absolute, except section 1's Project information table, which keeps the client's or the operator's own figure verbatim (`project-information.md`), and a scope item's `cost:` reference, which carries a one-line cost consequence but no amount (`agent-briefs.md`). The words themselves (`price`, `cost`, `rate`, `fee`, `budget`, and their plurals) are narrower:
+
+- **Allowed** in a `kb:`/`project:` reference when it is the Shopware feature, route or admin-surface name itself, quoted verbatim (e.g. a KB page literally titled "Customer-specific Prices").
+- **Allowed** in a Client Response when that item's own Requirement text uses the word — mirror the client's own wording back to them; never introduce the word where the client did not use it.
+- **Allowed** in a `cost:` reference — money words there are not the issue, an amount is; the amount check still applies to a `cost:` line.
+- **Otherwise paraphrase**: write "customer-specific pricing", "a configured amount", "the shop's payment methods" — the `-ing`/descriptive form, not the client's word repeated as if it were the tool's own.
+- Never an amount, a currency symbol (`EUR sign`, `dollar sign`, `pound sign`, `yen sign`) or an ISO code (`EUR`, `USD`, `GBP`, `CHF`), under any of the above, `cost:` included.
+
+This applies to Client Response, Assumptions, References, proposals, item fields, section 1 prose, section 2 and section 8 Log, the run report, and a working-sheet export. The client's own verbatim Requirement text and cells, section 1's Project information table (its own verbatim-amounts rule above), section 3 Exclusions, section 6 Integrations and section 7 Glossary (client transcriptions, `sw-tender-editor`'s `context` job) are exempt from the whole rule — the client may state a budget figure; the tool never repeats it as a figure of its own. `check`'s money scan covers that tool-authored text for a currency symbol or an ISO currency code, and for a price/cost/rate/fee/budget word, applying the `kb:`/`project:`/`cost:` exemptions above and, for a proposal statement, the same Requirement-wording exemption as a Client Response; the amount check still applies everywhere, `cost:` included; it refuses with a reason on a match.
 
 ## Partner profile
 
-Path: `specs/rfp-partner-profile.md`. Read every run. Missing: write the template below with `_TBD_` everywhere and add a `high` `Q-n` asking for overhead, buffer and the platform preferences. `_TBD_` overhead or buffer means PD final is stated before both, said in §2, and caps *Estimate basis* at 70.
+`specs/rfp-partner-profile.md`, gitignored, YAML frontmatter:
 
-```markdown
-# RFP partner profile
-
-| | |
-| --- | --- |
-| **Partner** | <name> |
-| **Updated** | YYYY-MM-DD |
-
-Effort and platform defaults only. The partner converts PD to an offer outside the skill.
-
-## 1. Overhead
-- **PM + QA overhead:** <n>% <!-- combined, folded into every row -->
-
-## 2. Risk buffer
-- **Buffer:** <n>% · mode `folded` | `separate`
-
-## 3. Preferred platforms
-| Item | Preference | Note |
-| --- | --- | --- |
-| Shopware plan | <Rise · Evolve · Beyond, or "per RFP"> | |
-| Hosting | <provider> | <!-- region, managed / PaaS --> |
-| PSP | <provider> | |
-| CMP | <product> | |
-| Store plugins commonly used | <names> | |
-
-## 4. Compliance scale when the RFP has none
-`Stock | Config | Plugin | Custom | Not offered`
-
-## 5. Reusable assets
-| Asset | Covers | PD saved | Ownership / licence |
-| --- | --- | --- | --- |
-| <own plugin> | <rows/themes> | <n> | |
-
-## 6. Standard exclusions and delivery defaults
-- Warranty <n> months · maintenance offer <scope summary>
-- Always excluded: <list>
-
-## 7. Response language
-`auto` <!-- follows the RFP --> | en | de
+```yaml
+calibration: { small: <PD>, big: <PD> }
+overhead: <percent>
+buffer: { percent: <percent>, mode: folded | separate }
+isv: [ { name: <name>, vendor: <vendor>, versions: <supported versions> } ]
+assets: [ { name: <name>, covers: <what>, pdSaved: <PD> } ]
 ```
+
+Created and edited in a page wizard, offered when no profile exists, skippable. The wizard shows `calibration.small` with an XS anchor and `calibration.big` with an XL anchor, so both figures mean the same thing across operators. `isv[]` carries no licence field — the money rule is a hard boundary, not a simplification. Creating or changing the profile marks every scope item for re-estimate on the next run.
+
+Estimation formula the runtime applies (profile regime): `round0.25(pd x (1 + overhead/100) x (1 + buffer/100 if folded))`. Buffer mode `separate` states the buffer once in section 2 instead of folding it into each item.

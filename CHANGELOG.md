@@ -7,6 +7,26 @@ release.
 
 ## [Unreleased]
 
+### Changed
+
+- **`sw-discover-tender` runs analysis automatically, in page-order chunks —
+  the Analyze step is gone.** Confirming the extraction starts assessment on
+  its own, about 15 items at a time in page order, split into groups of ~5
+  with an `apply` per group as it lands; re-estimate work joins the same
+  chunking. Every Configuration, Extension, ISV or Custom item now needs a
+  proposal with a numeric `pdSaved`, or a `noProposal` reason — `apply`
+  refuses otherwise. `SKILL.md`, `reference/procedure.md`,
+  `reference/editor-session.md` and `reference/agent-briefs.md` describe the
+  new flow; `agents/sw-shopware-architect.md` and its adapters carry the
+  `noProposal` requirement.
+- **The working document's Effort column is now Estimation** — column header
+  and order change only (client inputs ID · Prio · Requirement first, then
+  the working fields); the report JSON key stays `effort`. An older-order or
+  `Effort`-headed document is read the same way and rewritten on its next
+  write. `reference/analysis-template.md`, `reference/estimation-model.md`,
+  `reference/response-rules.md`, `reference/coverage-mapping.md` and
+  `reference/client-question-rules.md` updated.
+
 ## [0.1.11] - 2026-09-21
 
 ### Changed
