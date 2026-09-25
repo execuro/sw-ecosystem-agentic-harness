@@ -7,6 +7,8 @@ release.
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-09-25
+
 ### Changed
 
 - **`sw-discover-tender` runs analysis automatically, in page-order chunks —
