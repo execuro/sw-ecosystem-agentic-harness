@@ -7,6 +7,19 @@ release.
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-10-21
+
+### Changed
+
+- **The installer sets up only the coding agents a project targets.** The
+  target agents are anchored in `sw-ecosystem-agentic-harness.json`, next to
+  the lock file, by `agents --agent <a>` or by the first `install` with
+  `--agent` or the picker. Marker directories such as a bare `.vscode/` only
+  produce candidates and never make an agent a target. Once anchored,
+  `status` judges only those agents (the others report `not-targeted`),
+  `apply --yes` runs without `--agent`, and `uninstall` prunes what it removes
+  from the targets. `sw-setup` and its rows reflect the new `agents` command.
+
 ## [0.1.12] - 2026-09-25
 
 ### Changed
