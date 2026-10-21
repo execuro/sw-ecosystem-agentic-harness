@@ -23,6 +23,7 @@ const COMMANDS = {
   apply: async () => (await import('../lib/commands.mjs')).apply,
   install: async () => (await import('../lib/commands.mjs')).install,
   uninstall: async () => (await import('../lib/commands.mjs')).uninstall,
+  agents: async () => (await import('../lib/commands.mjs')).agentsCommand,
   guide: async () => (await import('../lib/guide.mjs')).main,
 };
 
@@ -33,6 +34,8 @@ const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
   plan       [--agent <a>] [--scope project|user] [--root <path>]
   apply      --yes [--agent <a>] [--scope project|user] [--root <path>]
   uninstall  --yes [--agent <a>] [--scope project|user] [--root <path>]
+  agents     [--agent <a> ...] [--scope project|user] [--root <path>]
+             show, or with --agent anchor, the project's target agents
   guide      print the install protocol
 
   install is apply --yes under a friendlier name: the whole install in one
@@ -41,10 +44,13 @@ const USAGE = `usage: sw-ecosystem-agentic-harness <command> [options]
 
   <a> is one of: claude-code, codex, copilot, cursor. Repeat --agent to select
   several. install/apply resolve which agent(s) to use, in order: --agent if
-  given; else the agents already recorded in the lock file, if one exists;
-  else, with a terminal attached, an interactive picker; else exit 2 with
-  the four "... install --agent <a>" commands as help. status and uninstall
-  keep covering every agent by default.
+  given; else the anchored target agents (\`agents --agent <a>\`, stored next
+  to the lock file); else the agents already recorded in the lock file, if
+  one exists; else, with a terminal attached, an interactive picker; else
+  exit 2 with the four "... install --agent <a>" commands as help. An
+  explicit choice is anchored on the first install. status reports only the
+  anchored agents when there are any; uninstall keeps covering every agent
+  by default and prunes the agents it removes from the anchored targets.
 
   --scope defaults to project: nothing is written under your home directory
   unless you ask for it. --root defaults to the current directory.

@@ -176,7 +176,8 @@ test('status names only the agents this project actually installed', () => {
       // Present on disk (every repo has a .github/), but never installed into.
       { id: 'copilot', detected: true, state: 'not-installed', installed: {}, notes: [] },
       { id: 'codex', detected: false, state: 'absent', installed: {}, notes: [] },
-      { id: 'cursor', detected: false, state: 'absent', installed: {}, notes: [] },
+      // A stray marker makes Cursor a candidate, not a target.
+      { id: 'cursor', detected: true, targeted: false, state: 'not-targeted', installed: {}, notes: [] },
     ],
     drift: [], declined: [], manual: [], errors: [],
   });

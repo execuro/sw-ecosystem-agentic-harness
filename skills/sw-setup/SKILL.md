@@ -50,10 +50,9 @@ npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest status --json
 
 `--json` is mandatory for every call this skill makes: without it the CLI
 prints a human summary, not the object below. It prints one JSON object
-(`ok`, `next_step`, `help`, and its own `agents[]`/`drift[]` configuration
-state). Alongside it, run every
-environment row's check from `reference/rows.md` in this skill's directory —
-read-only, seconds each: file/directory existence, one version command, one
+(`ok`, `next_step`, `help`, `targets`, `agents[]`, `drift[]`). First settle
+the target agents (`reference/rows.md`, Target agents); alongside, run every
+environment row's check from `reference/rows.md` — read-only, seconds each: file/directory existence, one version command, one
 `kb_status` call, one `npm view` registry lookup (Package updates row) — the
 one part of step 1 that touches the network, so it is the slow part.
 Never write, never install, never ask a question in this step.
@@ -74,7 +73,8 @@ one line per configuration item the CLI's `agents[]`/`drift[]` reports:
 - [x] Plugin tests — AhCheckout: phpunit + jest ok
 - [ ] Project wiki — docs/project-wiki/ missing
 - [ ] Package updates — harness 0.1.0 → 0.1.3
-- [ ] Installer config — .mcp.json entry: drift (from CLI status)
+- [x] Target agents — claude-code (anchored)
+- [ ] Installer config — .mcp.json entry: drift
 ```
 
 Per-plugin rows print one line per directory under `custom/plugins/`, e.g.
@@ -87,8 +87,7 @@ Print one closing line: `Environment ready.` Stop. No question.
 ### 3. Missing rows
 
 For a missing environment row, research only what it needs: the guideline
-sections `reference/rows.md` cites for that row
-(`shopware-project-qa-guidelines.md` §3.3–§3.7, §6.1), `compose.yaml` for the
+sections `reference/rows.md` cites for that row, `compose.yaml` for the
 service name, `custom/plugins/*` names for per-plugin rows.
 
 For a missing/drifted configuration row, do not research or plan the fix

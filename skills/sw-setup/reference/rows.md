@@ -11,16 +11,25 @@ Every installer-CLI call this skill makes passes `--json`. Without it the CLI
 prints a short human summary instead of the object these rows read — that
 summary is for the person typing the command, never for a skill parsing it.
 
-When that `status --json` call reports no install at all (no lock file, so no
-recorded agents), the installer CLI's `apply --yes`/`install` has no `--agent`
-to reuse and, run from this skill, no terminal to ask on — it would exit 2.
-Do not pass a guessed `--agent`. Report this to the user instead: the first
-install must be run by them directly in a terminal, e.g.
-`npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install`,
-which then either takes their `--agent` or prompts them interactively. Re-run
-this skill's `status` check afterwards — every later `apply --yes --json`
-reuses the agents that first run recorded, and this skill can call it
-directly again. Expect `agents[]` in every output this skill reads.
+## Target agents
+
+Every row below is judged against the **anchored target agents** only, never
+against marker directories: a stray `.vscode/` makes Copilot a candidate, not a
+target. Read `targets` and `candidates` from the step-1 `status --json`.
+
+- `targets.source` is `settings`: use `targets.agents`. Ask nothing.
+- `none` and exactly one candidate: anchor it with
+  `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest agents --agent <id> --json`
+  and say so in one line. This is the one write allowed before the question.
+- `none` and zero or several candidates: ask one multi-select question listing
+  the four agents (`claude-code`, `codex`, `copilot`, `cursor`), detected ones
+  marked, then anchor the answer the same way (one `--agent` per pick). Ask
+  with the structured question tool as in `SKILL.md` step 3.
+- A later change of mind goes through the same `agents --agent …` call.
+
+Re-run `status --json` after anchoring and read `agents[]` from that. An agent
+whose `state` is `not-targeted` is never printed or acted on. Print
+`- [x] Target agents — <ids> (anchored)` as the first configuration line.
 
 ## 1. vendor/
 
@@ -69,7 +78,7 @@ So this row never blocks readiness, and it never probes. It asks.
 
 - **Check:** read `agents[]` from the `status --json` output step 1 already
   ran. Each entry carries `id` and `skills_dir` — the directory that agent
-  actually reads skills from. For each agent whose `state` is not `absent`,
+  actually reads skills from. For each target agent (`targeted` is true),
   list `<skills_dir>/sw-specs-editor/` and
   `<skills_dir>/sw-tender-discovery-tool/`: a `SKILL.md` there means that
   editor is installed for that agent. That directory read is the whole check —
@@ -78,12 +87,12 @@ So this row never blocks readiness, and it never probes. It asks.
   state, not something to go looking for. Also read
   `sw-setup-editors.json` from the installer's own state directory if it
   exists — this skill's note of what the user has already declined
-  (`{"sw-specs-editor": "declined"}`). That directory is whatever `lock_file`
-  in the step-1 `status --json` output names, minus the file name — normally
+  (`{"sw-specs-editor": "declined"}`). That directory is the one
+  `settings_file` in `targets` names, minus the file name — normally
   `var/sw-ai-sdk/`, which a Shopware project already ignores. Read the path;
   never hard-code it.
 - **Ticked:** `[x]` when the editor's `SKILL.md` is present in every
-  non-`absent` agent's `skills_dir`; `[-]` when the note records a decline, or
+  target agent's `skills_dir`; `[-]` when the note records a decline, or
   when it is installed for some agents but not all (say which). `[ ]` only for
   an editor that is neither installed nor declined — and even then it does not
   hold the table open: report it as optional and move on.
@@ -97,7 +106,7 @@ So this row never blocks readiness, and it never probes. It asks.
     `--editor` and the `.xlsx` import on `sw-discover-tender`. Install?"
 
   On yes, for each accepted editor, run its own installer once per
-  non-`absent` agent, passing that agent's `skills_dir` from `status --json`:
+  target agent, passing that agent's `skills_dir` from `status --json`:
 
   ```
   npx -y @execuro-sw-ecosystem/sw-specs-editor@latest install-skill --target <skills_dir>
@@ -130,7 +139,7 @@ So this row never blocks readiness, and it never probes. It asks.
   <skills_dir>` and re-run the removal" — and carry on with the other agents
   and the other editor.
 - **On no:** write the decline to `sw-setup-editors.json` in the directory
-  `lock_file` names (create the file, and that directory, if absent; it is
+  `targets.settings_file` names (create the file, and that directory, if absent; it is
   never tracked) and do not
   offer that editor again on any later run. The user asking for it by name is
   the only thing that re-opens it — then delete its key and install. `--editor`
@@ -305,7 +314,8 @@ This row never blocks readiness. It folds into step 3's single question.
   npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest install
   ```
 
-  That command rewrites the installed `sw-setup` skill itself, so the newer
+  That command reuses the anchored target agents and rewrites the installed
+  `sw-setup` skill itself, so the newer
   skill takes effect on the next run — which step 3 already causes by re-running
   step 1. For the editors, see row 3: re-running their `install-skill` line is
   their update.

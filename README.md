@@ -56,7 +56,8 @@ stops with one line saying so.
 | Command | What it does |
 | --- | --- |
 | `install` | installs into the resolved coding agent(s) (see Flags below); the same as `apply --yes` |
-| `status` | read-only; what is installed, what drifted, and each agent's `skills_dir` |
+| `agents` | shows, or with `--agent` anchors, the coding agents this project targets |
+| `status` | read-only; the target agents, what is installed, what drifted, and each agent's `skills_dir` |
 | `plan` | the exact changes, written as a diff; writes nothing |
 | `apply --yes` | performs them |
 | `uninstall --yes` | removes what the lock file records |
@@ -68,12 +69,21 @@ directory), `--yes` (required by `apply` and `uninstall` — `install` implies
 it), `--json` and `--verbose` (see Output below).
 
 `install`/`apply` resolve which coding agent(s) to write into, in order:
-`--agent` if given; else the agents a lock file already records (a re-run
-needs no question); else, with a terminal attached, an interactive picker;
-else exit 2 with the four `install --agent <a>` commands as `help` — it never
-guesses and never hangs. `status` and `uninstall` are unaffected by this and
-keep covering every agent by default; `plan` writes nothing, so with no
-`--agent` and no lock it previews all four and says so.
+`--agent` if given; else the anchored target agents; else the agents a lock
+file already records (a re-run needs no question); else, with a terminal
+attached, an interactive picker; else exit 2 with the four
+`install --agent <a>` commands as `help` — it never guesses and never hangs.
+`plan` writes nothing, so with none of these it previews all four and says so.
+
+The anchored target agents live in `sw-ecosystem-agentic-harness.json`, next
+to the lock file (`var/sw-ai-sdk/`, else `.sw-ai-sdk/`). Marker directories
+such as a bare `.vscode/` only produce `candidates`; they never make an agent
+a target. `agents --agent <a>` (repeatable) anchors exactly those agents and
+writes nothing else; the first `install` with `--agent` or the picker anchors
+its choice too. Once anchored, `status` judges only those agents (the others
+report `not-targeted`) and `apply --yes` runs without `--agent`. `uninstall`
+keeps covering every agent by default and prunes what it removes from the
+targets.
 
 ### Output
 
@@ -109,7 +119,7 @@ row is ticked.
 
 `apply` refuses without `--yes`. Neither `apply` nor `install` prompts for
 consent — typing the verb, or passing `--yes`, is the consent — but with no
-`--agent`, no existing lock and no terminal (Codex's question tool does not
+`--agent`, no anchored targets, no existing lock and no terminal (Codex's question tool does not
 block outside Plan mode, and CI has no terminal either), it exits 2 rather
 than guess. Add `--agent claude-code` (repeatable) to install into one agent,
 and `--scope user` to install into your home directory instead of this

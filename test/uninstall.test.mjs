@@ -168,6 +168,9 @@ test('apply after uninstall reinstalls cleanly', () => {
     const second = snapshot(root);
     delete first['.sw-ai-sdk/harness.lock.json'];
     delete second['.sw-ai-sdk/harness.lock.json'];
+    // Anchored again by the second apply, with a new timestamp.
+    delete first['.sw-ai-sdk/sw-ecosystem-agentic-harness.json'];
+    delete second['.sw-ai-sdk/sw-ecosystem-agentic-harness.json'];
     assert.deepEqual(second, first);
   } finally { cleanup(root); }
 });

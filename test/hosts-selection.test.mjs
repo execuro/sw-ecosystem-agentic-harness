@@ -29,7 +29,7 @@ test('install --agent claude-code in a Claude-only repo writes no other host tre
 
 // -------------------------------------------------- 2. no TTY, no --agent
 
-test('no TTY, no --agent and no lock exits 2, names four runnable commands, and writes nothing', () => {
+test('no TTY, no --agent, nothing anchored and no lock exits 2, names four runnable commands, and writes nothing', () => {
   const root = hostRepo({ dirs: ['.claude'] });
   try {
     const before = snapshot(root);
