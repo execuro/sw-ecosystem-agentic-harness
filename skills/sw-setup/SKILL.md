@@ -68,8 +68,8 @@ one line per configuration item the CLI's `agents[]`/`drift[]` reports:
 - [ ] Project wiki — docs/project-wiki/ missing
 - [ ] Package updates — harness 0.1.0 → 0.1.3
 - [x] Target agents — claude-code (anchored)
-- [ ] Agent entry files — AGENTS.md: append block
-- [ ] Research sub-agent routing — hooks not registered
+- [ ] Agent entry files — not installed (AGENTS.md)
+- [x] Research sub-agent routing — installed (claude-code, codex)
 - [ ] Installer config — .mcp.json entry: drift
 ```
 

@@ -36,11 +36,13 @@ Two configuration rows from `status --json` / `plan --json`. The CLI writes
 both; this skill writes nothing.
 
 - **Agent entry files**
-  - `[x]` when every `entry_files[]` row has `change: unchanged`.
-  - `[ ]` otherwise: `- [ ] Agent entry files — AGENTS.md: append block`.
+  - `[x]` when every `entry_files[]` row has `change: unchanged`: `- [x] Agent entry files — installed (<targets>)`, e.g. `installed (AGENTS.md)`.
+  - `[ ]` otherwise: `- [ ] Agent entry files — not installed (<targets>)` for `create`/`append`; `- [ ] Agent entry files — outdated (<targets>)` for `update`/`remove`/`drift`.
 - **Research sub-agent routing**
-  - `[x]` when every `hooks[]` row has `state: unchanged`.
-  - `[ ]` otherwise: `- [ ] Research sub-agent routing — hooks not registered`.
+  - `[x]` when every `hooks[]` row has `state: unchanged`: `- [x] Research sub-agent routing — installed (<agents>)`, e.g. `installed (claude-code, codex)`.
+  - `[ ]` otherwise: `- [ ] Research sub-agent routing — not installed (<agents>)` when a hook is missing; `— outdated (<agents>)` when one differs from the shipped version.
+
+Labels never show CLI state words (`unchanged`, `create`, `append`, `update`, `drift`); those appear only in the step-3 Entry files table.
 
 Before the step-3 question, when either row is `[ ]`, print in this order:
 
