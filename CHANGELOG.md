@@ -7,6 +7,14 @@ release.
 
 ## [Unreleased]
 
+## [0.1.15] - 2026-10-22
+
+### Fixed
+
+- **CI's tarball round-trip passes again.** The fixture's first `apply` names
+  its four agents and both applies pass `--json`, matching the CLI's agent
+  resolution and JSON-on-request output.
+
 ## [0.1.14] - 2026-10-22
 
 ### Changed
