@@ -1,0 +1,20 @@
+## Shopware project knowledge
+
+- KB = `ShopwareDevKnowledgeBase` MCP: `platform/` = Shopware docs, `project/` = this project's wiki.
+- Applies while the KB is available. KB unavailable → report it once, then work as usual.
+- Answer from the KB, not model memory. Never read `vendor/` or `custom/` end to end.
+- Locate: `grep_docs {pattern, path, mode: "files"}`. Read: `read_doc {path, section}`. Guidelines: `read_doc` by fixed path.
+- Empty result → `platform/synonyms/index.md`, then `platform/hubs/index.md`. Never `list_docs`/`read_doc` a version index.
+- `<v>` = major.minor of `version` in `vendor/shopware/core/composer.json` (fallback `composer.lock`).
+
+| Task | KB path (locate → read), in order |
+| --- | --- |
+| Existing project feature | `project`. Code only for gaps, at named paths. |
+| Stock Shopware capability | `platform/func` |
+| Extension point, API, event, DAL, decoration | `platform/dev/<v>` → confirm in `vendor/` (code wins) |
+| Architecture decision, plan | `guidelines/<v>/architecture-guidelines.md` + routed `be-`/`fe-architecture-guidelines.md`; ADRs `project/adr/index.md` |
+| Code change | `guidelines/<v>/code-guidelines.md` + `be-code` / `admin-code` / `storefront-code` |
+| Tests | `guidelines/<v>/qa-guidelines.md` + `be-qa` / `fe-qa` |
+
+- End plans and research with `Sources:` (paths used); unsourced → `unverified`.
+- Sub-agent prompt → include this section and `<v>`.

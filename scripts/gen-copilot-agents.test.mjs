@@ -11,7 +11,7 @@ import { parseFrontmatter, splitFrontmatter, toolList } from './frontmatter.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'agents');
-const OUT = join(ROOT, 'copilot', 'agents');
+const OUT = join(ROOT, 'adapters', 'copilot');
 
 const sources = readdirSync(SRC).filter((f) => f.endsWith('.md')).sort();
 

@@ -48,7 +48,7 @@ jobs:
       - name: Regenerating produces no diff
         run: |
           npm run gen
-          git diff --exit-code -- codex/agents copilot/agents content/AGENTS.md
+          git diff --exit-code -- adapters project
 
   test:
     name: Tests (node ${{ matrix.node }}, ${{ matrix.os }})

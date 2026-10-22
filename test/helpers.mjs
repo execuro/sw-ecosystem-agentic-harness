@@ -58,7 +58,7 @@ export function cleanup(root) {
   rmSync(root, { recursive: true, force: true });
 }
 
-export const ALL_MARKERS = ['.claude', '.codex', '.github', '.cursor'];
+export const ALL_MARKERS = ['.claude', '.codex', '.github/agents', '.cursor'];
 
 /** `--agent` for every coding agent, spread into argv — `run()` has no TTY (it
  * is a child process spawned with a piped stdin), so any test exercising a bare

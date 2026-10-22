@@ -38,7 +38,7 @@ test('every agent has all three host adapters, and there are no orphans', () => 
     }
   }
   const names = new Set(list.map((a) => a.name));
-  for (const [dir, ext] of [['codex/agents', '.toml'], ['copilot/agents', '.agent.md']]) {
+  for (const [dir, ext] of [['adapters/codex', '.toml'], ['adapters/copilot', '.agent.md']]) {
     for (const file of readdirSync(join(PKG_ROOT, dir))) {
       const name = file.replace(ext, '');
       assert.ok(names.has(name), `orphan adapter with no source agent: ${dir}/${file}`);

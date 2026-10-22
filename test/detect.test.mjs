@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { ALL_MARKERS, cleanup, hostRepo, parse, run, snapshot } from './helpers.mjs';
 
 const EXPECT = {
-  '.claude': 'claude-code', '.codex': 'codex', '.github': 'copilot', '.cursor': 'cursor',
+  '.claude': 'claude-code', '.codex': 'codex', '.github/agents': 'copilot', '.cursor': 'cursor',
 };
 
 test('every combination of markers detects exactly the right hosts', () => {

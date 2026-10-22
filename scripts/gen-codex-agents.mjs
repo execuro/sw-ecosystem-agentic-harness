@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Generates codex/agents/<name>.toml from agents/<name>.md.
+// Generates adapters/codex/<name>.toml from agents/<name>.md.
 //
 // Codex plugins cannot ship sub-agents, so these TOMLs are adapters that
 // `sw-setup` copies into the host's `.codex/agents/` on its Codex branch. They
@@ -28,7 +28,7 @@ import { splitFrontmatter, parseFrontmatter } from './frontmatter.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC_DIR = join(ROOT, 'agents');
-const OUT_DIR = join(ROOT, 'codex', 'agents');
+const OUT_DIR = join(ROOT, 'adapters', 'codex');
 
 // Agents whose shell access is turned off in Codex. `sw-tender-editor` is a
 // mechanical file worker with no Bash in its Claude tool list.

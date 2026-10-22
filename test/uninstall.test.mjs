@@ -111,7 +111,7 @@ test('a hand-edited managed fence is kept', () => {
   try {
     run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     const file = join(root, 'AGENTS.md');
-    writeFileSync(file, readFileSync(file, 'utf8').replace('## Shopware agentic harness', '## My heading'));
+    writeFileSync(file, readFileSync(file, 'utf8').replace('## Shopware project knowledge', '## My heading'));
     const body = parse(run(['uninstall', '--yes', '--root', root]));
     assert.ok(body.kept.some((k) => k.target === 'AGENTS.md'));
     assert.match(readText(root, 'AGENTS.md'), /## My heading/);

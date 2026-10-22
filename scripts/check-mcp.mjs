@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Release gate: proves every MCP server this package registers actually
 // starts, speaks MCP and answers `tools/list` — a live check, not a trust
-// in the version number in content/mcp-servers.json.
+// in the version number in project/config/mcp-servers.json.
 //
 // Unlike every other script under scripts/, THIS ONE REACHES THE NETWORK:
 // a bare `npx <pkg>@latest` fetches the package from the registry on a

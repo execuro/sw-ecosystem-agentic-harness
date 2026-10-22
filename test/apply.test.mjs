@@ -240,7 +240,7 @@ test('AGENTS.md keeps the user prose and appends a managed block', () => {
     run(['apply', '--yes', ...ALL_AGENT_FLAGS, '--root', root]);
     const text = readText(root, 'AGENTS.md');
     assert.ok(text.startsWith('# mine\n\nUse pnpm.\n'));
-    assert.match(text, /Shopware agentic harness/);
+    assert.match(text, /## Shopware project knowledge/);
   } finally { cleanup(root); }
 });
 

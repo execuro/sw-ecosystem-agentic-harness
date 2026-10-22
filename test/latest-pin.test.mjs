@@ -25,9 +25,9 @@ function markdownFiles(dir) {
 test('every npx invocation of this package is pinned to @latest', () => {
   const files = [
     join(PKG_ROOT, 'README.md'),
-    // Generated from scripts/gen-agents-md.mjs, and it lands in a consumer's
-    // own AGENTS.md — a version baked in there outlives every upgrade.
-    join(PKG_ROOT, 'content', 'AGENTS.md'),
+    // The router lands in a consumer's own entry files — a version baked in
+    // there outlives every upgrade.
+    join(PKG_ROOT, 'project', 'entry', 'router.md'),
     ...markdownFiles(join(PKG_ROOT, 'skills')),
   ];
   const escaped = PKG_NAME.replace(/[/@]/g, '\\$&');

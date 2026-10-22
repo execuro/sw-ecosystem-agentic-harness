@@ -23,8 +23,9 @@ vehicle on any host.
 | --- | --- | --- |
 | Skills | `skills/` | 10 `sw-*` skills — `sw-setup`, `sw-discover-tender`, `sw-design-requirements`, `sw-design-solution`, `sw-implement-feature`, `sw-document-feature`, `sw-verify-feature` and its three verifiers (`-ac-tests`, `-architecture`, `-code-quality`) |
 | Sub-agents | `agents/` | `sw-storefront-developer`, `sw-php-backend-developer`, `sw-admin-frontend-developer`, `sw-qa-engineer`, `sw-shopware-architect`, `sw-product-manager`, `sw-tender-editor` |
-| Codex adapters | `codex/agents/` | The seven agents as Codex TOML roles — Codex plugins cannot ship sub-agents, so the installer writes these into `.codex/agents/` |
-| Copilot adapters | `copilot/agents/` | The same seven as `.agent.md`, with Claude tool names mapped to Copilot's |
+| Codex adapters | `adapters/codex/` | The seven agents as Codex TOML roles — Codex plugins cannot ship sub-agents, so the installer writes these into `.codex/agents/` |
+| Copilot adapters | `adapters/copilot/` | The same seven as `.agent.md`, with Claude tool names mapped to Copilot's |
+| Project files | `project/` | What the installer writes into your repository besides skills and agents: the router, the hook, the Cursor rule, permission rules and MCP servers — see `project/README.md` |
 | Installer | `bin/`, `lib/` | The `sw-ecosystem-agentic-harness` CLI |
 
 Every adapter is generated from `agents/*.md` at build time, committed, and
@@ -135,8 +136,61 @@ unless you ask.
 | GitHub Copilot | `.github/skills/` | `.github/agents/*.agent.md` | `.mcp.json`, `.vscode/mcp.json` | — |
 | Cursor | reads Claude's | reads Claude's | `.cursor/mcp.json` | — |
 
-`AGENTS.md` gets a managed block too — Codex, Copilot and Cursor read it, and
-Codex never reads `CLAUDE.md`.
+Each agent's entry file gets a managed block too, and Claude Code and Codex
+get a `SubagentStart` hook — see the next section.
+
+### What the installer adds to your agent entry files and hooks
+
+A general-purpose agent only follows the knowledge-base, wiki and guideline
+discipline once an `sw-*` skill starts. In plain plan mode, and in the research
+sub-agents it spawns, it reads code instead. The installer closes that gap in
+two places. `sw-setup` shows both, verbatim, before it asks for its yes.
+
+**1. A router block in the entry file each agent already reads.** About 20
+lines, inside a managed fence (`<!-- >>> managed by … block=harness -->`).
+It says which source answers which question — the project wiki for features,
+the knowledge base for stock behaviour and mechanisms, guidelines and ADRs for
+architecture and code — and how to cite them. It names no skill or sub-agent.
+The text is `project/entry/router.md`.
+
+| Agent | Block goes into (first match wins) |
+| --- | --- |
+| Claude Code | the `AGENTS.md` that a `CLAUDE.md` imports with `@AGENTS.md`; else root `CLAUDE.md`; else `.claude/CLAUDE.md`; else, with only `CLAUDE.local.md`, a new root `CLAUDE.md`; else `AGENTS.md` (needs Claude Code v2.1.277 or later) |
+| Codex | `AGENTS.md` (a root `AGENTS.override.md` replaces it for Codex: the installer warns) |
+| GitHub Copilot | `.github/copilot-instructions.md`; else `AGENTS.md` |
+| Cursor | root `AGENTS.md`; else its own `.cursor/rules/sw-shopware-knowledge.mdc` with `alwaysApply: true` |
+
+- An `AGENTS.md`-only project never gets a `CLAUDE.md`.
+- `CLAUDE.local.md` and `AGENTS.override.md` are never written.
+- The target is resolved again on every `status`, `plan` and `apply`. Add a
+  `CLAUDE.md` later and Claude Code's block moves to it; the block left behind
+  is removed.
+- A block from an earlier release is upgraded in place.
+
+**2. A `SubagentStart` hook** that injects the same router into research
+sub-agents. One zero-dependency Node script, `sw-knowledge-routing.mjs`, prints
+the router as `additionalContext` and always exits 0.
+
+| Agent | Script | Registered in | Fires for |
+| --- | --- | --- | --- |
+| Claude Code | `.claude/hooks/` | `.claude/settings.json`, matcher `Explore\|Plan` | Explore and Plan |
+| Codex | `.codex/hooks/` | `.codex/hooks.json`, no matcher | every sub-agent type |
+
+Your own hooks stay; ours sits beside them and uninstall removes only ours.
+Claude Code runs the hook only in a trusted workspace. Codex asks each user to
+approve it once with `/hooks`, and the project must be trusted.
+
+**Coverage.** ✅ deterministic · ◐ needs a trust step or depends on the model.
+
+| Context | Claude Code | Codex | Copilot | Cursor |
+| --- | --- | --- | --- | --- |
+| Main thread, including plan mode | ✅ block | ✅ block | ✅ block | ✅ block |
+| Built-in research sub-agents | ✅ hook (untrusted workspace: ◐ router line) | ✅ hook (before `/hooks` approval: ◐ router line) | ◐ router line | ◐ router line |
+| Our `sw-*` sub-agents | ✅ block | ✅ hook | ◐ router line | ◐ router line |
+| Implementation (main thread) | ✅ block | ✅ block | ✅ block | ✅ block |
+
+"Router line" is the router's own rule: spawning a sub-agent → paste the
+router and the Shopware `major.minor` into its prompt.
 
 The installer's own state — the lock file recording what it wrote — goes to
 `var/sw-ai-sdk/harness.lock.json`. A Shopware project already ignores the whole
@@ -261,7 +315,7 @@ The package's own `mcp.json` carries only `playwright` — it is the portable
 manifest checked by `claude plugin validate`, not what gets installed. Both
 servers are written into each host's own MCP config (`.mcp.json`,
 `.codex/config.toml`, `.vscode/mcp.json`, `.cursor/mcp.json`) at `apply` time,
-from `content/mcp-servers.json`.
+from `project/config/mcp-servers.json`.
 
 ### The `@latest` exception
 

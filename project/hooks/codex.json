@@ -1,0 +1,9 @@
+{
+  "file": ".codex/hooks.json",
+  "script": ".codex/hooks/sw-knowledge-routing.mjs",
+  "event": "SubagentStart",
+  "matcher": null,
+  "command": "node \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.codex/hooks/sw-knowledge-routing.mjs\"",
+  "commandWindows": "node \".codex\\hooks\\sw-knowledge-routing.mjs\"",
+  "trust_note": "Each user approves it once with /hooks, and the project must be trusted."
+}

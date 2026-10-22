@@ -34,9 +34,8 @@
     "lib/",
     "agents/",
     "skills/",
-    "codex/",
-    "copilot/",
-    "content/",
+    "adapters/",
+    "project/",
     "plugin.json",
     "mcp.json",
     ".mcp.json",
@@ -47,8 +46,8 @@
     "CONTRIBUTING.md"
   ],
   "scripts": {
-    "gen": "node scripts/gen-codex-agents.mjs && node scripts/gen-copilot-agents.mjs && node scripts/gen-agents-md.mjs",
-    "gen:check": "node scripts/gen-codex-agents.mjs --check && node scripts/gen-copilot-agents.mjs --check && node scripts/gen-agents-md.mjs --check",
+    "gen": "node scripts/gen-codex-agents.mjs && node scripts/gen-copilot-agents.mjs && node scripts/gen-routing.mjs",
+    "gen:check": "node scripts/gen-codex-agents.mjs --check && node scripts/gen-copilot-agents.mjs --check && node scripts/gen-routing.mjs --check",
     "test": "node -e \"const{spawnSync}=require('node:child_process');const{readdirSync}=require('node:fs');const list=(dir)=>readdirSync(dir).filter((f)=>f.endsWith('.test.mjs')).map((f)=>dir+'/'+f);const files=[...list('test'),...list('scripts')];const r=spawnSync(process.execPath,['--test',...files],{stdio:'inherit'});process.exit(r.status??1);\"",
     "check:mcp": "node scripts/check-mcp.mjs"
   },

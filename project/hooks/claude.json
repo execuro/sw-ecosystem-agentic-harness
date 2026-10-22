@@ -1,0 +1,8 @@
+{
+  "file": ".claude/settings.json",
+  "script": ".claude/hooks/sw-knowledge-routing.mjs",
+  "event": "SubagentStart",
+  "matcher": "Explore|Plan",
+  "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sw-knowledge-routing.mjs\"",
+  "trust_note": "Runs only after you trust this workspace."
+}

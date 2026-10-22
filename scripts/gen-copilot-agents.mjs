@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Generates copilot/agents/<name>.agent.md from agents/<name>.md.
+// Generates adapters/copilot/<name>.agent.md from agents/<name>.md.
 //
 // GitHub Copilot reads neither `.claude/agents/` nor a plugin's `agents/`:
 // different directory, different frontmatter, different tool names. These
@@ -32,7 +32,7 @@ import { splitFrontmatter, parseFrontmatter, toolList } from './frontmatter.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC_DIR = join(ROOT, 'agents');
-const OUT_DIR = join(ROOT, 'copilot', 'agents');
+const OUT_DIR = join(ROOT, 'adapters', 'copilot');
 
 // Copilot caps an agent prompt at 30,000 characters.
 const MAX_PROMPT = 30000;

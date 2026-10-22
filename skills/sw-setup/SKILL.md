@@ -28,15 +28,7 @@ question; it never restates or re-implements the install protocol.
 
 ## Called from other skills
 
-`sw-verify-feature` invokes this skill once, before spawning, and passes the
-table to its verifiers as `args`; one run standalone invokes it itself. A
-caller passes no arguments and reads the printed table, never re-running it.
-
-`sw-design-requirements`, `sw-design-solution` and `sw-implement-feature` do
-**not** invoke it: each probes only what its own run uses and stops naming
-`sw-setup` when one is missing. A full table is the price of surveying an
-environment, not of one run's prerequisites — so this skill stays the one place
-it is surveyed and fixed, run up front.
+`reference/callers.md` — which skills invoke this one, and which do not.
 
 ## Procedure
 
@@ -50,12 +42,14 @@ npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest status --json
 
 `--json` is mandatory for every call this skill makes: without it the CLI
 prints a human summary, not the object below. It prints one JSON object
-(`ok`, `next_step`, `help`, `targets`, `agents[]`, `drift[]`). First settle
-the target agents (`reference/rows.md`, Target agents); alongside, run every
-environment row's check from `reference/rows.md` — read-only, seconds each: file/directory existence, one version command, one
-`kb_status` call, one `npm view` registry lookup (Package updates row) — the
-one part of step 1 that touches the network, so it is the slow part.
-Never write, never install, never ask a question in this step.
+(`ok`, `next_step`, `help`, `targets`, `detected[]`, `agents[]`, `drift[]`,
+`entry_files[]`, `hooks[]`, `warnings[]`). First settle the target agents
+(`reference/rows.md`, Target agents); alongside, run every environment row's
+check from `reference/rows.md` — read-only, seconds each: file/directory
+existence, one version command, one `kb_status` call, one `npm view` registry
+lookup (Package updates row) — the one part of step 1 that touches the
+network, so it is the slow part. Never write, never install, never ask a
+question in this step.
 
 Print one checkbox list, one line per row — the environment rows first, then
 one line per configuration item the CLI's `agents[]`/`drift[]` reports:
@@ -74,6 +68,8 @@ one line per configuration item the CLI's `agents[]`/`drift[]` reports:
 - [ ] Project wiki — docs/project-wiki/ missing
 - [ ] Package updates — harness 0.1.0 → 0.1.3
 - [x] Target agents — claude-code (anchored)
+- [ ] Agent entry files — AGENTS.md: append block
+- [ ] Research sub-agent routing — hooks not registered
 - [ ] Installer config — .mcp.json entry: drift
 ```
 
@@ -104,6 +100,11 @@ updates), then the CLI's planned configuration changes last — Package
 updates comes immediately before those, since updating the harness is what
 may change them. Skip any row already ticked.
 
+Before the question, print what the CLI will write into the agents' own files
+(`reference/rows.md`, Agent entry files): the entry-files table, the router
+text verbatim, each hook's exact command. A first install (no anchored
+targets) puts its proposed agents in the question too.
+
 Ask exactly one question: "Do this and that?" with the steps spelled out in
 plain words (no command dump). Ask the user with a structured question tool
 if you have one (Claude Code: `AskUserQuestion`; Codex: `request_user_input`,
@@ -111,7 +112,8 @@ which is non-blocking outside Plan mode — so end the turn after asking).
 Options:
 - **Yes, run it** — run the environment-row fixes in order, then
   `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest apply --yes --json`
-  for the configuration changes, then re-run step 1 and print the final table.
+  (plus one `--agent <id>` per proposed agent on a first install) for the
+  configuration changes, then re-run step 1 and print the final table.
 - **No, stop** — stop; the table from step 1 is already on screen.
 
 ### 4. Rules
@@ -148,8 +150,6 @@ line:
 
 ## Reference files
 
-`reference/rows.md` in this skill's directory — the twelve environment rows:
-check command(s), what "ticked" means, the fix steps verbatim from the
-guideline, and which skills the row blocks. Agent configuration state (what
-gets installed into `.mcp.json`, permissions, `.gitignore`) is not in this
-file — it comes from the installer CLI's `status`/`plan`/`apply` output.
+`reference/rows.md` — target agents, the twelve environment rows (check,
+"ticked", fix, what the row blocks) and the entry-file and hook rows. Other
+configuration state comes from the installer CLI's `status`/`plan`/`apply`.

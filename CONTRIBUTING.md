@@ -22,12 +22,24 @@ commit the result:
 npm run gen
 ```
 
+## Layout
+
+```text
+skills/ agents/        authored; the plugin itself
+adapters/              generated per-host agent formats (codex, copilot)
+project/               what the installer writes into a project besides skills and agents
+  entry/ hooks/ config/    see project/README.md
+bin/ lib/              installer CLI
+scripts/ test/         generators, checks, tests
+```
+
 ## Rules that bite
 
-- **`codex/agents/*.toml` and `copilot/agents/*.agent.md` are generated** from
-  `agents/*.md` by `scripts/gen-codex-agents.mjs` and
-  `scripts/gen-copilot-agents.mjs`. Never hand-edit them — run `npm run gen`
+- **`adapters/codex/*.toml`, `adapters/copilot/*.agent.md`, `project/hooks/sw-knowledge-routing.mjs` and `project/entry/cursor/*.mdc` are generated** from
+  `agents/*.md` and `project/entry/router.md` by `scripts/gen-codex-agents.mjs`,
+  `scripts/gen-copilot-agents.mjs` and `scripts/gen-routing.mjs`. Never hand-edit them — run `npm run gen`
   and commit the output. `npm run gen:check` fails the build on drift.
+  Router wording: edit `project/entry/router.md`, then run `npm run gen` (hook script and Cursor `.mdc`).
 - **Every `SKILL.md` stays under 8192 bytes**, Codex's effective cap and the
   smallest of the four coding agents'. A test enforces it. When a skill grows
   past the cap, move material into `reference/*.md` beside it — that is

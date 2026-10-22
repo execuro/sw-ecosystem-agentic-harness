@@ -2,10 +2,10 @@
 
 Twelve environment rows. Each: check (read-only), what "ticked" means, the fix
 (only run on approval, in this order), and which skills the row blocks when
-unticked. Coding-agent configuration files (`.mcp.json` entries, `.gitignore`
-lines, permission grants) are not rows here — the installer CLI owns them and
-reports their state in its own `status --json`/`plan --json` output; see
-`SKILL.md`.
+unticked. Other coding-agent configuration files (`.mcp.json` entries,
+`.gitignore` lines, permission grants) are not rows here — the installer CLI
+owns them and reports their state in its own `status --json`/`plan --json`
+output; see `SKILL.md`.
 
 Every installer-CLI call this skill makes passes `--json`. Without it the CLI
 prints a short human summary instead of the object these rows read — that
@@ -13,23 +13,52 @@ summary is for the person typing the command, never for a skill parsing it.
 
 ## Target agents
 
-Every row below is judged against the **anchored target agents** only, never
-against marker directories: a stray `.vscode/` makes Copilot a candidate, not a
-target. Read `targets` and `candidates` from the step-1 `status --json`.
+Judge every row against the **target agents** only, never against marker
+directories. Read `targets`, `detected[]` (`id` + `evidence`) and `candidates`
+from the step-1 `status --json`.
 
 - `targets.source` is `settings`: use `targets.agents`. Ask nothing.
-- `none` and exactly one candidate: anchor it with
-  `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest agents --agent <id> --json`
-  and say so in one line. This is the one write allowed before the question.
-- `none` and zero or several candidates: ask one multi-select question listing
-  the four agents (`claude-code`, `codex`, `copilot`, `cursor`), detected ones
-  marked, then anchor the answer the same way (one `--agent` per pick). Ask
-  with the structured question tool as in `SKILL.md` step 3.
-- A later change of mind goes through the same `agents --agent …` call.
+- `none` (first install): propose `detected[]` plus the agent this skill runs in.
+  - Print one line per proposed agent with its evidence:
+    `- [ ] Target agents — proposed: claude-code (CLAUDE.md), codex (running agent)`.
+  - The proposal is the yes/no question of step 3. The user may name other agents.
+  - Write nothing before the yes. Pass one `--agent <id>` per proposed agent to
+    `plan --json` and `apply --yes --json`; `apply` anchors them.
+  - Re-run `status --json --agent <id> …` after the apply.
+- A later change of mind: `npx -y @execuro-sw-ecosystem/sw-ecosystem-agentic-harness@latest agents --agent <id> --json`.
 
-Re-run `status --json` after anchoring and read `agents[]` from that. An agent
-whose `state` is `not-targeted` is never printed or acted on. Print
+An agent whose `state` is `not-targeted` is never printed or acted on. Print
 `- [x] Target agents — <ids> (anchored)` as the first configuration line.
+
+## Agent entry files and research sub-agent routing
+
+Two configuration rows from `status --json` / `plan --json`. The CLI writes
+both; this skill writes nothing.
+
+- **Agent entry files**
+  - `[x]` when every `entry_files[]` row has `change: unchanged`.
+  - `[ ]` otherwise: `- [ ] Agent entry files — AGENTS.md: append block`.
+- **Research sub-agent routing**
+  - `[x]` when every `hooks[]` row has `state: unchanged`.
+  - `[ ]` otherwise: `- [ ] Research sub-agent routing — hooks not registered`.
+
+Before the step-3 question, when either row is `[ ]`, print in this order:
+
+1. Table from `entry_files[]`:
+
+   | File | Change | Reaches | Why |
+   | --- | --- | --- | --- |
+
+   `Change` is `create`, `append`, `update`, `unchanged` or `remove`. `Reaches`
+   lists the agents that read the file. `Why` is `reason`.
+2. The router: the `body` of an `entry_files[]` row, verbatim, in one fenced block.
+3. One line per `hooks[]` row: `file`, `event`, `matcher` (none = every agent
+   type), the exact `command`, then `trust_note`. Add the script it runs
+   (`script`).
+4. One line per `warnings[]` entry.
+
+A `remove` row means a router block sits in a file no selected agent reads
+any more. The CLI removes it on `apply`.
 
 ## 1. vendor/
 

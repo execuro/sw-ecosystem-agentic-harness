@@ -37,7 +37,7 @@ test('agents --agent falls back to .sw-ai-sdk when the root has no var/', () => 
 });
 
 test('agents --json reads the anchor back with the candidates', () => {
-  const root = shopwareRepo({ dirs: ['.claude', '.vscode'] });
+  const root = shopwareRepo({ dirs: ['.claude'], files: { '.vscode/mcp.json': '{}\n' } });
   try {
     const before = parse(run(['agents', '--root', root]));
     assert.equal(before.targets.source, 'none');
@@ -135,7 +135,7 @@ test('uninstall --agent prunes the targets, and the last one removes the file', 
 });
 
 test('status: a stray detected agent is not-targeted and does not count', () => {
-  const root = shopwareRepo({ dirs: ['.claude', '.vscode'] });
+  const root = shopwareRepo({ dirs: ['.claude'], files: { '.vscode/mcp.json': '{}\n' } });
   try {
     run(['agents', '--agent', 'claude-code', '--root', root]);
     run(['apply', '--yes', '--root', root]);
@@ -154,7 +154,7 @@ test('status: a stray detected agent is not-targeted and does not count', () => 
 });
 
 test('status with nothing anchored says so and names the verb', () => {
-  const root = shopwareRepo({ dirs: ['.claude', '.vscode'] });
+  const root = shopwareRepo({ dirs: ['.claude'], files: { '.vscode/mcp.json': '{}\n' } });
   try {
     const body = parse(run(['status', '--root', root]));
     assert.equal(body.targets.source, 'none');
