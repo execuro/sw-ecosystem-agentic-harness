@@ -86,13 +86,14 @@ jobs:
           FIX=$(mktemp -d); mkdir -p "$FIX"/{.claude,.codex,.github,.cursor}
           node "$CLI" status --root "$FIX" > /dev/null
           node "$CLI" plan --root "$FIX" > /dev/null
-          node "$CLI" apply --yes --root "$FIX" > /tmp/apply.json
+          # CI has no TTY and a fresh fixture has no anchor, so name the agents; --json for the machine-readable result.
+          node "$CLI" apply --yes --agent claude-code --agent codex --agent copilot --agent cursor --json --root "$FIX" > /tmp/apply.json
           node -e '
             const r = JSON.parse(require("fs").readFileSync("/tmp/apply.json", "utf8"));
             if (!r.ok || r.summary.failed) throw new Error("apply failed: " + JSON.stringify(r.summary));
             if (!r.next_step) throw new Error("apply carried no next_step");
           '
-          node "$CLI" apply --yes --root "$FIX" > /tmp/again.json
+          node "$CLI" apply --yes --json --root "$FIX" > /tmp/again.json
           node -e '
             const r = JSON.parse(require("fs").readFileSync("/tmp/again.json", "utf8"));
             if (r.summary.created || r.summary.updated) throw new Error("apply is not idempotent");
