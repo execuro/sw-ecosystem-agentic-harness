@@ -7,6 +7,16 @@ release.
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-10-22
+
+### Changed
+
+- **The knowledge-routing hook now reaches Plan Mode and Explore agents.**
+  The installer writes the router into each target agent's entry file and
+  wires a routing hook (Claude Code and Codex) and a Cursor rule from
+  `project/`; the Codex and Copilot agent adapters move under `adapters/`.
+- **`sw-setup` status report tidied** — rows and the skill text updated.
+
 ## [0.1.13] - 2026-10-21
 
 ### Changed
