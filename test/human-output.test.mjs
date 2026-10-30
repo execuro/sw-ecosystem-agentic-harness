@@ -44,7 +44,7 @@ test('a first install reports what changed, grouped by agent, with a restart lin
     const first = human(['install', '--agent', 'claude-code', '--root', root]);
     assert.equal(first.code, 0);
     assert.match(first.stdout, /Claude Code/);
-    assert.match(first.stdout, /added \d+ skills: .*sw-setup/);
+    assert.match(first.stdout, /added \d+ skills: sw-design-requirements/);
     assert.match(first.stdout, /added \d+ sub-agents: /);
     assert.match(first.stdout, /\.mcp\.json/);
     assert.match(first.stdout, /Restart Claude Code/);
