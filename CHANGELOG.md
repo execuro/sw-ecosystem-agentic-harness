@@ -7,6 +7,12 @@ release.
 
 ## [Unreleased]
 
+### Added
+
+- **`sw-feature-status` skill.** One read-only table of every feature in
+  `specs/`: the state of its PRD, tech spec and implementation, and the next
+  command to run.
+
 ## [0.1.15] - 2026-10-22
 
 ### Fixed
