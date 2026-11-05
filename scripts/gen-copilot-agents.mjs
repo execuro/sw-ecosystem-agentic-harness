@@ -18,7 +18,7 @@
 //   body                      -> the agent prompt, verbatim
 //   model                     -> only when the agent pins one; `inherit` is not a pin
 //   tools:                    -> mapped through the alias table below. An `mcp__*`
-//                                tool has no Copilot equivalent and is dropped, with
+//                                tool, or one in NO_EQUIVALENT, has no Copilot equivalent and is dropped, with
 //                                the dropped names printed so the loss is visible in
 //                                CI logs. An unknown non-`mcp__` name throws: a new
 //                                Claude tool must not be silently lost.
@@ -54,13 +54,18 @@ const TOOL_ALIASES = new Map(Object.entries({
   TodoWrite: 'todo',
 }));
 
+// Claude tools with no documented Copilot alias that are dropped on purpose,
+// like `mcp__*`: Copilot loads skills on its own and has no tool to grant for
+// them. Listed by name so any other unknown tool still throws.
+const NO_EQUIVALENT = new Set(['Skill']);
+
 /** Map a Claude tool list to Copilot names. Returns {tools, dropped}. */
 function mapTools(names, file) {
   if (names === null) return { tools: null, dropped: [] };
   const tools = [];
   const dropped = [];
   for (const name of names) {
-    if (name.startsWith('mcp__')) {
+    if (name.startsWith('mcp__') || NO_EQUIVALENT.has(name)) {
       dropped.push(name);
       continue;
     }
