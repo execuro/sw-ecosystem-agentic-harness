@@ -7,6 +7,10 @@ release.
 
 ## [Unreleased]
 
+### Fixed
+
+- `sw-design-requirements` no longer gives two PRDs started in parallel the same `NNNN`. A new number is the highest one across `specs/`, every git worktree and every local and remote branch, plus 1, and it is claimed by creating the file under a lock (`reference/claim-number.md`).
+
 ## [0.1.15] - 2026-10-22
 
 ### Fixed
