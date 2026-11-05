@@ -22,7 +22,7 @@ vehicle on any host.
 | Component | Where | Contents |
 | --- | --- | --- |
 | Skills | `skills/` | 10 `sw-*` skills — `sw-setup`, `sw-discover-tender`, `sw-design-requirements`, `sw-design-solution`, `sw-implement-feature`, `sw-document-feature`, `sw-verify-feature` and its three verifiers (`-ac-tests`, `-architecture`, `-code-quality`) |
-| Sub-agents | `agents/` | `sw-storefront-developer`, `sw-php-backend-developer`, `sw-admin-frontend-developer`, `sw-qa-engineer`, `sw-shopware-architect`, `sw-product-manager`, `sw-tender-editor` |
+| Sub-agents | `agents/` | `sw-storefront-developer`, `sw-php-backend-developer`, `sw-admin-frontend-developer`, `sw-qa-engineer`, `sw-shopware-architect`, `sw-product-manager`, `sw-tender-editor`, `sw-editor-batch` |
 | Codex adapters | `adapters/codex/` | The seven agents as Codex TOML roles — Codex plugins cannot ship sub-agents, so the installer writes these into `.codex/agents/` |
 | Copilot adapters | `adapters/copilot/` | The same seven as `.agent.md`, with Claude tool names mapped to Copilot's |
 | Project files | `project/` | What the installer writes into your repository besides skills and agents: the router, the hook, the Cursor rule, permission rules and MCP servers — see `project/README.md` |
