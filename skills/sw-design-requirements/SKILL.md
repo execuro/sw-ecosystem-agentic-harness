@@ -43,12 +43,7 @@ Then *Preconditions* in `reference/consistency-probes.md`: probe `vendor/` and t
 
 ### 1. Establish the target file
 
-New PRD:
-```
-mkdir -p specs
-ls specs
-```
-Take the highest `NNNN`, add 1, zero-pad to 4; slug = kebab-case, 2–5 words. Target: `specs/NNNN-slug.md`.
+New PRD: claim the number with `reference/claim-number.md` in this skill's directory, never with `ls specs` + 1. Target: the path it prints, `specs/NNNN-slug.md`.
 
 Continue mode: keep the existing path, number and slug. Never renumber or create a second file for the same feature.
 
