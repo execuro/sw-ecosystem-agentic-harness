@@ -9,7 +9,7 @@ release.
 
 ### Fixed
 
-- **Editor runs no longer stop in a dead end below readiness.** An answers-only
+- **Editor runs below readiness now always raise new questions.** An answers-only
   batch skipped the checks and raised no new question, so a PRD under 90% or a
   spec under 5/5 was left with nothing to answer. Editor mode of
   `sw-design-requirements` and `sw-design-solution` now closes each remaining
