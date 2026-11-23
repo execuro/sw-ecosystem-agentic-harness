@@ -1,8 +1,8 @@
 ---
 name: sw-design-requirements
-description: Turn a briefing — chat text or a file, covering one or more features — into a lean, business-only PRD stored as specs/NNNN-slug.md. Runs an interactive clarification loop for the requirement gaps and inconsistencies that actually change the requirements, then scores a weighted confidence %. Use when asked to write, draft, refine, continue, or score a PRD / requirements doc / feature brief for this Shopware project. Never writes a tech spec or answers architecture questions — that's sw-design-solution.
+description: Turn a briefing — chat text or a file, covering one or more features — into a lean, business-only PRD stored as specs/<id>-slug.md. Runs an interactive clarification loop for the requirement gaps and inconsistencies that actually change the requirements, then scores a weighted confidence %. Use when asked to write, draft, refine, continue, or score a PRD / requirements doc / feature brief for this Shopware project. Never writes a tech spec or answers architecture questions — that's sw-design-solution.
 when_to_use: Trigger phrases — "write a PRD", "draft requirements", "turn this brief into a PRD", "continue PRD 0003", "is this PRD ready for specification", "raise the confidence on this PRD", "requirements for <feature>".
-argument-hint: '[file-path | briefing text | specs/NNNN-slug.md to continue] [--editor]'
+argument-hint: '[file-path | briefing text | specs/<id>-slug.md to continue] [--editor]'
 allowed-tools: Read Write Edit Glob Grep AskUserQuestion Agent Skill Bash(ls *) Bash(mkdir -p specs) Bash(npx -y @execuro-sw-ecosystem/sw-specs-editor@latest *) mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
 
 ---
@@ -25,7 +25,7 @@ Tech decisions belong to `sw-design-solution`. Consult `sw-shopware-architect` (
 
 | Argument | Behaviour |
 | --- | --- |
-| Path to `specs/NNNN-*.md` | **Continue mode** — load, keep its number, advance |
+| Path to `specs/<id>-*.md` | **Continue mode** — load, keep its ID, advance |
 | Any other file path, or free text | **New PRD** — used as source brief |
 | Nothing | Ask for the feature in one sentence, then proceed |
 | `<path> --editor` | **Editor hand-off** — step 0 checks the optional `sw-specs-editor` skill, invokes it on `<path>`, stops; nothing else runs. The session edits the PRD alone — the tech spec is reference only, with its own session. A `-spec.md` path is refused. |
@@ -43,9 +43,9 @@ Then *Preconditions* in `reference/consistency-probes.md`: probe `vendor/` and t
 
 ### 1. Establish the target file
 
-New PRD: claim the number with `reference/claim-number.md` in this skill's directory, never with `ls specs` + 1. Target: the path it prints, `specs/NNNN-slug.md`.
+New PRD: get the ID per `reference/prd-id.md` in this skill's directory; slug = kebab-case, 2–5 words. Target: `specs/<id>-slug.md`, ID also in the `**ID**` row.
 
-Continue mode: keep the existing path, number and slug. Never renumber or create a second file for the same feature.
+Continue mode: keep the existing path, ID and slug. Never change the ID or create a second file for the same feature.
 
 ### 2. Targeted consistency lookup
 
@@ -89,6 +89,7 @@ Work through `reference/readiness-and-report.md` in this skill's directory: appl
 All under `reference/` in this skill's directory:
 
 - `reference/consistency-probes.md` — step 0's preconditions; step 2: conflicts, where to look, the KB stock-behaviour lookup
+- `reference/prd-id.md`: step 1, the PRD ID
 - `reference/prd-template.md` — step 3: section structure to fill
 - `reference/splitting-guidelines.md` — steps 3 and 6: when one PRD should have been two
 - `reference/clarification-loop.md` — step 4: the question loop, recommended-option rules, anchoring answers

@@ -1,8 +1,8 @@
 ---
 name: sw-implement-feature
-description: Implement a feature from its technical spec (specs/NNNN-slug-spec.md, written by sw-design-solution) following TDD — tests first per acceptance criterion, then the implementation, fixing until every relevant test passes (including that AC's own acceptance/e2e test, run immediately, not deferred), running Shopware's own shopware-cli fixers/static-analysis per AC to conform to Shopware's coding standards as code is written rather than after the fact. Builds ACs group by group per the spec's Parallel groups/Depends on data, fanning out independent ACs to concurrent agent spawns instead of one at a time. Runs sw-verify-feature as its final step to produce a full verification report. Use when asked to implement, build, or code a feature/epic from an existing tech spec.
+description: Implement a feature from its technical spec (specs/<id>-slug-spec.md, written by sw-design-solution) following TDD — tests first per acceptance criterion, then the implementation, fixing until every relevant test passes (including that AC's own acceptance/e2e test, run immediately, not deferred), running Shopware's own shopware-cli fixers/static-analysis per AC to conform to Shopware's coding standards as code is written rather than after the fact. Builds ACs group by group per the spec's Parallel groups/Depends on data, fanning out independent ACs to concurrent agent spawns instead of one at a time. Runs sw-verify-feature as its final step to produce a full verification report. Use when asked to implement, build, or code a feature/epic from an existing tech spec.
 when_to_use: Trigger phrases — "implement spec 0007", "build this feature", "code the epic-1 spec", "implement the tech spec".
-argument-hint: '[specs/NNNN-slug-spec.md]'
+argument-hint: '[specs/<id>-slug-spec.md]'
 allowed-tools: Read Write Edit Glob Grep Bash Agent mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
 ---
 
@@ -14,8 +14,8 @@ Implement one feature from its technical spec, under TDD, then hand off to full 
 
 | Argument | Behaviour |
 | --- | --- |
-| Path to `specs/NNNN-slug-spec.md` | Implement this spec |
-| Path to `specs/NNNN-slug.md` (a PRD, no spec) | Tell the user to run `sw-design-solution` first — do not improvise a spec |
+| Path to `specs/<id>-slug-spec.md` | Implement this spec |
+| Path to `specs/<id>-slug.md` (a PRD, no spec) | Tell the user to run `sw-design-solution` first — do not improvise a spec |
 | Nothing | Ask the user for the spec path |
 
 ## Procedure

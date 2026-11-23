@@ -1,8 +1,8 @@
 ---
 name: sw-design-solution
-description: Turn a PRD (specs/NNNN-slug.md) into a technical spec at specs/NNNN-slug-spec.md. Applies TDD — every acceptance criterion gets an implementation plan and e2e coverage, with Shopware toolchain (shopware-cli/PHPStan/ESLint/Stylelint) conventions baked into decisions up front. Runs a clarification loop for the gaps that change the implementation plan, and on the user's say-so extracts project-wide architecture/stack decisions into ADR files (specs/NNNN-slug-adr-<topic>.md) that gate readiness while proposed. Pre-checks vendor/ and the KB before it starts. Use when asked to write, draft, refine, or continue a tech spec / implementation plan. Never edits the source PRD or answers business/requirements questions — that's sw-design-requirements.
+description: Turn a PRD (specs/<id>-slug.md) into a technical spec at specs/<id>-slug-spec.md. Applies TDD — every acceptance criterion gets an implementation plan and e2e coverage, with Shopware toolchain (shopware-cli/PHPStan/ESLint/Stylelint) conventions baked into decisions up front. Runs a clarification loop for the gaps that change the implementation plan, and on the user's say-so extracts project-wide architecture/stack decisions into ADR files (specs/<id>-slug-adr-<topic>.md) that gate readiness while proposed. Pre-checks vendor/ and the KB before it starts. Use when asked to write, draft, refine, or continue a tech spec / implementation plan. Never edits the source PRD or answers business/requirements questions — that's sw-design-requirements.
 when_to_use: Trigger phrases — "write the tech spec for PRD 0007", "create an implementation plan for this PRD", "draft the spec", "continue spec 0007", "is this spec ready for implementation".
-argument-hint: '[specs/NNNN-slug.md | specs/NNNN-slug-spec.md] [--editor]'
+argument-hint: '[specs/<id>-slug.md | specs/<id>-slug-spec.md] [--editor]'
 allowed-tools: Read Write Edit Glob Grep AskUserQuestion Agent Skill Bash(ls *) Bash(npx -y @execuro-sw-ecosystem/sw-specs-editor@latest *) WebSearch WebFetch mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
 ---
 
@@ -18,10 +18,10 @@ Answers **how**, never **what**/**why**. Never re-litigate, question, or change 
 
 | Argument | Behaviour |
 | --- | --- |
-| `specs/NNNN-slug-spec.md` | **Continue mode** — load, keep its number, advance |
-| `specs/NNNN-slug.md` (a PRD) | **New spec** — PRD is the source of truth |
+| `specs/<id>-slug-spec.md` | **Continue mode** — load, keep its ID, advance |
+| `specs/<id>-slug.md` (a PRD) | **New spec** — PRD is the source of truth |
 | Nothing | Ask for the PRD path — a tech spec is always written from one (§0.5) |
-| `<path> --editor` | **Editor hand-off**, first reference file below. The path may be the PRD or the spec; it always resolves to `specs/NNNN-slug-spec.md`, **drafted in the terminal first** when that file is missing or has no ACs yet, then opened automatically. The session edits the spec only — the PRD is reference only, with its own session |
+| `<path> --editor` | **Editor hand-off**, first reference file below. The path may be the PRD or the spec; it always resolves to `specs/<id>-slug-spec.md`, **drafted in the terminal first** when that file is missing or has no ACs yet, then opened automatically. The session edits the spec only — the PRD is reference only, with its own session |
 | `<path> --editor-session <url> --batch <file>` | **Editor mode** — see `reference/editor-mode.md` |
 
 ## Procedure
@@ -45,4 +45,4 @@ Under `reference/` in this skill's directory:
 
 - `tech-spec-template.md` — the section structure to fill; §3 is the per-AC contract `sw-implement-feature` and `sw-verify-feature` consume, §7 is the five-criteria readiness table that sets the confidence
 - `adr-template.md` — the ADR file created on Extract
-- KB via MCP — `read_doc { path: "guidelines/<version>/qa-guidelines.md" }` plus `be-qa-guidelines.md` / `fe-qa-guidelines.md` for test levels and directory layout the test tables must follow. AC marker convention: PHPUnit — method name contains `Ac<n>` plus `#[Group('NNNN-ACn')]`; Jest — test title starts `AC-n:`; Playwright — `{ tag: ['@NNNN', '@AC-n'] }`.
+- KB via MCP — `read_doc { path: "guidelines/<version>/qa-guidelines.md" }` plus `be-qa-guidelines.md` / `fe-qa-guidelines.md` for test levels and directory layout the test tables must follow. AC marker convention: PHPUnit — method name contains `Ac<n>` plus `#[Group('<id>-ACn')]`; Jest — test title starts `AC-n:`; Playwright — `{ tag: ['@<id>', '@AC-n'] }`.

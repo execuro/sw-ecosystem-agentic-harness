@@ -4,11 +4,11 @@ Entered from `sw-document-feature` after step 0. Steps 1-7 run in order. Step 3 
 
 ### 1. Resolve inputs
 
-Read the source document(s) or the chat. Collect the names the built-check will search for: extension name, entities, services, routes, templates/Twig blocks, admin modules/components, snippet keys, config keys, feature flags, test names. Note the feature slug: PRD slug without `NNNN-` (chat mode: kebab-case, 2–5 words).
+Read the source document(s) or the chat. Collect the names the built-check will search for: extension name, entities, services, routes, templates/Twig blocks, admin modules/components, snippet keys, config keys, feature flags, test names. Note the feature slug: PRD slug without `<id>-` (chat mode: kebab-case, 2–5 words).
 
 ### 2. Find the counterpart
 
-`ls specs/` and match by `NNNN`, then by slug. Read the counterpart. Do not create, edit, or renumber anything under `specs/`.
+`ls specs/` and match by `<id>`, then by slug. Read the counterpart. Do not create, edit, or renumber anything under `specs/`.
 
 ### 3. Built-check gate (mandatory)
 

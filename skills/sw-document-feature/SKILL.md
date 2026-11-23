@@ -1,6 +1,6 @@
 ---
 name: sw-document-feature
-description: Document one Shopware project feature into the LLM-wiki under docs/project-wiki/ — one feature page per surface (administration/ and/or storefront/), the "why" row in the domain index, ADR pages only promoted from the WIP ADR files sw-design-solution extracted into specs/ once they are accepted and built (with an organised table of contents) or provided by the user (never invented). Sources are a PRD (specs/NNNN-slug.md), its tech spec (specs/NNNN-slug-spec.md), or the current chat. Runs a mandatory built-check gate first — pages for functionality that does not exist in custom/ or vendor/ are written only after the user explicitly enforces it, and then carry the ⚠️ NOT BUILT block. Never restates code; references paths, extension points, decisions, config. Not for writing PRDs or specs — that's sw-design-requirements / sw-design-solution.
+description: Document one Shopware project feature into the LLM-wiki under docs/project-wiki/ — one feature page per surface (administration/ and/or storefront/), the "why" row in the domain index, ADR pages only promoted from the WIP ADR files sw-design-solution extracted into specs/ once they are accepted and built (with an organised table of contents) or provided by the user (never invented). Sources are a PRD (specs/<id>-slug.md), its tech spec (specs/<id>-slug-spec.md), or the current chat. Runs a mandatory built-check gate first — pages for functionality that does not exist in custom/ or vendor/ are written only after the user explicitly enforces it, and then carry the ⚠️ NOT BUILT block. Never restates code; references paths, extension points, decisions, config. Not for writing PRDs or specs — that's sw-design-requirements / sw-design-solution.
 when_to_use: Trigger phrases — "document this feature", "write the wiki page for spec 0007", "document PRD specs/0003-…", "add docs for <feature>", "update the wiki for <feature>", "put this in the project wiki", "record this as a project coding rule", "override/waive this guideline for our project".
 argument-hint: '[path to PRD or spec | empty = use chat] [--setup]'
 allowed-tools: Read Glob Grep Bash Write Edit Agent AskUserQuestion mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
@@ -16,19 +16,19 @@ Turn one feature — from its PRD/spec or from the chat — into wiki pages unde
 - **Never restate code.** Class listings, method signatures, DI wiring, Twig markup are pointed to by path, not reproduced. At most a one-line snippet if unavoidable.
 - **One surface per page.** `administration/<feature>.md` and `storefront/<feature>.md` only; never `admin/`, `backend/`, `api/`, never a page without a surface. The "why" lives once, in the domain index feature row.
 - **User answers are anchored, never quoted.** Rewrite them into the page's own voice and add one line to the page's *Decision Log* (see `reference/page-rules.md`).
-- **ADRs are never invented.** `docs/project-wiki/adr/` is the single source of truth and holds only accepted + built ADRs — promoted once from the WIP files `specs/NNNN-slug-adr-<topic>.md` written by `sw-design-solution` (the spec's `[adr] <path>` lines point at them; procedure in `reference/adr-promotion.md`), or provided by the user in chat as accepted (title + context/decision/consequences; anything not accepted is sent to `specs/` as WIP). Never from "precedent", significance, or its own judgment; never written to `specs/`; an existing docs ADR is never overwritten. Everything else goes to Developer › Decisions or the index "Why" column; `[potential ADR]` items are only listed in the report under "ADR candidates (not created)" — no question mid-run unless the user asked about ADRs.
+- **ADRs are never invented.** `docs/project-wiki/adr/` is the single source of truth and holds only accepted + built ADRs — promoted once from the WIP files `specs/<id>-slug-adr-<topic>.md` written by `sw-design-solution` (the spec's `[adr] <path>` lines point at them; procedure in `reference/adr-promotion.md`), or provided by the user in chat as accepted (title + context/decision/consequences; anything not accepted is sent to `specs/` as WIP). Never from "precedent", significance, or its own judgment; never written to `specs/`; an existing docs ADR is never overwritten. Everything else goes to Developer › Decisions or the index "Why" column; `[potential ADR]` items are only listed in the report under "ADR candidates (not created)" — no question mid-run unless the user asked about ADRs.
 - **Never paste a page body into chat.** The final report is at most six lines.
 
 ## Inputs
 
 | Argument | Behaviour |
 | --- | --- |
-| `specs/NNNN-slug.md` (PRD) | Read it; locate the spec `specs/NNNN-*-spec.md` by number, then slug |
-| `specs/NNNN-slug-spec.md` (spec) | Read it; locate the PRD `specs/NNNN-slug.md` (same number, slug without `-spec`) |
+| `specs/<id>-slug.md` (PRD) | Read it; locate the spec `specs/<id>-*-spec.md` by ID, then slug |
+| `specs/<id>-slug-spec.md` (spec) | Read it; locate the PRD `specs/<id>-slug.md` (same ID, slug without `-spec`) |
 | Both paths | Read both |
 | Nothing | **Chat mode** — the current discussion is the source; `prd: null`, `spec: null` |
 | `--setup` (alone or with a path) | **Setup only** — run step 0, report its table, stop. Nothing is documented. The `sw-setup` Project wiki row invokes this flag as its fix |
-| A path that does not exist | Say so, `ls specs/`, and ask with a structured question tool if you have one (Claude Code: `AskUserQuestion`; Codex: `request_user_input`) offering the nearest match (by number or slug) or chat mode. Never guess a file, never silently fall back to chat |
+| A path that does not exist | Say so, `ls specs/`, and ask with a structured question tool if you have one (Claude Code: `AskUserQuestion`; Codex: `request_user_input`) offering the nearest match (by ID or slug) or chat mode. Never guess a file, never silently fall back to chat |
 
 If a counterpart is missing, say so in one line and continue with what exists. In chat mode extract what/why/AC-like statements from the discussion per `reference/source-mapping.md`; ask the user for the feature name in one sentence only if it cannot be inferred.
 

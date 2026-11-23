@@ -2,7 +2,7 @@
 name: sw-verify-feature-architecture
 description: Verify that a feature's implementation matches the architectural decisions its spec made, and complies with Shopware's own Core conventions plus any written Project guidelines this repo defines. Reports per-AC pass/partly/not pass with the specific guideline or mismatch behind any non-pass. One of three parallel verifiers spawned by sw-verify-feature; can also be run standalone.
 when_to_use: Trigger phrases — "verify architecture for spec 0007", "does this implementation follow the spec's design", "check Core/Project guideline compliance for this feature", "architecture audit for epic 1".
-argument-hint: '[specs/NNNN-slug-spec.md]'
+argument-hint: '[specs/<id>-slug-spec.md]'
 allowed-tools: Read Glob Grep Bash mcp__ShopwareDevKnowledgeBase__list_docs mcp__ShopwareDevKnowledgeBase__grep_docs mcp__ShopwareDevKnowledgeBase__read_doc mcp__ShopwareDevKnowledgeBase__kb_status
 ---
 
@@ -18,7 +18,7 @@ This skill observes and reports. It never changes the project: no file created, 
 
 | Argument | Behaviour |
 | --- | --- |
-| Path to `specs/NNNN-slug-spec.md` | Verify the architecture for this spec against the current codebase |
+| Path to `specs/<id>-slug-spec.md` | Verify the architecture for this spec against the current codebase |
 | `; ` followed by a detected Shopware/PHP version + evidence (e.g. from `sw-verify-feature`'s brief) | Use it as verified — no re-detection needed |
 | Nothing | Ask the user for the spec path |
 

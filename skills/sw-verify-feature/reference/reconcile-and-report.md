@@ -28,7 +28,7 @@ Beyond the per-AC lines, each verifier also reports gates that don't map to a si
 
 ### 5. Report
 
-Fill `reference/verification-report-template.md` verbatim and write it to `specs/NNNN-slug-verification.md`, where `NNNN-slug` matches the spec being verified (e.g. `specs/0007-checkout-notes-verification.md` for `specs/0007-checkout-notes-spec.md`). If the file already exists from a previous run, overwrite it — this report is a snapshot of the latest run, not an append-only log.
+Fill `reference/verification-report-template.md` verbatim and write it to `specs/<id>-slug-verification.md`, where `<id>-slug` matches the spec being verified (e.g. `specs/0007-checkout-notes-verification.md` for `specs/0007-checkout-notes-spec.md`). If the file already exists from a previous run, overwrite it — this report is a snapshot of the latest run, not an append-only log.
 
 - **§1 Per-AC Verdicts** — one row per AC in the union list from step 1 (spec ∪ PRD), reconciled per step 3 above. An AC that only exists in the PRD still gets a row here, marked `not pass` / `traceability`.
 - **§2 Whole-Feature Gates** — the gate lines collected in step 4, each prefixed by its source verifier (`[tests]`, `[architecture]`, `[code-quality]`), copied verbatim from what each verifier reported, plus the `[tests] PRD AC coverage: <passed>/<total> passed, <failed> failed, <absent> absent` line from step 3's tally (`failed` = test exists but fails/flagged, `absent` = no test located, including ACs missing from the spec entirely).

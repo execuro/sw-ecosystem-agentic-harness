@@ -7,10 +7,6 @@ release.
 
 ## [Unreleased]
 
-### Fixed
-
-- `sw-design-requirements` no longer gives two PRDs started in parallel the same `NNNN`. A new number is the highest one across `specs/`, every git worktree and every local and remote branch, plus 1, and it is claimed by creating the file under a lock (`reference/claim-number.md`).
-
 ### Added
 
 - **`sw-editor-batch` sub-agent.** A lean worker that runs exactly one Specs
@@ -19,6 +15,17 @@ release.
   batch needs, so it starts from about 23k tokens of context instead of about
   39k for a general-purpose agent. It pins no model: it inherits the session's.
   The Copilot adapter drops `Skill`, which has no Copilot equivalent.
+
+### Fixed
+
+- **PRD IDs no longer collide across developers.** A new PRD takes its ID from
+  the feature's ticket key, whatever the tracker (`SHOP-12`, `GH-45`), so the
+  file becomes `specs/SHOP-12-slug.md` and the test markers `SHOP-12-AC3`. The
+  key keeps its prefix, so `SHOP-12` and `BACKEND-12` never clash; a key made
+  of digits only gets a prefix. Without a ticket the PRD falls back to the
+  local highest number plus 1, and a collision is renamed by hand. PRD and spec
+  carry an `**ID**` row, and skills and agents use `<id>` instead of the 4-digit
+  `NNNN`. The lock script `reference/claim-number.md` is removed.
 
 ## [0.1.15] - 2026-10-22
 

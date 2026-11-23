@@ -7,10 +7,11 @@ Unknown content stays `_TBD_`. Never delete an empty section; an empty section i
 ---
 
 ```markdown
-# PRD-NNNN — <Feature name>
+# PRD-<id> — <Feature name>
 
 | | |
 | --- | --- |
+| **ID** | <id> |
 | **Status** | In progress |
 | **Confidence** | 0% |
 | **Created** | YYYY-MM-DD |
@@ -52,7 +53,7 @@ Business-level only — what concepts change, not how they are stored.
 **New concepts:** <!-- name + one-line definition, or "none" -->
 
 <!-- Optional, added by the Specs Editor on first request — keep the line exactly in this shape: -->
-<!-- Diagram: specs/NNNN-slug.domain.excalidraw -->
+<!-- Diagram: specs/<id>-slug.domain.excalidraw -->
 
 ## 5. Functional Requirements
 
