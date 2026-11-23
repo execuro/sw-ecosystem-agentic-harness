@@ -31,7 +31,7 @@ test('every skill has a SKILL.md within the Codex budget', () => {
 
 test('every agent has all three host adapters, and there are no orphans', () => {
   const list = agents();
-  assert.equal(list.length, 7);
+  assert.equal(list.length, 8);
   for (const agent of list) {
     for (const key of ['claude', 'codex', 'copilot']) {
       assert.ok(statSync(join(PKG_ROOT, agent[key])).size > 0, `missing ${agent[key]}`);

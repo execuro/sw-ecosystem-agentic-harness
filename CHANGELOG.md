@@ -7,6 +7,15 @@ release.
 
 ## [Unreleased]
 
+### Added
+
+- **`sw-editor-batch` sub-agent.** A lean worker that runs exactly one Specs
+  Editor batch: it invokes the design skill it is given, lets the skill post
+  its own replies to the page and returns one line. It carries only the tools a
+  batch needs, so it starts from about 23k tokens of context instead of about
+  39k for a general-purpose agent. It pins no model: it inherits the session's.
+  The Copilot adapter drops `Skill`, which has no Copilot equivalent.
+
 ## [0.1.15] - 2026-10-22
 
 ### Fixed
