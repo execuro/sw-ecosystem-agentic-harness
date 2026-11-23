@@ -11,6 +11,15 @@ release.
 
 - `sw-design-requirements` no longer gives two PRDs started in parallel the same `NNNN`. A new number is the highest one across `specs/`, every git worktree and every local and remote branch, plus 1, and it is claimed by creating the file under a lock (`reference/claim-number.md`).
 
+### Added
+
+- **`sw-editor-batch` sub-agent.** A lean worker that runs exactly one Specs
+  Editor batch: it invokes the design skill it is given, lets the skill post
+  its own replies to the page and returns one line. It carries only the tools a
+  batch needs, so it starts from about 23k tokens of context instead of about
+  39k for a general-purpose agent. It pins no model: it inherits the session's.
+  The Copilot adapter drops `Skill`, which has no Copilot equivalent.
+
 ## [0.1.15] - 2026-10-22
 
 ### Fixed
