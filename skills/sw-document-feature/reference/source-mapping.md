@@ -2,7 +2,7 @@
 
 How each input lands on the wiki. Condense, never quote; one fact lives in one place.
 
-## PRD (`specs/NNNN-slug.md`, sections as in sw-design-requirements)
+## PRD (`specs/<id>-slug.md`, sections as in sw-design-requirements)
 
 | PRD section | Goes to |
 |---|---|
@@ -20,7 +20,7 @@ How each input lands on the wiki. Condense, never quote; one fact lives in one p
 | §11 C-n clarification log | Already anchored in the PRD; use the decision, not the log |
 | §12 Confidence | Nothing |
 
-## Tech spec (`specs/NNNN-slug-spec.md`, written by sw-design-solution)
+## Tech spec (`specs/<id>-slug-spec.md`, written by sw-design-solution)
 
 | Spec section | Goes to |
 |---|---|
@@ -37,7 +37,7 @@ Which surface owns what: entities, migrations, admin modules, Admin API → admi
 
 ## ADR marker (the only spec input that yields an ADR)
 
-A spec Decision Log line `[adr] <path>` (written by sw-design-solution when the user chose *Extract as ADR*) points at `specs/NNNN-slug-adr-<topic>.md`; that **file** is the WIP ADR — the line carries no detail of its own. It becomes a docs ADR only by promotion per `adr-promotion.md` (`accepted` and its required changes found in the code; created once, never overwritten). An `[adr]` path that resolves neither to a WIP file nor to a docs ADR by `id` → report "dangling [adr] links", no page. Lines without `[adr]` never become ADRs, however far-reaching; `[potential ADR]` lines go to the report as "ADR candidates (not created)". Promotion covers every `specs/*-adr-*.md`, not only those the current spec links.
+A spec Decision Log line `[adr] <path>` (written by sw-design-solution when the user chose *Extract as ADR*) points at `specs/<id>-slug-adr-<topic>.md`; that **file** is the WIP ADR — the line carries no detail of its own. It becomes a docs ADR only by promotion per `adr-promotion.md` (`accepted` and its required changes found in the code; created once, never overwritten). An `[adr]` path that resolves neither to a WIP file nor to a docs ADR by `id` → report "dangling [adr] links", no page. Lines without `[adr]` never become ADRs, however far-reaching; `[potential ADR]` lines go to the report as "ADR candidates (not created)". Promotion covers every `specs/*-adr-*.md`, not only those the current spec links.
 
 ## Verification report (`sw-verify-feature`, in chat)
 

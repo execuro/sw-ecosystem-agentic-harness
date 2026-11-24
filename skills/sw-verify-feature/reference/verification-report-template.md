@@ -7,12 +7,12 @@ This report is a record of one verification run, not a living document like the 
 ---
 
 ```markdown
-# VERIFICATION-NNNN — <Feature name>
+# VERIFICATION-<id> — <Feature name>
 
 | | |
 | --- | --- |
 | **Overall verdict** | fully verified \| not fully verified |
-| **Source spec** | specs/NNNN-slug-spec.md |
+| **Source spec** | specs/<id>-slug-spec.md |
 | **Run date** | YYYY-MM-DD |
 | **Verifiers consulted** | tests, architecture, code-quality <!-- list only the ones that actually ran; append "— not consulted: <name> (<reason>)" if any failed to spawn -->|
 
@@ -54,4 +54,4 @@ test::method (type) — flagged: <specific reason>
 
 ---
 
-Naming: save as `specs/NNNN-slug-verification.md`, same `NNNN-slug` as the spec it verifies. A re-run overwrites the previous report in place — this is a snapshot of the latest run, not an append-only log; if the caller wants history, that's what git provides.
+Naming: save as `specs/<id>-slug-verification.md`, same `<id>-slug` as the spec it verifies. A re-run overwrites the previous report in place — this is a snapshot of the latest run, not an append-only log; if the caller wants history, that's what git provides.

@@ -6,7 +6,7 @@ Entered before touching the target file. Decides how to handle `--editor`/`--edi
 
 `--editor` → **first action**, in this order. An editor session edits **one** document and is named from its filename, so the target has to be the *spec* path, and the page only opens on a spec that already says something.
 
-1. **Resolve to the spec path.** `…-spec.md` → that is it. `specs/NNNN-slug.md` (a PRD) → `specs/NNNN-slug-spec.md`, same `NNNN`/slug, per §1's one-spec-per-PRD rule. Anything else → stop with one line naming the two shapes.
+1. **Resolve to the spec path.** `…-spec.md` → that is it. `specs/<id>-slug.md` (a PRD) → `specs/<id>-slug-spec.md`, same `<id>`/slug, per §1's one-spec-per-PRD rule. Anything else → stop with one line naming the two shapes.
 2. **Gate, before any work.** Is the `sw-specs-editor` skill available? It is an optional add-on, installed by `sw-setup`, not part of this plugin. Not available → **stop here** with one line — "The Specs Editor is not installed. Run `sw-setup` to add it, or re-run without `--editor`." — do not fall back to non-editor mode, and never spend a draft on a page that will never open.
 3. **Preconditions, still before any work.** §0.5's probes. Either missing → **stop** with its one line: nothing is drafted, no skeleton is written and no page is opened, exactly as for a missing Specs Editor.
 4. **Branch.** At least one AC block in §3 → already drafted: report `Opening <path> — <status>, <N>/5`, hand off at once, never re-draft. Otherwise → step 5 first.
@@ -37,4 +37,4 @@ In an editor session the stop still has to release the document: post that one l
 
 ### 1. Establish the target file
 
-New spec: `specs/NNNN-slug-spec.md`, reusing the PRD's `NNNN`/`slug` — one per PRD. Create from `reference/tech-spec-template.md` in this skill's directory, section numbers/titles unchanged. Under `--editor` §0 step 5 already created and drafted this file; one that reached the page untouched migrates on first write. Header: PRD path, `shopware/core` version + KB directory, plugin (`custom/plugins/<Name>`, `<Vendor>\<Name>`, existing domain plugin or new one named after the feature's domain). Plugin never `_TBD_` at readiness. Continue mode: keep path, never renumber/duplicate; pre-template spec → migrate this run, say so in the report.
+New spec: `specs/<id>-slug-spec.md`, reusing the PRD's `<id>`/`slug` — one per PRD. Create from `reference/tech-spec-template.md` in this skill's directory, section numbers/titles unchanged. Under `--editor` §0 step 5 already created and drafted this file; one that reached the page untouched migrates on first write. Header: PRD path, `shopware/core` version + KB directory, plugin (`custom/plugins/<Name>`, `<Vendor>\<Name>`, existing domain plugin or new one named after the feature's domain). Plugin never `_TBD_` at readiness. Continue mode: keep path, never renumber/duplicate; pre-template spec → migrate this run, say so in the report.

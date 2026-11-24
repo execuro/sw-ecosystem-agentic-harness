@@ -49,7 +49,7 @@ An edit is not done until `lint:twig` passes on it and the changed markup is obs
 - Re-read the file from disk immediately before editing it, and patch the lines that need changing. Never recreate a whole template to fix one line: a full-file overwrite clobbers changes that landed between turns, and a copied core template leaves the inheritance chain entirely.
 
 ### AC test markers
-- Every test covering an acceptance criterion carries its marker (`NNNN` = spec number): PHPUnit functional tests have `Ac<n>` in the method name and `#[Group('NNNN-ACn')]`; storefront Jest titles start with `AC-n:`; Playwright specs under `tests/acceptance/` are tagged `{ tag: ['@NNNN', '@AC-n'] }`. `sw-verify-feature` greps for exactly these; an unmarked test is not coverage.
+- Every test covering an acceptance criterion carries its marker (`<id>` = the spec's ID): PHPUnit functional tests have `Ac<n>` in the method name and `#[Group('<id>-ACn')]`; storefront Jest titles start with `AC-n:`; Playwright specs under `tests/acceptance/` are tagged `{ tag: ['@<id>', '@AC-n'] }`. `sw-verify-feature` greps for exactly these; an unmarked test is not coverage.
 - Inside `sw-implement-feature` the tests for an AC are authored first by `sw-qa-engineer` and are the contract: make them pass, never weaken, skip or delete one; a test you believe wrong relative to the spec is reported, not edited. Add `data-testid` hooks the Playwright spec expects rather than changing its selectors.
 
 ## Working flow
