@@ -1,8 +1,8 @@
 ---
 name: sw-verify-feature
-description: Verify a feature implementation against its technical spec (specs/NNNN-slug-spec.md) by running three independent verifiers in parallel — AC test coverage/health, architecture/guideline compliance, and code quality/static analysis — then cross-checking their verdicts into one final per-AC pass/not pass/partly report. Wired as the final step of sw-implement-feature; can also be run standalone to (re)check a feature. Not to be confused with the existing "verify-implementation" skill, which is a mock and should be ignored.
+description: Verify a feature implementation against its technical spec (specs/<id>-slug-spec.md) by running three independent verifiers in parallel — AC test coverage/health, architecture/guideline compliance, and code quality/static analysis — then cross-checking their verdicts into one final per-AC pass/not pass/partly report. Wired as the final step of sw-implement-feature; can also be run standalone to (re)check a feature. Not to be confused with the existing "verify-implementation" skill, which is a mock and should be ignored.
 when_to_use: Trigger phrases — "verify spec 0007", "check if this feature is done", "run full verification for this feature", "is epic 1 actually passing".
-argument-hint: '[specs/NNNN-slug-spec.md]'
+argument-hint: '[specs/<id>-slug-spec.md]'
 allowed-tools: Read Write Glob Grep Agent
 ---
 
@@ -10,17 +10,17 @@ allowed-tools: Read Write Glob Grep Agent
 
 Independently verify that an implementation actually satisfies its spec. This is the completeness gate — do not soften a `not pass` into a `partly` to be agreeable.
 
-This skill is a pure orchestrator: it does not run tests, read code for compliance, or execute static analysis itself. It spawns three specialist verifier skills in parallel, each of which performs its own verification with its own tools, then cross-checks their independent verdicts into one report, written to `specs/NNNN-slug-verification.md` using `reference/verification-report-template.md`.
+This skill is a pure orchestrator: it does not run tests, read code for compliance, or execute static analysis itself. It spawns three specialist verifier skills in parallel, each of which performs its own verification with its own tools, then cross-checks their independent verdicts into one report, written to `specs/<id>-slug-verification.md` using `reference/verification-report-template.md`.
 
 ## Read-only contract
 
-This skill observes and reports. It never changes the project code: no source/test file created, edited or deleted, no fix applied, no migration run, no git action. The one file this skill is allowed to write is its own output report at `specs/NNNN-slug-verification.md` (create or overwrite). Anything found wrong in the project is a report line handed to `sw-implement-feature`, never a fix. The same contract binds every agent this skill spawns — pass it verbatim in each brief.
+This skill observes and reports. It never changes the project code: no source/test file created, edited or deleted, no fix applied, no migration run, no git action. The one file this skill is allowed to write is its own output report at `specs/<id>-slug-verification.md` (create or overwrite). Anything found wrong in the project is a report line handed to `sw-implement-feature`, never a fix. The same contract binds every agent this skill spawns — pass it verbatim in each brief.
 
 ## Inputs
 
 | Argument | Behaviour |
 | --- | --- |
-| Path to `specs/NNNN-slug-spec.md` | Verify this spec against the current codebase |
+| Path to `specs/<id>-slug-spec.md` | Verify this spec against the current codebase |
 | Nothing | Ask the user for the spec path |
 
 ## Procedure
@@ -29,7 +29,7 @@ This skill observes and reports. It never changes the project code: no source/te
 
 Read the spec's acceptance criteria — this is the reference list used in step 3 to catch a verifier that silently drops an AC.
 
-Also read the source PRD: same `NNNN-slug` as the spec, at `specs/NNNN-slug.md` (drop the `-spec` suffix). Read its §7 Acceptance Criteria — this is the AC-n list the feature was originally scoped to. This skill runs independently of `sw-implement-feature` (it can verify a manually-implemented feature just as well, and doubles as this skill's own test), so it cannot assume the spec still matches the PRD it was derived from; that assumption is exactly what this check exists to catch.
+Also read the source PRD: same `<id>-slug` as the spec, at `specs/<id>-slug.md` (drop the `-spec` suffix). Read its §7 Acceptance Criteria — this is the AC-n list the feature was originally scoped to. This skill runs independently of `sw-implement-feature` (it can verify a manually-implemented feature just as well, and doubles as this skill's own test), so it cannot assume the spec still matches the PRD it was derived from; that assumption is exactly what this check exists to catch.
 
 If the PRD file doesn't exist, note `PRD not found — traceability check skipped` in the final report's Overall Verdict and skip the PRD comparison in step 3.
 

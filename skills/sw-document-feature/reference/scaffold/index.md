@@ -57,7 +57,7 @@ Pages are written and kept in sync by the `sw-document-feature` skill, which doc
 only after it has been verified in the code. Each page states when it was last synced and which
 Shopware version it was verified against, so a stale page is visible as stale rather than wrong.
 
-The path a feature takes: PRD `specs/NNNN-slug.md` → tech spec `specs/NNNN-slug-spec.md` →
+The path a feature takes: PRD `specs/<id>-slug.md` → tech spec `specs/<id>-slug-spec.md` →
 implementation in `custom/plugins/<PluginName>` → `sw-verify-feature` → `sw-document-feature` →
 the pages here.
 

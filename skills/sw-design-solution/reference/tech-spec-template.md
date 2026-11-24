@@ -7,15 +7,16 @@ Unknown content stays `_TBD_`. Never delete an empty section; an empty section i
 ---
 
 ```markdown
-# TECH-SPEC-NNNN — <Feature name>
+# TECH-SPEC-<id> — <Feature name>
 
 | | |
 | --- | --- |
+| **ID** | <id> |
 | **Status** | In progress |
 | **Confidence** | NN% |
 | **Created** | YYYY-MM-DD |
 | **Updated** | YYYY-MM-DD |
-| **Source PRD** | specs/NNNN-slug.md |
+| **Source PRD** | specs/<id>-slug.md |
 | **Supersedes** | — |
 
 ## 1. Source PRD Summary
@@ -40,7 +41,7 @@ _Source: `sw-shopware-architect`'s report, verified in-agent per its evidence ru
 **Unverified / at risk:** <!-- anything marked `(unverified — static citation only)` — must also appear in §6 as an open question -->
 
 <!-- Optional, added by the Specs Editor on first request — keep the line exactly in this shape: -->
-<!-- Diagram: specs/NNNN-slug-spec.architecture.excalidraw -->
+<!-- Diagram: specs/<id>-slug-spec.architecture.excalidraw -->
 
 ## 3. Per-AC Implementation Plan
 
@@ -101,7 +102,7 @@ Rules: one block per question, a `**Q-n**` line, `[adr]`/`[gate]` tag right afte
 | C-1 | Every §2 decision has an extension point and a `Verified by` citation | <!-- yes/no --> |
 | C-2 | Domain model changes scoped — entities/fields/migrations named, or "none" | <!-- yes/no --> |
 | C-3 | Architecture & stack decisions vetted against the installed version, or marked no impact — any `(unverified — …)` decision fails this | <!-- yes/no --> |
-| C-4 | Every AC in §3 has an implementation plan and tests at the right level, every marker carries `NNNN`, plugin header filled | <!-- yes/no --> |
+| C-4 | Every AC in §3 has an implementation plan and tests at the right level, every marker carries `<id>`, plugin header filled | <!-- yes/no --> |
 | C-5 | §6 empty, and no ADR `proposed` / `rejected` | <!-- yes/no --> |
 
 Confidence = criteria met / 5, as a percentage. **Ready for implementation** at 5/5. Otherwise **In progress**.

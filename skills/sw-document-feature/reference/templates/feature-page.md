@@ -8,8 +8,8 @@ surface: <administration|storefront>
 feature: <feature-slug>
 status: <built|partially-built|planned|not-built|deprecated>
 extension: <PluginName in custom/, composer package vendor/name, or null>
-spec: <specs/NNNN-slug-spec.md or null>
-prd: <specs/NNNN-slug.md or null>
+spec: <specs/<id>-slug-spec.md or null>
+prd: <specs/<id>-slug.md or null>
 verified_against: Shopware 6.7.13
 last_synced: YYYY-MM-DD
 tags: [<domain-slug>, <surface>]
