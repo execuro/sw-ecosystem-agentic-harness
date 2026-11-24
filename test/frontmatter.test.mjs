@@ -136,7 +136,7 @@ test('the strict checker rejects an unquoted colon-space inside a description', 
 
 test('the strict checker accepts the single-quoted argument-hint actually shipped, and the em-dash description restructure', () => {
   const good = [
-    "argument-hint: '[specs/NNNN-slug.md | specs/NNNN-slug-spec.md] [--editor]'",
+    "argument-hint: '[specs/<id>-slug.md | specs/<id>-slug-spec.md] [--editor]'",
     'description: Deterministic, no judgment — every value it writes comes from a named input file.',
   ];
   for (const line of good) {

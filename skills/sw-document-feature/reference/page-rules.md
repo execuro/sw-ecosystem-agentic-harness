@@ -20,7 +20,7 @@ Schema per the documentation guidelines' "Frontmatter" section. Skill-side deriv
 - `nav_order` — position within the parent domain's Features table (order the feature was added, or the position the user asks for).
 - `parent` — the domain's `title` from `domains/<domain>/index.md` (exact string, case-sensitive).
 - `grand_parent` — always `Domains`.
-- `feature` — PRD slug without `NNNN-` (chat mode: kebab-case, 2–5 words); identical on both surface halves.
+- `feature` — PRD slug without `<id>-` (chat mode: kebab-case, 2–5 words); identical on both surface halves.
 - `status` — only from the gate verdict (below).
 - `extension` — plugin/app/theme name in `custom/`, or the Composer package name (`vendor/name`) when a vendor-installed extension delivers it, or `null`.
 - `spec`, `prd` — the paths read, or `null` (chat mode: both `null`).
@@ -94,7 +94,7 @@ Where decisions go: documentation guidelines "Where decisions go". Skill rule �
 
 The skill never invents, decides on, or creates an ADR by itself. Exactly two inputs yield one:
 
-1. **WIP ADR file under `specs/`** — `specs/NNNN-slug-adr-<topic>.md` written by `sw-design-solution`; the spec's `[adr] <path>` Decision Log lines and Dependencies table point at it. Promoted once into `adr/` by `adr-promotion.md` when `accepted` and its required changes exist in the code; `docs/` is then the source of truth and the specs copy may be removed by people.
+1. **WIP ADR file under `specs/`** — `specs/<id>-slug-adr-<topic>.md` written by `sw-design-solution`; the spec's `[adr] <path>` Decision Log lines and Dependencies table point at it. Promoted once into `adr/` by `adr-promotion.md` when `accepted` and its required changes exist in the code; `docs/` is then the source of truth and the specs copy may be removed by people.
 2. **Provided by the user in chat as accepted** — title + context/decision/consequences, or an explicit "record this as an ADR" for a named decision. Written from `templates/adr.md` verbatim in structure, `status: accepted`, `area` = domain | `platform` | `process`, file `adr/YYYY-MM-DD-<kebab-title>.md`, no `promoted_from` key. Not stated as accepted → tell the user to file it under `specs/` as WIP; nothing is written.
 
 Both get the matching Decision Log line above on the feature page and a Developer › Decisions link (`adr-promotion.md` §5); both are listed by the regenerated TOC block in `adr/index.md`. Anything the skill *thinks* might deserve an ADR (new project-specific domain, domain split, a spec `[potential ADR]` left unextracted) is not written and not asked about mid-run — it is listed in the report as "ADR candidates (not created)"; the user can provide one later.
