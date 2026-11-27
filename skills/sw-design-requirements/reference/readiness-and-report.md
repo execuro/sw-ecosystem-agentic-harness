@@ -12,7 +12,7 @@ Write the file. In continue mode, update `Updated`, `Confidence`, `Status` and �
 
 Five lines, no more (six with an architect), each one line:
 - path written
-- confidence % and status
+- confidence %, status and open §11 questions `<count>`, as written in the file
 - what changed this run (continue mode)
 - remaining gap costing most confidence, or `none`
 - in editor mode, once the status is `Ready for specification`: `Next: sw-design-solution <prd path> --editor` — a statement of what the user runs next, never an offer, and never something this skill starts itself
