@@ -21,6 +21,10 @@ Run the suites relevant to the types identified in step 2:
 
 If a live check doesn't reflect an already-applied change, rule out stale cache before concluding the implementation is wrong.
 
+**Test-run lock.** Run every PHPUnit command, and every `bin/console cache:clear` or `theme:compile`, through `flock /tmp/sw-test-run.lock timeout 600` inside the web container, for example `docker compose exec web flock /tmp/sw-test-run.lock timeout 600 vendor/bin/phpunit ...` (DDEV: `ddev exec flock /tmp/sw-test-run.lock timeout 600 ...`). Every run in that container shares one test database: when two runs write the same rows (fixtures reuse the same product numbers), InnoDB breaks the deadlock by rolling back one run's whole test transaction, so its tests fail at random with `SAVEPOINT ... does not exist` or `transaction was not closed properly`. `flock` waits for the other run and releases on exit; `timeout 600` kills a run stuck for more than 10 minutes, so a hung run cannot hold the lock forever. A run it killed exits with code 124: report it as `timeout (10 min)`, never as a failing test. Keep the lock file in the container's `/tmp`, never in the mounted project directory, where the lock does not hold. No `flock` in the container: run without it and say so in the report.
+
+A failure with one of those two messages is interference, not a defect: re-run that test alone, under the lock, before scoring it, and score the re-run.
+
 **On any failure or unexpected state**, capture evidence before moving on:
 - Admin Panel / Storefront (Playwright) → `mcp__playwright__browser_take_screenshot` at the point of failure, saved to `var/verification-screenshots/<spec-slug>/AC-n-<type>-<short-label>.png`. Take it before dismissing/navigating away, so it shows the actual failure, not a recovered page.
 - API / CLI (PHPUnit) → no screenshot; capture the failing assertion output/response body as evidence text instead.

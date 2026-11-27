@@ -54,6 +54,7 @@ The three skills, one per Agent call:
 
 Never call these three sequentially — they run concurrently. If one Agent call fails to spawn or errors out, note it and continue with the other two; do not block the run on a single failed spawn (report that dimension as `not consulted — <reason>` in step 4 instead of silently omitting it).
 
+Running them concurrently is safe only because each verifier runs PHPUnit and cache clears through the project's test-run lock (`flock /tmp/sw-test-run.lock timeout 600` in the web container, described in each verifier's reference); a verifier that reports `SAVEPOINT ... does not exist` or `transaction was not closed properly` skipped it.
 
 ### 3-5. Reconcile and report
 
