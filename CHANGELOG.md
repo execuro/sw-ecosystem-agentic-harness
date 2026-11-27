@@ -14,6 +14,15 @@ release.
   command to run.
 ### Fixed
 
+- **Verification no longer loops on "not fully verified" when runs overlap.**
+  `sw-verify-feature` runs its verifiers in parallel, and `sw-implement-feature`
+  runs the ACs of a group in parallel, all against one test database. Two runs
+  writing the same fixture rows deadlock, and InnoDB rolls back one run's whole
+  test transaction, so a random AC failed with `SAVEPOINT ... does not exist`. Every PHPUnit run, cache clear and `theme:compile` now goes
+  through `flock /tmp/sw-test-run.lock timeout 600` inside the web container (a
+  run stuck for 10 minutes is killed, so the lock is always released), a failure with
+  that message is re-run alone before it is scored, and `sw-implement-feature`
+  stops after a second verification run instead of looping.
 - **Editor runs below readiness now always raise new questions.** An answers-only
   batch skipped the checks and raised no new question, so a PRD under 90% or a
   spec under 5/5 was left with nothing to answer. Editor mode of

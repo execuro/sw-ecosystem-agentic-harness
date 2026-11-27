@@ -56,6 +56,8 @@ Once every AC in the spec has been implemented:
 
 **Status tags.** After an AC's own tests pass, you may mark it in the spec by inserting `[done]` (or `[partly]` when only part of the plan landed) directly after its bold id — `- **AC-2** [done] (FR-3)` — and the same on the matching `- **FR-n**` / `- **AC-n**` line of the PRD. Edit that line only; touch nothing else in either document. The Specs Editor and `sw-verify-feature` read and preserve these tags.
 
+**No verification loop.** If the report is not fully verified, fix only what it names as a real defect, then run `sw-verify-feature` once more. A test that fails there but passes when re-run alone under the test-run lock is interference, not a defect: change no code for it. After the second run, stop and report whatever it says, with the open items; never start a third run on your own.
+
 ## Report
 
 After `sw-verify-feature` completes, relay its report to the user. Do not produce a second, separate summary — `sw-verify-feature`'s report is the source of truth for completion status.
